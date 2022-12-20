@@ -3,6 +3,7 @@
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tangerine">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom_style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading.css') }}">
   </head>
 
   <body class="start-body">
@@ -20,7 +21,21 @@
         <p>
             <button class="w3-button w3-gray w3-round-large start-w3-button" type="submit">Generate</button>
         </p>
-        <span id="submit-note" style="display:none; color:rgb(187, 184, 184);">Generating story, this could take a few minutes...</span>
+
+        <div style="height:45px;">
+        <div id="loading-note" class="start-loading-note">
+          <div id="load" style="display:block;">
+            <div>G</div>
+            <div>N</div>
+            <div>I</div>
+            <div>D</div>
+            <div>A</div>
+            <div>O</div>
+            <div>L</div>
+          </div>
+        </div>
+      </div>
+        
     </form>
 
     {% include "start_page_footer.html" %}
@@ -28,7 +43,7 @@
     <script>
       document.getElementById('form').addEventListener('submit', function(event) {
         event.preventDefault(); // prevent the form from being submitted
-        document.getElementById('submit-note').style.display = 'block';
+        document.getElementById('loading-note').style.display = 'block';
         document.getElementById('form').submit(); // submit the form
       });
     </script>

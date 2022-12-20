@@ -35,6 +35,10 @@
   background-color: rgba(0, 0, 0, 0.5);
   color:whitesmoke;
 }
+.start-loading-note {
+  display:none;
+  padding-top:10px;
+}
 
 /* Page layout setup */
 .page-body {
@@ -76,17 +80,17 @@
 }
 .page-area {
   height: calc(100vh - 75px - 75px - 40px); 
-  text-align:center; 
+  text-align: center; 
   overflow-x: hidden; 
   overflow-y: hidden; 
-  border:1px solid;
+  border: 1px solid;
   background-color:whitesmoke;
 }
 
 /* Title Page */
 .title-page {
   height: 85vh; 
-  overflow: hidden; 
+  overflow-y: hidden; 
   background-size: cover; 
   background-position: center;
 }
@@ -100,7 +104,8 @@
 .title-page-img {
   height:100vh;
   width:100%;
-  object-fit: cover
+  object-fit: cover;
+  overflow-y: hidden;
 }
 
 /* Story Page */

@@ -85,7 +85,7 @@ class StoryObjectGenerator:
     def generate_story_page(self, page_text):
         print(f'Page Text: {page_text}') if DEBUG else ''
         self.story_page_header = self.ai.generate_page_header(page_text)
-        self.story_page_img = self.ai.openai_image(self.story_page_header)
+        self.story_page_img = self.ai.openai_image(page_text)
         self.story_object['pages'].append({
             "header": self.story_page_header,
             "page_text": page_text,

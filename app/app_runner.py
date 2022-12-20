@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Import Flask and related modules
-from flask import Flask, render_template, request, redirect, Response, make_response
+from flask import Flask, render_template, request, Response, make_response
 from flask_cors import CORS
 
 # Initialize Flask app
@@ -20,63 +20,18 @@ from src.story_generator import StoryObjectGenerator
 import io
 from xhtml2pdf import pisa
 
-# Create instance of story generator
-story = StoryObjectGenerator()
-
 # Home page route
 @app.route('/')
 def start():
     # Render start template
     return render_template('start.html')
 
-# Route to download JSON file of story object
-@app.route('/download_json')
-def download_json():
-    # Convert story object to JSON format
-    json_data = json.dumps(story.story_object)
-
-    # Return JSON data as response with appropriate headers
-    return Response(
-        json_data,
-        mimetype='application/json',
-        headers={'Content-disposition': 'attachment; filename=story.json'}
-    )
-
-# Route for import page
-@app.route('/import')
-def import_page():
-    # Render import template
-    return render_template('import.html')
-
-# Route for importing JSON file
-@app.route('/import_json', methods=['POST'])
-def import_json():
-    # Load story object from JSON data in form
-    story.story_object = json.loads(request.form['story_json'])
-
-    # Render index template with imported story object
-    return render_template('index.html', story_object=story.story_object)
-
-# Route to download PDF of story
-@app.route('/download_pdf')
-def download_pdf():
-    # Render index template and combine HTML content of two div containers
-    html = render_template("index.html", story_object=story.story_object)
-
-    # Create PDF from HTML content
-    result = io.BytesIO()
-    pisa.pisaDocument(io.BytesIO(html.encode('utf-8')), result)
-    pdf = result.getvalue()
-
-    # Create Flask response object and set content-type to application/pdf
-    response = make_response(pdf)
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'inline; filename=output.pdf'
-    return response
-
 # Route for generating story
 @app.route('/story', methods=['GET', 'POST'])
 def story_page():
+    # Create instance of story generator
+    story = StoryObjectGenerator()
+
     # Sanitize plot input and set as plot for story generator
     plot = sanitize_input(request.form['plot'])
     story.plot = plot
@@ -84,11 +39,10 @@ def story_page():
     # Generate story and story object
     story.generate_story()
     story.generate_story_object()
-    story_object = story.story_object
 
     # For testing purposes, the following story object can be used instead of making calls to OpenAI
     '''For Testing to avoid OpenAI api calls to test presentation layer
-    story_object = {
+    story.story_object = {
         "title_page": {
             "title": "My Awesome Story",
             "img": "#"
@@ -110,8 +64,59 @@ def story_page():
         }    
     }
     '''
-    story.story_object = story_object
-    return render_template('index.html', story_object=story.story_object)
+    app.config['story_object'] = story.story_object
+    return render_template('index.html', story_object=app.config['story_object'])
+
+
+# Route to download PDF of story
+@app.route('/download_pdf')
+def download_pdf():
+    # Render index template and combine HTML content of two div containers
+    html = render_template("index.html", story_object=app.config['story_object'])
+
+    # Create PDF from HTML content
+    result = io.BytesIO()
+    pisa.pisaDocument(io.BytesIO(html.encode('utf-8')), result)
+    pdf = result.getvalue()
+
+    # Create Flask response object and set content-type to application/pdf
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'inline; filename=output.pdf'
+    return response
+
+
+
+# Route to download JSON file of story object
+@app.route('/download_json')
+def download_json():
+
+    # Convert story object to JSON format
+    json_data = json.dumps(app.config['story_object'])
+
+    # Return JSON data as response with appropriate headers
+    return Response(
+        json_data,
+        mimetype='application/json',
+        headers={'Content-disposition': 'attachment; filename=story.json'}
+    )
+
+# Route for import page
+@app.route('/import')
+def import_page():
+    # Render import template
+    return render_template('import.html')
+
+# Route for importing JSON file
+@app.route('/import_json', methods=['POST'])
+def import_json():
+    # Load story object from JSON data in form
+    app.config['story_object'] = json.loads(request.form['story_json'])
+
+    # Render index template with imported story object
+    return render_template('index.html', story_object=app.config['story_object'])
+
+
 
 if __name__ == '__main__':
     # Run application serving to public over default flast port (5000)
