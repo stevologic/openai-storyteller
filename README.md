@@ -1,7 +1,7 @@
 # openai-storyteller
 This project is a web application that generates a story based on a provided plot using OpenAI's ChatGPT and DALL-E models. The resulting story is then illustrated and presented in an interactive web page.
 
-![image](app/static/img/openai-storyteller.png)
+![image](app/static/img/sample.png)
 
 ## Features
 - Accepts a plot as input and generates a corresponding story
