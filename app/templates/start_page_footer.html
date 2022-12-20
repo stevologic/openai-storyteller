@@ -1,0 +1,9 @@
+<footer class="w3-full start-page-footer-div w3-right-align">
+    <script>
+        if (location.pathname.startsWith('/import')) {
+            document.write('<a href="/">Generate a new story</a>');
+        } else {
+            document.write('<a href="/import">Import existing story</a>');
+        }
+    </script>
+</footer>

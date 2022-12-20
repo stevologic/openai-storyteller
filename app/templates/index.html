@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tangerine">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/custom_style.css') }}">
+  
+  <body class="page-body">    
+    {% include "page_header.html" %}
+    {% include "top_page_navigation.html" %}
+
+    <br clear="all" />
+
+    <!-- Page Area -->
+    <div class="w3-row w3-animate-right w3-margin-left w3-margin-right page-area">
+
+      <!-- story title page -->
+      {% include "title_page.html" %}
+      <!-- story pages -->
+      {% for page in story_object.pages %}
+        {% with page=page %}
+          {% include "story_page.html" %}
+        {% endwith %}
+      {% endfor %}
+      <!-- story the_end page -->
+      {% include "the_end.html" %}
+    </div>
+
+    {% include "export.html" %}
+    {% include "back_next_buttons.html" %}
+
+    <br clear="all" />
+    
+    <script src="{{ url_for('static', filename='js/custom_javascript.js') }}"></script>
+
+  </body>
+
+</html>

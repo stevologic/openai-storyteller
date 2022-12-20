@@ -1,0 +1,58 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tangerine">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom_style.css') }}">
+  </head>
+
+  <body class="start-body">
+    
+    <form id="form" method="post" action="/import_json" class="start-form">
+        <p>
+            <span style="color:whitesmoke;">
+              <span class="w3-xxlarge" style='font-family: "Courier New", monospace;'>OpenAI</span>
+              <span class="w3-tangerine w3-xxxlarge">Storyteller</span>
+            </span>
+        </p>
+        <p>
+            <input type="text" name="story_json" id="story_json" class="w3-input w3-border-gray w3-round-large" size=50 placeholder="Paste JSON to import existing story" class="start-w3-input">
+        </p>
+        <p>
+            <button class="w3-button w3-gray w3-round-large start-w3-button" type="submit">Import</button>
+        </p>
+    </form>
+
+    {% include "start_page_footer.html" %}
+
+
+    <script src="{{ url_for('static', filename='js/custom_javascript.js') }}"></script>
+
+
+    <!-- cool background from Vanta.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+    <script>
+      VANTA.BIRDS({
+        el: "body",
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.00,
+        minWidth: 200.00,
+        scale: 1.00,
+        scaleMobile: 1.00,
+        color1: 0x171f5f,
+        color2: 0x318193,
+        colorMode: "lerp",
+        birdSize: 0.70,
+        wingSpan: 23.00,
+        speedLimit: 1.00,
+        separation: 66.00,
+        alignment: 43.00,
+        cohesion: 88.00,
+        quantity: 3.00
+      })
+    </script>
+
+  </body>
+</html>
