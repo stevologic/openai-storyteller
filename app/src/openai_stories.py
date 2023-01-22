@@ -11,7 +11,7 @@ class OpenAIStoryTeller:
         openai.api_key = self.openai_api_key
         self.model = 'text-davinci-003'
         self.max_tokens = 1024
-        self.temperature = 0.4
+        self.temperature = 1
         self.n = 1
         self.top_p = 0.5
         self.stop = None
@@ -43,7 +43,7 @@ class OpenAIStoryTeller:
         # Make the query to the model
         response = openai.Image.create(
             prompt=prompt_text,
-            n=3,
+            n=1,
             size="1024x1024",
             response_format="url"
         )
