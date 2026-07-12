@@ -10,6 +10,7 @@ import { Ambient } from './ambient';
 import {
   IconAuto,
   IconClose,
+  IconDownload,
   IconMute,
   IconNext,
   IconPause,
@@ -17,6 +18,7 @@ import {
   IconPrev,
   IconVolume,
 } from '../icons';
+import { downloadStoryImages, saveStoryJson, storyHasImages } from '../../lib/exportStory';
 import './reader.css';
 
 type Slide = { kind: 'cover' } | { kind: 'page'; index: number } | { kind: 'end' };
@@ -204,6 +206,16 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
                   <button className="btn btn-ghost" onClick={() => setPos(0)}>
                     Read again
                   </button>
+                  {!story.demo && (
+                    <button className="btn btn-ghost" onClick={() => saveStoryJson(story)}>
+                      <IconDownload /> Save file
+                    </button>
+                  )}
+                  {!story.demo && storyHasImages(story) && (
+                    <button className="btn btn-ghost" onClick={() => downloadStoryImages(story)}>
+                      <IconDownload /> Download pictures
+                    </button>
+                  )}
                   <button className="btn btn-primary" onClick={close}>
                     {story.demo ? 'Create your own' : 'Back to studio'}
                   </button>
@@ -220,6 +232,11 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
           <IconClose />
         </button>
         <div className="reader-toptools">
+          {!story.demo && (
+            <button className="reader-chip" onClick={() => saveStoryJson(story)} title="Save this story to a file">
+              <IconDownload /> <span className="reader-chip-label">Save</span>
+            </button>
+          )}
           <button
             className={`reader-chip ${autoplay ? 'active' : ''}`}
             onClick={() => setAutoplay((a) => !a)}

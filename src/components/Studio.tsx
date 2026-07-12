@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import type { ChangeEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from '../lib/store';
 import { ART_STYLE_PRESETS, TONE_PRESETS, providerLabel, TEXT_PROVIDERS, IMAGE_PROVIDERS } from '../lib/catalog';
 import { weaveStory } from '../lib/generate';
+import { openStoryFile } from '../lib/exportStory';
 import type { StoryBrief } from '../lib/types';
 import { IconSpark, IconSettings } from './icons';
 import './studio.css';
@@ -31,6 +33,20 @@ export default function Studio() {
   const [customStyle, setCustomStyle] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function onOpenFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const opened = await openStoryFile(file);
+      setStory(opened);
+      setView('reader');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not open that file.');
+    }
+  }
 
   const textKeyMissing = !settings.keys[TEXT_PROVIDERS.find((p) => p.id === settings.text.provider)!.keyField ?? 'openai'];
 
@@ -67,6 +83,13 @@ export default function Studio() {
         <span className="eyebrow">Storyteller AI Studio</span>
         <h1>Create a new storybook</h1>
         <p>Describe the tale. Storyteller AI writes it, illustrates every page, and reads it aloud.</p>
+        <p className="studio-open">
+          or{' '}
+          <button type="button" className="linklike" onClick={() => fileRef.current?.click()}>
+            open a saved story
+          </button>
+          <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={onOpenFile} />
+        </p>
       </div>
 
       <div className="studio-grid">
