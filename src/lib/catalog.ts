@@ -18,9 +18,11 @@ export const TEXT_PROVIDERS: ProviderCatalogEntry<TextProviderId>[] = [
     keyField: 'anthropic',
     docsUrl: 'https://docs.anthropic.com/en/docs/about-claude/models',
     models: [
-      { id: 'claude-opus-4-8', label: 'Claude Opus 4.8', note: 'Most vivid prose' },
+      { id: 'claude-fable-5', label: 'Claude Fable 5', note: 'Most capable' },
+      { id: 'claude-opus-4-8', label: 'Claude Opus 4.8', note: 'Flagship · vivid prose' },
+      { id: 'claude-opus-4-7', label: 'Claude Opus 4.7' },
       { id: 'claude-sonnet-5', label: 'Claude Sonnet 5', note: 'Balanced' },
-      { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5', note: 'Fast & cheap' },
+      { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5', note: 'Fast & cheap' },
     ],
   },
   {

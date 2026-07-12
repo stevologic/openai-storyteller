@@ -43,7 +43,7 @@ directly to each provider — never to a Storyteller AI server (there isn't one)
 Configured entirely in the UI (**Settings → Models**). All calls go straight from your browser to
 the provider.
 
-- **Text:** OpenAI GPT-5.1 / GPT-5 / GPT-4.1 / GPT-4o · Anthropic Claude Opus 4.8 / Sonnet 5 / Haiku 4.5 · Google Gemini 2.5 Pro / Flash
+- **Text:** OpenAI GPT-5.1 / GPT-5 / GPT-4.1 / GPT-4o · Anthropic Claude Fable 5 / Opus 4.8 / Opus 4.7 / Sonnet 5 / Haiku 4.5 · Google Gemini 2.5 Pro / Flash
 - **Images:** OpenAI `gpt-image-1`, DALL·E 3 · Google Imagen 4 / 3
 - **Video (optional):** Google Veo 3 · OpenAI Sora 2 — or free Ken Burns motion
 - **Narration:** Browser voices (free) · OpenAI speech (`gpt-4o-mini-tts`, `tts-1-hd`)
