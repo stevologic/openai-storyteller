@@ -26,6 +26,45 @@ app is gone; in its place is a fast, single-page web app that:
 Everything runs **in your browser**. You bring your own API keys; they're stored locally and sent
 directly to each provider — never to a Storyteller AI server (there isn't one).
 
+## 📖 A book it made — _Billy's Broccoli Path_
+
+A real storybook Storyteller AI generated end-to-end from a one-line idea about a picky eater who
+gets a little lost — original prose, a **Pixar-style hero kept consistent on every page**, and warm
+narration. A few spreads:
+
+<!-- illustration gallery goes here once the exported page PNGs are added to docs/showcase/ -->
+
+> **Ages 4–7** — _"For every little explorer who finds their way home, one tiny green tree at a time."_
+
+<table>
+<tr><td width="33%" valign="top">
+
+**The Path of Pebbles**
+
+Beyond the bushes, Billy found a narrow pebble path he had never noticed before. It curled like a
+gray ribbon between tall ferns and whispering trees… until he suddenly realized he couldn't see his
+house at all.
+
+</td><td width="33%" valign="top">
+
+**Lost and Little**
+
+Billy stopped walking and listened, but all he heard were rustling leaves and an owl far away. The
+pebble path now looked twisty instead of fun, and the shadows felt a little bigger than before.
+
+</td><td width="33%" valign="top">
+
+**Broccoli Bread Crumbs**
+
+He picked one tiny piece from the wild plant and took a brave, crunchy bite. Warmth spread through
+him — and he followed a line of glowing fireflies that seemed to point the way back home.
+
+</td></tr>
+</table>
+
+_Made with a text model for the words, an image model for the art, and a locked character bible so
+Billy looks like Billy from cover to end._
+
 ## Highlights
 
 | | |
