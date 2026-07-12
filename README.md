@@ -1,76 +1,119 @@
-# openai-storyteller
-This project is a web application that generates a story based on a provided plot using OpenAI's ChatGPT and DALL-E models. The resulting story is then illustrated and presented in an interactive web page.
+<div align="center">
 
-![image](app/static/img/sample.png)
+# ✦ Storyloom
 
-## Features
-- Accepts a plot as input and generates a corresponding story
-- Illustrates the story with images generated using DALL-E
-- Displays the story in an interactive web page
-- Allows the user to download the story as a JSON file or a PDF document
-- Provides the option to import a previously saved story as a JSON file
+### Living storybooks, woven by AI.
 
+Turn a single bedtime idea into a **fully illustrated, narrated children's picture book** —
+using whichever frontier AI models you already have keys for.
 
-## Requirements
-- Python 3.7 or later
-- Flask
-- XHTML2PDF
-- OpenAI API key
+**[▶ Live demo & sample story →](https://stevologic.github.io/openai-storyteller/)**
 
+</div>
 
-## How to use
-1. Clone the repository and install the required dependencies
-    ```bash
-    git clone https://github.com/user/story-generator.git
-    cd story-generator
-    pip install -r requirements.txt
-    ```
+---
 
-2. Set up your OpenAI API key as an environment variable
-    ```bash
-    export OPENAI_API_KEY=your_api_key
-    ```
+Storyloom is a complete rewrite of the original _openai-storyteller_. The old Flask + DALL·E 2 app
+is gone; in its place is a fast, single-page web app that:
 
-3. Run the app using python app_runner.py
+- **writes** an original, age-appropriate story with GPT, Claude, or Gemini,
+- **illustrates** every page and the cover with gpt-image, Imagen, or DALL·E — keeping the hero
+  visually consistent across pages via a locked "character bible,"
+- **reads it aloud** with word-by-word highlighting (free in-browser voices, or an AI voice), and
+- **presents it** in an immersive, cinematic reader with full-bleed art, Ken Burns motion,
+  page-turn transitions, and an ambient soundscape.
 
-4. The app will be served at http://localhost:5000
+Everything runs **in your browser**. You bring your own API keys; they're stored locally and sent
+directly to each provider — never to a Storyloom server (there isn't one).
 
-5. On the home page, enter a plot and submit it to generate a story
+## Highlights
 
-6. The resulting story will be displayed on the page, with options to download it as a JSON file or a PDF document, or to import a previously saved story as a JSON file
+| | |
+|---|---|
+| 🎛 **Any frontier model** | Choose providers and models for text, images, video, and narration right in the Settings panel. Type a custom model id for anything new. |
+| 📖 **Cinematic reader** | Autoplay "movie mode," swipe/keyboard navigation, ambient audio, and a page-turn feel. |
+| 🗣 **Read aloud** | Live browser narration with karaoke-style word highlighting, or studio-grade OpenAI voices. |
+| 🎨 **Consistent characters** | A generated character description is fused into every illustration prompt so your hero stays the same. |
+| 🎬 **Video-ready** | Optionally animate pages into short clips with Veo or Sora — or let the free cinematic pan carry the mood. |
+| 🧸 **Made for kids' books** | Prompts, guardrails, and layout tuned for warm, safe picture books. |
+| 🔌 **Zero-key demo** | A bundled sample story ("Pip and the Lantern Moon") renders with animated vector art, so the whole experience works with no keys at all. |
 
+## Supported models
 
-## Docker
-This repository contains a Dockerfile for building a Docker image for the openai-storyteller web app. The image is based on Python 3.8 and includes all the necessary dependencies for the app to run.
+Configured entirely in the UI (**Settings → Models**). All calls go straight from your browser to
+the provider.
 
-How to use:
-1. Clone the repository and build the Docker image
-    ```bash
-    git clone https://github.com/user/openai-storyteller.git
-    cd openai-storyteller
-    docker build -t openai-storyteller .
-    ```
+- **Text:** OpenAI GPT-5.1 / GPT-5 / GPT-4.1 / GPT-4o · Anthropic Claude Opus 4.8 / Sonnet 5 / Haiku 4.5 · Google Gemini 2.5 Pro / Flash
+- **Images:** OpenAI `gpt-image-1`, DALL·E 3 · Google Imagen 4 / 3
+- **Video (optional):** Google Veo 3 · OpenAI Sora 2 — or free Ken Burns motion
+- **Narration:** Browser voices (free) · OpenAI speech (`gpt-4o-mini-tts`, `tts-1-hd`)
 
-2. Run the Docker container, replacing your_api_key with your own OpenAI API key
-    ```bash
-    docker run -p 5000:5000 -e OPENAI_API_KEY=your_api_key openai-storyteller
-    ```
+> New model just dropped? Pick "Custom model…" in any dropdown and paste the exact id — no update needed.
 
-## Files
-- `app_runner.py`: the main script to run the app
-- `src/sanitize.py`: a module to sanitize user input
-- `src/story_generator.py`: a module to generate the story and illustrate it using the OpenAI models
-- `src/openai_stories.py`: a module to interact with OpenAI from the lense of storytelling
-- `templates/`: a directory containing the HTML templates for the web pages
+## Run it locally
 
-## Credits
-- OpenAI's ChatGPT and DALL-E models: https://openai.com/
-- Flask: https://flask.palletsprojects.com/
-- XHTML2PDF: https://xhtml2pdf.readthedocs.io/
+```bash
+npm install
+npm run dev        # http://localhost:5173
+```
 
+Then open **Settings → Models**, paste at least one API key, and start weaving. No key? The sample
+story on the landing page is fully interactive.
 
-## Sample Screenshots
-![image](app/static/img/sample_start.png)
-![image](app/static/img/sample_story1.png)
-![image](app/static/img/sample_story2.png)
-![image](app/static/img/sample_story3.png)
+```bash
+npm run build      # type-check + production build to dist/
+npm run preview    # serve the production build
+```
+
+**Requirements:** Node 20+.
+
+## Deploy (GitHub Pages)
+
+A workflow at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) builds and publishes to
+Pages on every push to `main`.
+
+1. In the repo: **Settings → Pages → Build and deployment → Source → GitHub Actions**.
+2. Push to `main`. The site deploys to `https://<user>.github.io/openai-storyteller/`.
+
+The Vite `base` is already set to `/openai-storyteller/` for production builds. If you fork under a
+different repo name, update `base` in [`vite.config.ts`](vite.config.ts).
+
+## How it's built
+
+- **Vite + React + TypeScript**, no backend.
+- A small **provider abstraction** (`src/lib/providers/`) wraps each API with plain `fetch` — no
+  vendor SDKs — including the header Anthropic requires for direct browser calls.
+- **`src/lib/generate.ts`** orchestrates the pipeline: write → cover → per-page illustration →
+  (optional video) → (optional narration), reporting progress to the UI.
+- The **demo scenes** (`src/sample/`) are pure animated SVG, so the advertised sample needs no keys.
+
+```
+src/
+  lib/
+    providers/   text · image · video · tts  (per-provider fetch calls)
+    generate.ts  the write→illustrate→narrate pipeline
+    prompts.ts   the author + art-direction prompts
+    catalog.ts   the model catalog that powers Settings
+    store.ts     zustand state + settings persistence
+  components/
+    Landing · Studio · SettingsPanel · reader/StoryReader
+  sample/        the bundled zero-key demo story + vector scenes
+```
+
+## Privacy
+
+- API keys live only in your browser's `localStorage`.
+- Requests go **directly** to OpenAI / Anthropic / Google. Storyloom has no server and collects nothing.
+- Generated stories are kept in memory for the session.
+
+## License
+
+**[PolyForm Noncommercial 1.0.0](LICENSE)** — free to use, modify, and share for any noncommercial
+purpose. **Commercial rights are reserved** by the author, keeping the door open to build a
+children's-book product on top of this. For commercial use or licensing, contact the author.
+
+---
+
+<div align="center">
+<sub>Storyloom · a rewrite of openai-storyteller · © 2022–2026 Stephen M Abbott</sub>
+</div>

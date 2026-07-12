@@ -1,0 +1,212 @@
+.studio {
+  padding-top: 40px;
+  padding-bottom: 80px;
+}
+.studio-head {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.studio-head h1 {
+  font-size: clamp(32px, 5vw, 52px);
+  margin: 10px 0 12px;
+}
+.studio-head p {
+  color: var(--text-dim);
+  font-size: 17px;
+  max-width: 44ch;
+  margin: 0 auto;
+}
+
+.studio-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.studio-form {
+  padding: 28px;
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.mt-8 {
+  margin-top: 8px;
+}
+.slider {
+  width: 100%;
+  accent-color: var(--accent);
+  height: 40px;
+}
+.studio-error {
+  background: rgba(239, 125, 125, 0.14);
+  border: 1px solid rgba(239, 125, 125, 0.4);
+  color: #ffd9d9;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.studio-weave {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.studio-side {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: sticky;
+  top: 90px;
+}
+.studio-models {
+  padding: 22px;
+}
+.studio-models-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.studio-models-head h3 {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 16px;
+}
+.model-summary {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.model-summary li {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  align-items: baseline;
+  gap: 6px 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.model-summary li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.model-summary span {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+.model-summary b {
+  font-size: 14.5px;
+  color: var(--text);
+}
+.model-summary em {
+  grid-column: 2;
+  font-style: normal;
+  font-size: 12.5px;
+  color: var(--accent);
+  font-family: ui-monospace, monospace;
+}
+.studio-nokey {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--amber);
+  line-height: 1.5;
+}
+
+.studio-tip {
+  padding: 22px;
+}
+.studio-tip h3 {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+.studio-tip ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.studio-tip li {
+  margin-bottom: 8px;
+}
+
+/* Weaving overlay */
+.weave-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(6, 4, 16, 0.82);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.weave-card {
+  text-align: center;
+  max-width: 460px;
+  width: 100%;
+}
+.weave-card h2 {
+  font-size: 26px;
+  margin-bottom: 22px;
+  min-height: 1.2em;
+}
+.weave-spinner {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.14);
+  border-top-color: var(--accent);
+  animation: weave-spin 0.9s linear infinite;
+}
+@keyframes weave-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.weave-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.weave-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--amber));
+  width: 0%;
+}
+.weave-stage {
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+@media (max-width: 880px) {
+  .studio-grid {
+    grid-template-columns: 1fr;
+  }
+  .studio-side {
+    position: static;
+  }
+}
+@media (max-width: 520px) {
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+}

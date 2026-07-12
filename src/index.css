@@ -1,0 +1,280 @@
+/* ============================================================
+   Storyloom — global design system
+   A warm, papery, storybook aesthetic with a cinematic night mode.
+   ============================================================ */
+
+:root {
+  /* Brand palette — dusk & lantern */
+  --ink: #1c1330;
+  --ink-soft: #3a2f52;
+  --cream: #fdf6ec;
+  --paper: #fbf3e4;
+  --parchment: #f3e6cf;
+
+  --plum-900: #0d0a1f;
+  --plum-800: #171033;
+  --plum-700: #221646;
+  --plum-600: #2f1e5e;
+
+  --amber: #f4b860;
+  --amber-deep: #e0902f;
+  --rose: #ef7d7d;
+  --sky: #7cc4e8;
+  --leaf: #8ecb9a;
+  --lilac: #b79ce0;
+
+  --accent: #b57bff;
+  --accent-2: #ffb347;
+
+  /* Semantic (light UI surfaces) */
+  --bg: var(--plum-900);
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-2: rgba(255, 255, 255, 0.07);
+  --border: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --text: #f4eefc;
+  --text-dim: #b9aecb;
+  --text-faint: #7d738f;
+
+  --radius: 18px;
+  --radius-sm: 11px;
+  --radius-lg: 28px;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 60px rgba(181, 123, 255, 0.35);
+
+  --serif: 'Fraunces', 'Georgia', serif;
+  --sans: 'Nunito', system-ui, -apple-system, sans-serif;
+
+  --maxw: 1180px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--sans);
+  color: var(--text);
+  background: var(--plum-900);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Fixed atmosphere layer — avoids background-attachment:fixed scroll jank. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 700px at 12% -10%, rgba(181, 123, 255, 0.22), transparent 60%),
+    radial-gradient(900px 700px at 100% 0%, rgba(244, 184, 96, 0.16), transparent 55%),
+    radial-gradient(1000px 900px at 50% 120%, rgba(124, 196, 232, 0.14), transparent 60%);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--serif);
+  font-weight: 600;
+  line-height: 1.05;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+::selection {
+  background: rgba(181, 123, 255, 0.4);
+  color: #fff;
+}
+
+/* Reusable app-shell scaffolding ---------------------------------- */
+
+.container {
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.btn {
+  --btn-bg: var(--surface-2);
+  --btn-fg: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid var(--border);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 15px;
+  transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+.btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+}
+.btn:active {
+  transform: translateY(0);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn-primary {
+  --btn-bg: linear-gradient(135deg, var(--accent) 0%, #8a5cff 100%);
+  --btn-fg: #fff;
+  border-color: transparent;
+  box-shadow: 0 10px 30px rgba(138, 92, 255, 0.4);
+}
+.btn-primary:hover {
+  box-shadow: 0 14px 40px rgba(138, 92, 255, 0.55);
+}
+.btn-sunlit {
+  --btn-bg: linear-gradient(135deg, var(--amber) 0%, var(--amber-deep) 100%);
+  --btn-fg: #3a2400;
+  border-color: transparent;
+  box-shadow: 0 10px 30px rgba(224, 144, 47, 0.35);
+}
+.btn-ghost {
+  --btn-bg: transparent;
+}
+.btn-lg {
+  padding: 15px 28px;
+  font-size: 16px;
+}
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(8px);
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent-2);
+}
+
+/* Form controls -------------------------------------------------- */
+
+label.field {
+  display: block;
+  margin-bottom: 16px;
+}
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--text-dim);
+  margin-bottom: 7px;
+}
+input[type='text'],
+input[type='password'],
+input[type='number'],
+textarea,
+select {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  padding: 12px 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(181, 123, 255, 0.22);
+}
+textarea {
+  resize: vertical;
+  min-height: 92px;
+  line-height: 1.5;
+}
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23b9aecb' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 38px;
+}
+
+.scroll-lock {
+  overflow: hidden;
+}
+
+/* Utility ------------------------------------------------------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

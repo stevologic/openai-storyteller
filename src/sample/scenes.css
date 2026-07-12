@@ -1,0 +1,143 @@
+/* Ambient animation for the bundled demo scenes (pure vector, no assets). */
+
+.scene-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes sl-twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+.sl-star {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sl-twinkle 4s ease-in-out infinite;
+}
+
+@keyframes sl-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+  }
+}
+.sl-moonglow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sl-glow 7s ease-in-out infinite;
+}
+
+@keyframes sl-drift {
+  from {
+    transform: translateX(-40px);
+  }
+  to {
+    transform: translateX(40px);
+  }
+}
+.sl-cloud {
+  animation: sl-drift 22s ease-in-out infinite alternate;
+}
+
+@keyframes sl-firefly {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(60px, -40px);
+  }
+  50% {
+    transform: translate(120px, 10px);
+  }
+  75% {
+    transform: translate(40px, 50px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+.sl-firefly {
+  animation: sl-firefly 12s ease-in-out infinite;
+}
+@keyframes sl-firefly-blink {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.sl-firefly-core {
+  animation: sl-firefly-blink 2.4s ease-in-out infinite;
+}
+
+@keyframes sl-sway {
+  0%,
+  100% {
+    transform: rotate(-2.5deg);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+.sl-sway {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: sl-sway 5s ease-in-out infinite;
+}
+
+@keyframes sl-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.sl-bob {
+  animation: sl-bob 4.5s ease-in-out infinite;
+}
+
+@keyframes sl-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+.sl-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sl-blink 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-star,
+  .sl-moonglow,
+  .sl-cloud,
+  .sl-firefly,
+  .sl-firefly-core,
+  .sl-sway,
+  .sl-bob,
+  .sl-eyes {
+    animation: none;
+  }
+}

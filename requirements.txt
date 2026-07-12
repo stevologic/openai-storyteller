@@ -1,5 +1,0 @@
-flask
-flask-cors
-xhtml2pdf
-python-dotenv
-openai
