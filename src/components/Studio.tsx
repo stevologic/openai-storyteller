@@ -48,7 +48,7 @@ export default function Studio() {
       return;
     }
     setBusy(true);
-    setProgress({ stage: 'writing', message: 'Warming up the loom…', ratio: 0.02 });
+    setProgress({ stage: 'writing', message: 'Warming up the storyteller…', ratio: 0.02 });
     try {
       const story = await weaveStory(settings, brief, (p) => setProgress(p));
       setStory(story);
@@ -64,9 +64,9 @@ export default function Studio() {
   return (
     <div className="studio container">
       <div className="studio-head">
-        <span className="eyebrow">Storyloom Studio</span>
-        <h1>Weave a new storybook</h1>
-        <p>Describe the tale. Storyloom writes it, illustrates every page, and reads it aloud.</p>
+        <span className="eyebrow">Storyteller AI Studio</span>
+        <h1>Create a new storybook</h1>
+        <p>Describe the tale. Storyteller AI writes it, illustrates every page, and reads it aloud.</p>
       </div>
 
       <div className="studio-grid">
@@ -168,7 +168,7 @@ export default function Studio() {
 
           <button className="btn btn-primary btn-lg studio-weave" onClick={onWeave} disabled={busy}>
             <IconSpark />
-            {busy ? 'Weaving…' : 'Weave my storybook'}
+            {busy ? 'Creating…' : 'Create my storybook'}
           </button>
         </div>
 
@@ -202,7 +202,7 @@ export default function Studio() {
             </ul>
             {!hasKey && (
               <p className="studio-nokey">
-                No API keys yet. Add at least a text-model key to start weaving.
+                No API keys yet. Add at least a text-model key to start creating.
               </p>
             )}
           </div>
@@ -223,7 +223,7 @@ export default function Studio() {
           <motion.div className="weave-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="weave-card">
               <div className="weave-spinner" />
-              <h2>{progress.message || 'Weaving your story…'}</h2>
+              <h2>{progress.message || 'Creating your story…'}</h2>
               <div className="weave-bar">
                 <motion.div className="weave-fill" animate={{ width: `${Math.round(progress.ratio * 100)}%` }} transition={{ ease: 'easeOut' }} />
               </div>

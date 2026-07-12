@@ -1,12 +1,12 @@
 {
-  "name": "storyloom",
+  "name": "storyteller-ai",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Storyloom — weave living, illustrated children's storybooks with any frontier AI model.",
+  "description": "Storyteller AI — living, illustrated children's storybooks generated with any frontier AI model.",
   "author": "Stephen M Abbott",
   "license": "SEE LICENSE IN LICENSE",
-  "homepage": "https://stevologic.github.io/openai-storyteller/",
+  "homepage": "https://stevologic.github.io/storyteller-ai/",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

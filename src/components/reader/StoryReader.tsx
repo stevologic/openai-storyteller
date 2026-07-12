@@ -205,7 +205,7 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
                     Read again
                   </button>
                   <button className="btn btn-primary" onClick={close}>
-                    {story.demo ? 'Weave your own' : 'Back to studio'}
+                    {story.demo ? 'Create your own' : 'Back to studio'}
                   </button>
                 </div>
               </div>

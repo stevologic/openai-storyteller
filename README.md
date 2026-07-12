@@ -1,20 +1,20 @@
 <div align="center">
 
-# ✦ Storyloom
+# ✦ Storyteller AI
 
-### Living storybooks, woven by AI.
+### Living storybooks, told by AI.
 
 Turn a single bedtime idea into a **fully illustrated, narrated children's picture book** —
 using whichever frontier AI models you already have keys for.
 
-**[▶ Live demo & sample story →](https://stevologic.github.io/openai-storyteller/)**
+**[▶ Live demo & sample story →](https://stevologic.github.io/storyteller-ai/)**
 
 </div>
 
 ---
 
-Storyloom is a complete rewrite of the original _openai-storyteller_. The old Flask + DALL·E 2 app
-is gone; in its place is a fast, single-page web app that:
+Storyteller AI is a complete rewrite of the original _openai-storyteller_. The old Flask + DALL·E 2
+app is gone; in its place is a fast, single-page web app that:
 
 - **writes** an original, age-appropriate story with GPT, Claude, or Gemini,
 - **illustrates** every page and the cover with gpt-image, Imagen, or DALL·E — keeping the hero
@@ -24,7 +24,7 @@ is gone; in its place is a fast, single-page web app that:
   page-turn transitions, and an ambient soundscape.
 
 Everything runs **in your browser**. You bring your own API keys; they're stored locally and sent
-directly to each provider — never to a Storyloom server (there isn't one).
+directly to each provider — never to a Storyteller AI server (there isn't one).
 
 ## Highlights
 
@@ -34,7 +34,7 @@ directly to each provider — never to a Storyloom server (there isn't one).
 | 📖 **Cinematic reader** | Autoplay "movie mode," swipe/keyboard navigation, ambient audio, and a page-turn feel. |
 | 🗣 **Read aloud** | Live browser narration with karaoke-style word highlighting, or studio-grade OpenAI voices. |
 | 🎨 **Consistent characters** | A generated character description is fused into every illustration prompt so your hero stays the same. |
-| 🎬 **Video-ready** | Optionally animate pages into short clips with Veo or Sora — or let the free cinematic pan carry the mood. |
+| 🎬 **Video-ready** | Animate pages into short clips with Veo or Sora when you want motion — or let the free cinematic pan carry the mood. |
 | 🧸 **Made for kids' books** | Prompts, guardrails, and layout tuned for warm, safe picture books. |
 | 🔌 **Zero-key demo** | A bundled sample story ("Pip and the Lantern Moon") renders with animated vector art, so the whole experience works with no keys at all. |
 
@@ -57,7 +57,7 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 
-Then open **Settings → Models**, paste at least one API key, and start weaving. No key? The sample
+Then open **Settings → Models**, paste at least one API key, and start creating. No key? The sample
 story on the landing page is fully interactive.
 
 ```bash
@@ -73,9 +73,9 @@ A workflow at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) bui
 Pages on every push to `main`.
 
 1. In the repo: **Settings → Pages → Build and deployment → Source → GitHub Actions**.
-2. Push to `main`. The site deploys to `https://<user>.github.io/openai-storyteller/`.
+2. Push to `main`. The site deploys to `https://<user>.github.io/storyteller-ai/`.
 
-The Vite `base` is already set to `/openai-storyteller/` for production builds. If you fork under a
+The Vite `base` is already set to `/storyteller-ai/` for production builds. If you fork under a
 different repo name, update `base` in [`vite.config.ts`](vite.config.ts).
 
 ## How it's built
@@ -103,7 +103,7 @@ src/
 ## Privacy
 
 - API keys live only in your browser's `localStorage`.
-- Requests go **directly** to OpenAI / Anthropic / Google. Storyloom has no server and collects nothing.
+- Requests go **directly** to OpenAI / Anthropic / Google. Storyteller AI has no server and collects nothing.
 - Generated stories are kept in memory for the session.
 
 ## License
@@ -115,5 +115,5 @@ children's-book product on top of this. For commercial use or licensing, contact
 ---
 
 <div align="center">
-<sub>Storyloom · a rewrite of openai-storyteller · © 2022–2026 Stephen M Abbott</sub>
+<sub>Storyteller AI · a rewrite of the original openai-storyteller · © 2022–2026 Stephen M Abbott</sub>
 </div>

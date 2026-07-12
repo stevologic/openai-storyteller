@@ -48,7 +48,7 @@ export const useStore = create<AppState>()(
       },
     }),
     {
-      name: 'storyloom.v1',
+      name: 'storyteller-ai.v1',
       // Only persist settings (which includes BYO keys). Stories hold large
       // data-URL images and are kept in memory only.
       partialize: (state) => ({ settings: state.settings }),

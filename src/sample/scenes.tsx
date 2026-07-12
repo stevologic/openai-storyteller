@@ -2,7 +2,7 @@ import { useId, type ReactNode } from 'react';
 import './scenes.css';
 
 /* ============================================================
-   Storyloom demo art — a self-contained, animated vector world.
+   Storyteller AI demo art — a self-contained, animated vector world.
    The SAME <Fox> is drawn on every page, so the bundled demo also
    demonstrates the character-consistency idea behind the real app.
    All scenes share a 1600×900 (16:9) stage.

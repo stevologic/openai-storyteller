@@ -18,7 +18,7 @@ const FEATURES = [
 
 const STEPS = [
   { n: '01', title: 'Describe the tale', body: 'A sentence is enough: the hero, the feeling, the gentle lesson.' },
-  { n: '02', title: 'Storyloom weaves it', body: 'It writes the spreads, art-directs a consistent look, and paints every page.' },
+  { n: '02', title: 'Storyteller AI creates it', body: 'It writes the spreads, art-directs a consistent look, and paints every page.' },
   { n: '03', title: 'Read it like a movie', body: 'Turn pages, press play, dim the lights. Then export and keep it forever.' },
 ];
 
@@ -42,13 +42,13 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
           >
-            ✦ Living storybooks, woven by AI
+            ✦ Living storybooks, told by AI
           </motion.span>
           <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
             Turn a bedtime idea into a <span className="grad">fully illustrated</span> book.
           </motion.h1>
           <motion.p className="hero-sub" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            Storyloom writes an original children’s story, paints every page in a style you choose, and
+            Storyteller AI writes an original children’s story, paints every page in a style you choose, and
             reads it aloud — all with the frontier AI models you already have keys for.
           </motion.p>
           <motion.div className="hero-cta" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}>
@@ -56,7 +56,7 @@ export default function Landing() {
               <IconAuto /> Read the sample story
             </button>
             <button className="btn btn-primary btn-lg" onClick={() => setView('studio')}>
-              <IconSpark /> Weave your own
+              <IconSpark /> Create your own
             </button>
           </motion.div>
           <p className="hero-note">Live, interactive demo — no sign-up, no API key required.</p>
@@ -96,7 +96,7 @@ export default function Landing() {
       {/* FEATURES */}
       <section className="container section">
         <div className="section-head">
-          <span className="eyebrow">Why Storyloom</span>
+          <span className="eyebrow">Why Storyteller AI</span>
           <h2>A studio and a stage, in one page.</h2>
         </div>
         <div className="feature-grid">
@@ -157,11 +157,11 @@ export default function Landing() {
 
       <footer className="landing-footer container">
         <div>
-          <strong>Storyloom</strong>
-          <span> — living storybooks, woven by AI.</span>
+          <strong>Storyteller AI</strong>
+          <span> — living storybooks, told by AI.</span>
         </div>
         <div className="footer-links">
-          <a href="https://github.com/stevologic/openai-storyteller" target="_blank" rel="noreferrer">
+          <a href="https://github.com/stevologic/storyteller-ai" target="_blank" rel="noreferrer">
             GitHub
           </a>
           <span className="footer-license">PolyForm Noncommercial 1.0.0</span>
