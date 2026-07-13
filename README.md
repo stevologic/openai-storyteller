@@ -107,7 +107,11 @@ the provider — bring a key for at least one.
 - **Video (optional):** Google Veo 3 · OpenAI Sora 2 — or free Ken Burns motion
 - **Narration:** OpenAI speech (`gpt-4o-mini-tts`, `tts-1-hd`, baked into the video) · live browser voices (free)
 
-> New model just dropped? Pick "Custom model…" in any dropdown and paste the exact id — no update needed.
+When you add a key, each dropdown **loads that provider's live model list** (OpenAI / Anthropic / Google /
+xAI) and merges the newest models in automatically — the lists above are just the built-in fallback used
+when no key is set. A "✓ latest models" badge shows when a live list is in use (cached ~12h).
+
+> New model just dropped and not listed yet? Pick "Custom model…" in any dropdown and paste the exact id.
 
 ## Run it locally
 

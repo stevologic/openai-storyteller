@@ -9,11 +9,14 @@ import {
   TTS_PROVIDERS,
   VIDEO_PROVIDERS,
 } from '../lib/catalog';
-import type { ModelOption, ProviderCatalogEntry, Settings } from '../lib/types';
+import type { ModelOption, ProviderCatalogEntry, ProviderKeys, Settings } from '../lib/types';
 import { generateNarration, browserNarration } from '../lib/providers/tts';
+import { getProviderModels, resolveModels, type ModelCategory, type ProviderKey, type RawModel } from '../lib/providers/models';
 import { Dropdown } from './Dropdown';
 import { IconClose, IconKey, IconVolume } from './icons';
 import './settings.css';
+
+type DynModels = Partial<Record<ProviderKey, RawModel[]>>;
 
 const CUSTOM = '__custom__';
 
@@ -137,6 +140,8 @@ function ProviderRow<T extends string>({
   providers,
   providerId,
   model,
+  category,
+  dyn,
   onProvider,
   onModel,
   extra,
@@ -146,11 +151,14 @@ function ProviderRow<T extends string>({
   providers: ProviderCatalogEntry<T>[];
   providerId: T;
   model: string;
+  category: ModelCategory;
+  dyn: DynModels;
   onProvider: (id: T) => void;
   onModel: (id: string) => void;
   extra?: ReactNode;
 }) {
   const current = providers.find((p) => p.id === providerId) ?? providers[0];
+  const { models, live } = resolveModels(current.models, current.keyField as ProviderKey | null, category, dyn);
   return (
     <div className="provider-row">
       <div className="provider-row-head">
@@ -164,13 +172,24 @@ function ProviderRow<T extends string>({
           options={providers.map((p) => ({ value: p.id, label: p.label }))}
           ariaLabel={`${title} provider`}
         />
-        <ModelPicker models={current.models} value={model} onChange={onModel} />
+        <ModelPicker models={models} value={model} onChange={onModel} />
       </div>
       {extra}
-      {current.docsUrl && (
-        <a className="provider-docs" href={current.docsUrl} target="_blank" rel="noreferrer">
-          {current.label} model list ↗
-        </a>
+      {(current.docsUrl || live) && (
+        <div className="provider-row-foot">
+          {current.docsUrl ? (
+            <a className="provider-docs" href={current.docsUrl} target="_blank" rel="noreferrer">
+              {current.label} model list ↗
+            </a>
+          ) : (
+            <span />
+          )}
+          {live && (
+            <span className="provider-live" title="Loaded live from the provider">
+              ✓ latest models
+            </span>
+          )}
+        </div>
       )}
     </div>
   );
@@ -184,6 +203,24 @@ export default function SettingsPanel() {
 
   const setKey = (k: keyof typeof settings.keys, v: string) =>
     update({ keys: { ...settings.keys, [k]: v } });
+
+  // Load each keyed provider's live model list when the panel opens so the
+  // newest models surface in the dropdowns automatically (cached for 12h).
+  const [dyn, setDyn] = useState<DynModels>({});
+  useEffect(() => {
+    if (!open) return;
+    (['openai', 'anthropic', 'google', 'xai'] as const).forEach((p) => {
+      const key = settings.keys[p as keyof ProviderKeys];
+      if (!key) return;
+      getProviderModels(p, key).then(
+        (models) => setDyn((s) => (s[p] === models ? s : { ...s, [p]: models })),
+        () => {
+          /* keep the curated list on failure */
+        },
+      );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, settings.keys.openai, settings.keys.anthropic, settings.keys.google, settings.keys.xai]);
 
   // When switching a provider, snap the model to that provider's default.
   const firstModel = <T extends string>(list: ProviderCatalogEntry<T>[], id: T) =>
@@ -280,6 +317,8 @@ export default function SettingsPanel() {
                 <ProviderRow
                   title="Story text"
                   hint="Writes the tale and art direction."
+                  category="text"
+                  dyn={dyn}
                   providers={TEXT_PROVIDERS}
                   providerId={settings.text.provider}
                   model={settings.text.model}
@@ -292,6 +331,8 @@ export default function SettingsPanel() {
                 <ProviderRow
                   title="Illustrations"
                   hint="Paints every page and the cover."
+                  category="image"
+                  dyn={dyn}
                   providers={IMAGE_PROVIDERS}
                   providerId={settings.image.provider}
                   model={settings.image.model}
@@ -304,6 +345,8 @@ export default function SettingsPanel() {
                 <ProviderRow
                   title="Video"
                   hint="Optional. Animates pages into short clips (slow & costly)."
+                  category="video"
+                  dyn={dyn}
                   providers={VIDEO_PROVIDERS}
                   providerId={settings.video.provider}
                   model={settings.video.model}
@@ -334,6 +377,8 @@ export default function SettingsPanel() {
                 <ProviderRow
                   title="Narration"
                   hint="Reads the story aloud."
+                  category="tts"
+                  dyn={dyn}
                   providers={TTS_PROVIDERS}
                   providerId={settings.tts.provider}
                   model={settings.tts.model}

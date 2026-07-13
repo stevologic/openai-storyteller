@@ -131,15 +131,28 @@
   flex-direction: column;
   gap: 8px;
 }
+.provider-row-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
 .provider-docs {
   display: inline-block;
-  margin-top: 6px;
   font-size: 12px;
   font-weight: 700;
   color: var(--accent);
 }
 .provider-docs:hover {
   text-decoration: underline;
+}
+.provider-live {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #4d6b3a;
+  white-space: nowrap;
 }
 
 .toggle-line {
