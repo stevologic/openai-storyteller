@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from '../lib/store';
@@ -8,12 +9,99 @@ import {
   TTS_PROVIDERS,
   VIDEO_PROVIDERS,
 } from '../lib/catalog';
-import type { ModelOption, ProviderCatalogEntry } from '../lib/types';
+import type { ModelOption, ProviderCatalogEntry, Settings } from '../lib/types';
+import { generateNarration, browserNarration } from '../lib/providers/tts';
 import { Dropdown } from './Dropdown';
-import { IconClose, IconKey } from './icons';
+import { IconClose, IconKey, IconVolume } from './icons';
 import './settings.css';
 
 const CUSTOM = '__custom__';
+
+const PREVIEW_LINE = 'Once upon a time, a tiny star wished to shine as bright as the moon.';
+
+/** Play a short sample so the user can hear a narration voice before choosing it.
+ *  OpenAI voices are synthesized via the API (needs a key); the browser voice
+ *  speaks live for free. */
+function NarrationPreview({ settings }: { settings: Settings }) {
+  const [status, setStatus] = useState<'idle' | 'loading' | 'playing' | 'error'>('idle');
+  const [message, setMessage] = useState('');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const browserRef = useRef(browserNarration());
+  const provider = settings.tts.provider;
+  const voice = settings.tts.voice;
+  const model = settings.tts.model;
+
+  function stop() {
+    browserRef.current.cancel();
+    const el = audioRef.current;
+    if (el) {
+      el.pause();
+      if (el.src) URL.revokeObjectURL(el.src);
+      el.removeAttribute('src');
+    }
+    setStatus('idle');
+  }
+
+  // Stop any preview when the voice/provider changes or the panel unmounts.
+  useEffect(() => stop, [provider, voice, model]);
+
+  async function play() {
+    if (status === 'loading' || status === 'playing') {
+      stop();
+      return;
+    }
+    setMessage('');
+    if (provider === 'browser') {
+      if (!browserRef.current.supported) {
+        setStatus('error');
+        setMessage('This browser has no speech voices.');
+        return;
+      }
+      setStatus('playing');
+      browserRef.current.speak(PREVIEW_LINE, { onEnd: () => setStatus('idle') });
+      return;
+    }
+    // OpenAI voice — synthesize a sample through the API.
+    if (!settings.keys.openai) {
+      setStatus('error');
+      setMessage('Add your OpenAI key above to preview.');
+      return;
+    }
+    setStatus('loading');
+    try {
+      const url = await generateNarration(settings, PREVIEW_LINE);
+      if (!url) {
+        setStatus('idle');
+        return;
+      }
+      const el = audioRef.current ?? new Audio();
+      audioRef.current = el;
+      el.src = url;
+      el.onended = () => setStatus('idle');
+      await el.play();
+      setStatus('playing');
+    } catch (err) {
+      setStatus('error');
+      setMessage(err instanceof Error ? err.message : 'Could not play a preview.');
+    }
+  }
+
+  const label =
+    status === 'loading' ? 'Loading…' : status === 'playing' ? 'Stop' : 'Preview voice';
+  return (
+    <div className="voice-preview">
+      <button
+        type="button"
+        className="btn btn-ghost btn-sm voice-preview-btn"
+        onClick={play}
+        disabled={status === 'loading'}
+      >
+        <IconVolume /> {label}
+      </button>
+      {message && <span className="voice-preview-msg">{message}</span>}
+    </div>
+  );
+}
 
 function ModelPicker({
   models,
@@ -261,16 +349,23 @@ export default function SettingsPanel() {
                   }
                   onModel={(model) => update({ tts: { ...settings.tts, model } })}
                   extra={
-                    settings.tts.provider === 'openai' && (
+                    settings.tts.provider === 'openai' ? (
                       <label className="field inline-field">
-                        <span className="field-label">Voice</span>
+                        <div className="voice-head">
+                          <span className="field-label">Voice</span>
+                          <NarrationPreview settings={settings} />
+                        </div>
                         <Dropdown
                           value={settings.tts.voice}
                           onChange={(v) => update({ tts: { ...settings.tts, voice: v } })}
                           options={OPENAI_VOICES.map((v) => ({ value: v.id, label: v.label }))}
                         />
                       </label>
-                    )
+                    ) : settings.tts.provider === 'browser' ? (
+                      <div className="inline-field">
+                        <NarrationPreview settings={settings} />
+                      </div>
+                    ) : null
                   }
                 />
 
