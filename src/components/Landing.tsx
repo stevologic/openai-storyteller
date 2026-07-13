@@ -69,9 +69,6 @@ export default function Landing() {
           aria-label="Watch the sample stories"
         >
           <img className="hero-book-art" src={`https://i.ytimg.com/vi/${featured.id}/hqdefault.jpg`} alt={featured.title} />
-          <div className="hero-book-plate">
-            <span className="hero-book-title">{featured.title}</span>
-          </div>
           <span className="hero-book-play">▶ Watch</span>
         </motion.button>
       </section>
