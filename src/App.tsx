@@ -35,8 +35,8 @@ export default function App() {
               <span className="brand-badge">AI</span>
             </button>
             <nav className="nav-actions">
-              <button className="btn btn-ghost btn-sm" onClick={openSettings}>
-                <IconSettings /> Models
+              <button className="btn btn-ghost btn-sm nav-models" onClick={openSettings} aria-label="Models">
+                <IconSettings /> <span className="btn-text">Models</span>
               </button>
               <button className="btn btn-primary btn-sm" onClick={() => setView('studio')}>
                 <IconSpark /> Create

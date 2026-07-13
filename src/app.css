@@ -25,6 +25,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: none;
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -45,9 +46,11 @@
   font-size: 21px;
   letter-spacing: -0.01em;
   color: var(--navy);
+  white-space: nowrap;
 }
 .brand-badge {
   align-self: center;
+  flex: none;
   margin-left: -2px;
   padding: 2px 7px;
   border-radius: 7px;
@@ -81,8 +84,57 @@
   color: var(--text);
 }
 
-@media (max-width: 520px) {
-  .nav-link {
+/* Mobile header — keep the logo on one line and stop the actions overflowing */
+@media (max-width: 560px) {
+  .nav-inner {
+    height: 58px;
+  }
+  .brand {
+    gap: 7px;
+  }
+  .brand-mark {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+  .brand-name {
+    font-size: 16px;
+  }
+  .brand-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+  .nav-actions {
+    gap: 6px;
+  }
+  /* Settings becomes an icon-only gear so the Create CTA keeps its label */
+  .nav-models .btn-text {
     display: none;
+  }
+  .nav-models.btn-sm {
+    padding: 8px 10px;
+  }
+  .nav-actions .btn-sm {
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .brand-name {
+    font-size: 15px;
+  }
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+    font-size: 15px;
+  }
+  .brand {
+    gap: 6px;
+  }
+  .nav-actions {
+    gap: 5px;
+  }
+  .nav-actions .btn-sm {
+    padding: 8px 11px;
   }
 }

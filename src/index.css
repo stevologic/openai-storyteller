@@ -126,6 +126,11 @@ button {
   margin: 0 auto;
   padding: 0 24px;
 }
+@media (max-width: 560px) {
+  .container {
+    padding: 0 16px;
+  }
+}
 
 .btn {
   --btn-bg: var(--surface-2);
