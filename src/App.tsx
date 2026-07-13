@@ -35,12 +35,6 @@ export default function App() {
               <span className="brand-badge">AI</span>
             </button>
             <nav className="nav-actions">
-              <button
-                className={`nav-link ${view === 'studio' ? 'active' : ''}`}
-                onClick={() => setView('studio')}
-              >
-                Studio
-              </button>
               <button className="btn btn-ghost btn-sm" onClick={openSettings}>
                 <IconSettings /> Models
               </button>

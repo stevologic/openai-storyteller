@@ -11,7 +11,7 @@ const FEATURES = [
   { icon: <IconKey />, title: 'Your choice of frontier AI', body: 'OpenAI GPT, Anthropic Claude, Google Gemini, or xAI Grok write the words; gpt-image, Imagen, or Grok paint the art. Mix and match in Settings.' },
   { icon: <IconBook />, title: 'A reader that feels alive', body: 'Full-bleed art with cinematic Ken Burns motion, elegant type, page-turn transitions and an ambient soundscape.' },
   { icon: <IconVolume />, title: 'Read aloud', body: 'Warm narration highlights each word as it’s spoken — add an OpenAI Speech voice to bake it right into the exported video.' },
-  { icon: <IconFilm />, title: 'Consistent & video-ready', body: 'A locked “character bible” keeps your hero on-model every page; every book is filmed to a shareable MP4.' },
+  { icon: <IconFilm />, title: 'Consistent & video-ready', body: 'A locked “character bible” keeps your hero on-model every page; every book is filmed to a shareable MP4 — download it narrated, or as a silent version ready to post to social.' },
   { icon: <IconAuto />, title: 'In any language', body: 'Write the whole story in any of a dozen languages — from Spanish and French to Japanese, Hindi and Arabic.' },
   { icon: <IconDownload />, title: 'You own it', body: 'Everything runs in your browser and your API keys never leave your device. Export any book to a file, its images, or a shareable video.' },
 ];
