@@ -309,14 +309,15 @@ function startAmbient(actx: AudioContext, dest: AudioNode): { stop: () => void }
   };
 }
 
-function pickMime(): string {
-  const candidates = [
-    'video/webm;codecs=vp9,opus',
-    'video/webm;codecs=vp8,opus',
-    'video/webm',
+function pickMime(preferMp4: boolean): string {
+  const mp4 = [
+    'video/mp4;codecs=avc1.640028,mp4a.40.2',
+    'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
     'video/mp4',
   ];
-  for (const c of candidates) {
+  const webm = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+  const order = preferMp4 ? [...mp4, ...webm] : [...webm, ...mp4];
+  for (const c of order) {
     if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(c)) return c;
   }
   return '';
@@ -325,10 +326,16 @@ function pickMime(): string {
 export interface VideoResult {
   blob: Blob;
   filename: string;
+  mime: string;
 }
 
-/** Render the whole story to a video Blob (real-time capture). */
-export async function renderStoryToVideo(story: RenderedStory, onProgress: VideoProgress): Promise<VideoResult> {
+/** Render the whole story to a video Blob (real-time capture). Prefers MP4
+ *  (H.264/AAC) when the browser can record it, else falls back to WebM. */
+export async function renderStoryToVideo(
+  story: RenderedStory,
+  onProgress: VideoProgress,
+  opts: { preferMp4?: boolean } = {},
+): Promise<VideoResult> {
   if (!videoExportSupported()) throw new Error('Video export is not supported in this browser. Try Chrome, Edge, or Firefox.');
 
   onProgress({ message: 'Preparing…', ratio: 0 });
@@ -371,7 +378,8 @@ export async function renderStoryToVideo(story: RenderedStory, onProgress: Video
 
   const videoStream = canvas.captureStream(30);
   const stream = new MediaStream([...videoStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
-  const mime = pickMime();
+  const mime = pickMime(opts.preferMp4 ?? true);
+  const ext = mime.includes('mp4') ? 'mp4' : 'webm';
   const recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 4_500_000 } : undefined);
   const chunks: BlobPart[] = [];
   recorder.ondataavailable = (e) => {
@@ -423,7 +431,7 @@ export async function renderStoryToVideo(story: RenderedStory, onProgress: Video
   setTimeout(() => actx.close().catch(() => {}), 300);
 
   onProgress({ message: 'Done', ratio: 1 });
-  return { blob, filename: `${slugify(story.title)}.webm` };
+  return { blob, filename: `${slugify(story.title)}.${ext}`, mime: mime || 'video/webm' };
 }
 
 export function downloadBlob(blob: Blob, filename: string): void {

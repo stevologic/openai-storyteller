@@ -3,6 +3,7 @@ import { generateJson } from './providers/text';
 import { generateImage } from './providers/image';
 import { generateVideo } from './providers/video';
 import { generateNarration } from './providers/tts';
+import { renderStoryToVideo, videoExportSupported } from './exportVideo';
 import { buildWriterPrompt, WRITER_SYSTEM, composeIllustrationPrompt, composeCoverPrompt } from './prompts';
 
 type ProgressFn = (p: GenerationProgress) => void;
@@ -147,6 +148,22 @@ export async function weaveStory(
         console.warn(`Narration ${i + 1} failed:`, err);
       }
       done++;
+    }
+  }
+
+  // Render the whole book to a downloadable video (MP4 where supported).
+  if (settings.storyVideo?.enabled !== false && videoExportSupported()) {
+    onProgress({ stage: 'filming', message: 'Filming your storybook…', ratio: 0.9 });
+    try {
+      const { blob, filename } = await renderStoryToVideo(
+        rendered,
+        (p) => onProgress({ stage: 'filming', message: p.message, ratio: 0.9 + 0.09 * p.ratio }),
+        { preferMp4: true },
+      );
+      rendered.storyVideoUrl = URL.createObjectURL(blob);
+      rendered.storyVideoName = filename;
+    } catch (err) {
+      console.warn('Story video render failed:', err);
     }
   }
 

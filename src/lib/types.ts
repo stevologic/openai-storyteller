@@ -43,6 +43,9 @@ export interface RenderedStory extends Omit<Story, 'pages'> {
   coverSceneId?: string;
   pages: RenderedPage[];
   createdAt: number;
+  /** A whole-book video rendered during generation (object URL + filename). */
+  storyVideoUrl?: string;
+  storyVideoName?: string;
   /** Present only for the bundled demo; renders vector scenes instead of images. */
   demo?: boolean;
 }
@@ -78,6 +81,8 @@ export interface Settings {
   image: { provider: ImageProviderId; model: string };
   video: { provider: VideoProviderId; model: string; enabled: boolean };
   tts: { provider: TtsProviderId; model: string; voice: string };
+  /** Render the whole book to a downloadable video while generating. */
+  storyVideo: { enabled: boolean };
 }
 
 /* ---------- Model catalog entry ---------- */
@@ -101,6 +106,7 @@ export type GenerationStage =
   | 'illustrating'
   | 'animating'
   | 'narrating'
+  | 'filming'
   | 'done'
   | 'error';
 

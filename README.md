@@ -30,9 +30,10 @@ app is gone; in its place is a fast, single-page web app that:
   Transformers.js), or with GPT / Claude / Gemini when you add a key,
 - **illustrates** every page — free procedural art on-device, or gpt-image / Imagen / DALL·E — keeping
   the hero visually consistent across pages via a locked "character bible,"
-- **reads it aloud** with word-by-word highlighting (free in-browser voices, or an AI voice), and
+- **reads it aloud** with word-by-word highlighting (free in-browser voices, or an AI voice),
 - **presents it** in an immersive, cinematic reader with full-bleed art, Ken Burns motion,
-  page-turn transitions, and an ambient soundscape.
+  page-turn transitions, and an ambient soundscape, and
+- **films it** — every book is also rendered to a shareable MP4 while it generates.
 
 **It works with zero setup** — no key, no sign-up, no cost — because the default models run entirely on
 your own computer. Add API keys anytime to upgrade the words and art. Everything runs **in your
@@ -94,7 +95,7 @@ Billy looks like Billy from cover to end._
 | 🔌 **Zero setup** | Runs on-device out of the box — Chrome Built-in AI (Gemini Nano) or Transformers.js for the words, procedural vector art for the pictures. No key, no account, no cost. |
 | 🎛 **Any frontier model** | Then plug in keys to switch to GPT / Claude / Gemini and gpt-image / Imagen / DALL·E. Choose providers and models per task in Settings; type a custom model id for anything new. |
 | 📖 **Cinematic reader** | Autoplay "movie mode," swipe/keyboard navigation, ambient audio, and a page-turn feel. |
-| 🎥 **Export to video** | Render the whole book — art, Ken Burns motion, text, and soundtrack — to a downloadable `.webm`, entirely in the browser (canvas + MediaRecorder). Also export to a story file or PNGs. |
+| 🎥 **Auto video** | Every book is also rendered to a shareable **MP4** while it generates — art, Ken Burns motion, text, and soundtrack, entirely in the browser (canvas + MediaRecorder, H.264/AAC with a WebM fallback). Toggle it off in Settings. Also export to a story file or PNGs. |
 | 🗣 **Read aloud** | Live browser narration with karaoke-style word highlighting, or studio-grade OpenAI voices. |
 | 🎨 **Consistent characters** | A generated character description is fused into every illustration prompt so your hero stays the same. |
 | 🎬 **Video-ready** | Animate pages into short clips with Veo or Sora when you want motion — or let the free cinematic pan carry the mood. |

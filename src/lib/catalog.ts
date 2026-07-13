@@ -199,6 +199,7 @@ export const DEFAULT_SETTINGS: Settings = {
   image: { provider: 'procedural', model: 'procedural' },
   video: { provider: 'none', model: 'none', enabled: false },
   tts: { provider: 'browser', model: 'system', voice: 'nova' },
+  storyVideo: { enabled: true },
 };
 
 export function providerLabel<T extends string>(

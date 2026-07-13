@@ -271,6 +271,21 @@ export default function SettingsPanel() {
                     )
                   }
                 />
+
+                <div className="provider-row">
+                  <div className="provider-row-head">
+                    <h4>Story video</h4>
+                    <p>Render the whole book to a downloadable video while generating (MP4 where supported).</p>
+                  </div>
+                  <label className="toggle-line">
+                    <input
+                      type="checkbox"
+                      checked={settings.storyVideo?.enabled !== false}
+                      onChange={(e) => update({ storyVideo: { enabled: e.target.checked } })}
+                    />
+                    <span>Also make a video of the finished book</span>
+                  </label>
+                </div>
               </section>
             </div>
 

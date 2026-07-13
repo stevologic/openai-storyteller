@@ -235,11 +235,15 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
                       <IconDownload /> Download pictures
                     </button>
                   )}
-                  {videoExportSupported() && (
+                  {story.storyVideoUrl ? (
+                    <a className="btn btn-ghost" href={story.storyVideoUrl} download={story.storyVideoName}>
+                      <IconFilm /> Download video
+                    </a>
+                  ) : videoExportSupported() ? (
                     <button className="btn btn-ghost" onClick={onExportVideo}>
                       <IconFilm /> Export video
                     </button>
-                  )}
+                  ) : null}
                   <button className="btn btn-primary" onClick={close}>
                     {story.demo ? 'Create your own' : 'Back to studio'}
                   </button>

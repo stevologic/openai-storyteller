@@ -279,6 +279,8 @@ function stageLabel(stage: string): string {
       return 'Bringing pages to life';
     case 'narrating':
       return 'Recording the narration';
+    case 'filming':
+      return 'Filming the video';
     case 'done':
       return 'Ready!';
     default:
