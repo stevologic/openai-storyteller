@@ -5,10 +5,37 @@ import { useStore } from '../lib/store';
 import { ART_STYLE_PRESETS, TONE_PRESETS, providerLabel, TEXT_PROVIDERS, IMAGE_PROVIDERS } from '../lib/catalog';
 import { weaveStory } from '../lib/generate';
 import { openStoryFile } from '../lib/exportStory';
+import { describeCharacter } from '../lib/providers/vision';
 import type { StoryBrief } from '../lib/types';
 import { Dropdown } from './Dropdown';
-import { IconSpark, IconSettings } from './icons';
+import { IconSpark, IconSettings, IconImage } from './icons';
 import './studio.css';
+
+/** Read an image file, downscaled, as a JPEG data URL. */
+function readImageResized(file: File, maxDim: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        const w = Math.max(1, Math.round(img.width * scale));
+        const h = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject(new Error('Could not process the image.'));
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = () => reject(new Error('That image could not be read.'));
+      img.src = reader.result as string;
+    };
+    reader.onerror = () => reject(new Error('That image could not be read.'));
+    reader.readAsDataURL(file);
+  });
+}
 
 const AGE_BANDS = ['0–3', '3–6', '4–7', '6–9', '8–12'];
 const CUSTOM = '__custom__';
@@ -45,7 +72,34 @@ export default function Studio() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [writeStep, setWriteStep] = useState(0);
+  const [describing, setDescribing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const photoRef = useRef<HTMLInputElement>(null);
+
+  async function onPhoto(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      set('characterImage', await readImageResized(file, 768));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not read that image.');
+    }
+  }
+
+  async function onDescribe() {
+    if (!brief.characterImage) return;
+    setDescribing(true);
+    setError(null);
+    try {
+      const desc = await describeCharacter(settings, brief.characterImage);
+      set('characterDescription', desc.trim());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not describe the photo. Try adding an API key, or type the look below.');
+    } finally {
+      setDescribing(false);
+    }
+  }
 
   // While the writer runs (an opaque single call), cycle descriptive sub-steps.
   // On-device runs emit real download/inference messages, which take priority.
@@ -141,6 +195,45 @@ export default function Studio() {
                 options={AGE_BANDS.map((a) => ({ value: a, label: `Ages ${a}` }))}
               />
             </label>
+          </div>
+
+          <div className="field">
+            <span className="field-label">Character look (optional)</span>
+            <div className="char-row">
+              {brief.characterImage ? (
+                <div className="char-thumb">
+                  <img src={brief.characterImage} alt="Character reference" />
+                  <button
+                    type="button"
+                    className="char-remove"
+                    onClick={() => set('characterImage', undefined)}
+                    aria-label="Remove photo"
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : (
+                <button type="button" className="char-add" onClick={() => photoRef.current?.click()}>
+                  <IconImage />
+                  <span>Add a photo</span>
+                </button>
+              )}
+              <input ref={photoRef} type="file" accept="image/*" hidden onChange={onPhoto} />
+              <div className="char-desc">
+                <textarea
+                  placeholder="Describe the hero’s look — e.g. a cheerful 5-year-old with curly brown hair and a green star t-shirt. Or add a photo and let AI describe it."
+                  value={brief.characterDescription ?? ''}
+                  onChange={(e) => set('characterDescription', e.target.value)}
+                  rows={3}
+                />
+                {brief.characterImage && (
+                  <button type="button" className="btn btn-ghost btn-sm char-describe" onClick={onDescribe} disabled={describing}>
+                    <IconSpark />
+                    {describing ? 'Looking at the photo…' : 'Describe from photo'}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
           <label className="field">

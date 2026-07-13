@@ -7,9 +7,30 @@ import { pipeline, env } from '@huggingface/transformers';
 env.allowLocalModels = false;
 
 let generatorPromise: Promise<any> | null = null;
+let captionerPromise: Promise<any> | null = null;
 let loadedModel = '';
 
 const post = (m: any) => (self as unknown as Worker).postMessage(m);
+
+async function getCaptioner(): Promise<any> {
+  if (captionerPromise) return captionerPromise;
+  const device = (navigator as any).gpu ? 'webgpu' : 'wasm';
+  captionerPromise = pipeline('image-to-text', 'Xenova/vit-gpt2-image-captioning', {
+    device,
+    progress_callback: (p: any) => {
+      if (p.status === 'progress' && typeof p.progress === 'number') {
+        const file = (p.file ?? '').split('/').pop();
+        post({ type: 'progress', message: `Downloading vision model ${file} — ${Math.round(p.progress)}%` });
+      } else if (p.status === 'ready') {
+        post({ type: 'progress', message: 'Looking at your photo…' });
+      }
+    },
+  }).catch((err: any) => {
+    captionerPromise = null;
+    throw err;
+  });
+  return captionerPromise;
+}
 
 async function getGenerator(model: string): Promise<any> {
   if (generatorPromise && loadedModel === model) return generatorPromise;
@@ -34,7 +55,20 @@ async function getGenerator(model: string): Promise<any> {
 }
 
 self.onmessage = async (e: MessageEvent) => {
-  const { id, system, user, maxTokens, model } = e.data ?? {};
+  const { id, system, user, maxTokens, model, type, imageUrl } = e.data ?? {};
+
+  if (type === 'caption') {
+    try {
+      const captioner = await getCaptioner();
+      const out: any = await captioner(imageUrl);
+      const text = Array.isArray(out) ? (out[0]?.generated_text ?? '') : (out?.generated_text ?? '');
+      post({ type: 'result', id, text });
+    } catch (err: any) {
+      post({ type: 'error', id, message: err?.message ?? String(err) });
+    }
+    return;
+  }
+
   try {
     const generator = await getGenerator(model);
     const messages = [

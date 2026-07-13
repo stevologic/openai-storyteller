@@ -98,6 +98,7 @@ Billy looks like Billy from cover to end._
 | 🎥 **Auto video, narrated** | Every book is also rendered to a shareable **MP4** while it generates — art, Ken Burns motion, text, and the **selected narration voice baked in** (on-device Kokoro by default), entirely in the browser (canvas + MediaRecorder, H.264/AAC with a WebM fallback). Toggle it off in Settings. Also export to a story file or PNGs. |
 | 🗣 **Read aloud** | Live browser narration with karaoke-style word highlighting, or studio-grade OpenAI voices. |
 | 🎨 **Consistent characters** | A generated character description is fused into every illustration prompt so your hero stays the same. |
+| 🖼 **Hero from a photo** | Upload a reference photo and a vision model (cloud, or on-device captioning) describes the character; that look drives every page. Or just type the description. |
 | 🎬 **Video-ready** | Animate pages into short clips with Veo or Sora when you want motion — or let the free cinematic pan carry the mood. |
 | 🧸 **Made for kids' books** | Prompts, guardrails, and layout tuned for warm, safe picture books. |
 | 🔌 **Zero-key demo** | A bundled sample story ("Pip and the Lantern Moon") renders with animated vector art, so the whole experience works with no keys at all. |

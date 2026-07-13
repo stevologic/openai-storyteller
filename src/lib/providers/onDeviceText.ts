@@ -59,6 +59,14 @@ export async function chromeText(system: string, user: string, onProgress?: OnPr
   try {
     const out = await session.prompt(user);
     return typeof out === 'string' ? out : String(out ?? '');
+  } catch (err) {
+    const m = String((err as Error)?.message || err);
+    if (/too large|quota|token|context/i.test(m)) {
+      throw new Error(
+        'Chrome’s on-device model (Gemini Nano) ran out of room for this story. Try fewer pages, switch Text to “Transformers.js” in Settings, or add an API key.',
+      );
+    }
+    throw err;
   } finally {
     session.destroy?.();
   }

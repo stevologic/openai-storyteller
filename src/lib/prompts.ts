@@ -8,6 +8,7 @@ and you describe each page's illustration so vividly that an image model can ren
 
 export function buildWriterPrompt(brief: StoryBrief): string {
   const hero = brief.heroName.trim() || 'the hero';
+  const look = brief.characterDescription?.trim();
   return `Write an original illustrated children's picture book.
 
 BRIEF
@@ -18,6 +19,7 @@ BRIEF
 - Tone: ${brief.tone}
 - Gentle lesson to land softly by the end: ${brief.lesson || 'let it emerge naturally'}
 - Art style for every illustration: ${brief.artStyle}
+${look ? `- The hero's exact appearance (use this — do not invent a different look): ${look}` : ''}
 
 REQUIREMENTS
 1. Give it a short, evocative TITLE.
@@ -25,6 +27,7 @@ REQUIREMENTS
 3. Write a "characterBible": 2–3 sentences fixing the hero's exact, unchanging appearance
    (species/kind, age, hair, clothing colors, distinctive features). This EXACT text will be pasted
    into every illustration prompt to keep the character identical across pages, so be specific and concise.
+   ${look ? 'Base it faithfully on the appearance given in the brief above.' : ''}
 4. Restate the "artStyle" as one tight art-direction sentence (medium, palette, lighting, mood).
 5. Write exactly ${brief.pageCount} pages. Each page has:
    - "header": 2–5 words, lyrical, like an old storybook chapter title (no character names).
@@ -46,6 +49,22 @@ Return ONLY a JSON object with this exact shape:
   "pages": [{ "header": string, "text": string, "illustration": string, "motion": string }],
   "moral": string
 }`;
+}
+
+/** A short system + prompt for small on-device models with tiny context windows
+ *  (Chrome Gemini Nano, Transformers.js) — the full prompt overflows them. */
+export const WRITER_SYSTEM_COMPACT =
+  'You write warm, safe, age-appropriate children’s stories. Reply with ONLY a single valid JSON object.';
+
+export function buildWriterPromptCompact(brief: StoryBrief): string {
+  const hero = brief.heroName.trim() || 'the hero';
+  const look = brief.characterDescription?.trim();
+  return `Write a ${brief.pageCount}-page children's picture book as JSON.
+Idea: ${brief.idea}. Hero: ${hero}. Ages: ${brief.ageRange}. Tone: ${brief.tone}. Art style: ${brief.artStyle}.${
+    look ? ` The hero looks like: ${look}.` : ''
+}${brief.lesson ? ` Lesson: ${brief.lesson}.` : ''}
+Return ONLY this JSON (exactly ${brief.pageCount} pages):
+{"title":"","dedication":"","characterBible":"the hero's fixed look","artStyle":"${brief.artStyle}","pages":[{"header":"2-4 words","text":"2-3 sentences","illustration":"the scene, no words in the image","motion":"drift"}],"moral":"one warm sentence"}`;
 }
 
 /** Compose the final illustration prompt sent to the image model, fusing the

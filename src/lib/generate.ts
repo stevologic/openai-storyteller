@@ -4,7 +4,16 @@ import { generateImage } from './providers/image';
 import { generateVideo } from './providers/video';
 import { generateNarration } from './providers/tts';
 import { renderStoryToVideo, videoExportSupported } from './exportVideo';
-import { buildWriterPrompt, WRITER_SYSTEM, composeIllustrationPrompt, composeCoverPrompt } from './prompts';
+import {
+  buildWriterPrompt,
+  buildWriterPromptCompact,
+  WRITER_SYSTEM,
+  WRITER_SYSTEM_COMPACT,
+  composeIllustrationPrompt,
+  composeCoverPrompt,
+} from './prompts';
+
+const ON_DEVICE_TEXT = new Set(['ondevice', 'chrome', 'transformers']);
 
 type ProgressFn = (p: GenerationProgress) => void;
 
@@ -26,9 +35,18 @@ export async function writeStory(
   brief: StoryBrief,
   onProgress?: (msg: string) => void,
 ): Promise<Story> {
+  // Small on-device models have tiny context windows and struggle with long
+  // structured output — use a compact prompt and cap the length.
+  const onDevice = ON_DEVICE_TEXT.has(settings.text.provider);
+  const effectiveBrief = onDevice ? { ...brief, pageCount: Math.min(brief.pageCount, 5) } : brief;
   const data = await generateJson(
     settings,
-    { system: WRITER_SYSTEM, user: buildWriterPrompt(brief), json: true, maxTokens: 6000 },
+    {
+      system: onDevice ? WRITER_SYSTEM_COMPACT : WRITER_SYSTEM,
+      user: onDevice ? buildWriterPromptCompact(effectiveBrief) : buildWriterPrompt(effectiveBrief),
+      json: true,
+      maxTokens: onDevice ? 2000 : 6000,
+    },
     onProgress,
   );
   const parsed = StorySchema.safeParse(data);
@@ -81,6 +99,12 @@ export async function weaveStory(
     pages: story.pages.map((p) => ({ ...p })),
     createdAt: Date.now(),
   };
+
+  // A user-supplied character look (from a photo or typed) is authoritative —
+  // it drives the character bible fused into every illustration prompt.
+  if (brief.characterDescription?.trim()) {
+    rendered.characterBible = brief.characterDescription.trim();
+  }
 
   // Cover
   if (doImages) {

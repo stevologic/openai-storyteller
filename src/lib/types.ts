@@ -60,6 +60,10 @@ export interface StoryBrief {
   pageCount: number;
   lesson: string;
   tone: string;
+  /** Optional reference photo (data URL) to base the hero's look on. */
+  characterImage?: string;
+  /** Fixed description of the hero's appearance (from the photo, or typed). */
+  characterDescription?: string;
 }
 
 /* ---------- Provider configuration ---------- */

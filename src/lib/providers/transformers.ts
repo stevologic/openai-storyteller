@@ -54,3 +54,13 @@ export function transformersText(
     w.postMessage({ id, model, system, user, maxTokens });
   });
 }
+
+/** On-device image captioning (used to describe an uploaded character photo). */
+export function transformersCaption(imageUrl: string, onProgress?: OnProgress): Promise<string> {
+  const w = getWorker();
+  const id = ++seq;
+  return new Promise<string>((resolve, reject) => {
+    pending.set(id, { resolve, reject, onProgress });
+    w.postMessage({ id, type: 'caption', imageUrl });
+  });
+}
