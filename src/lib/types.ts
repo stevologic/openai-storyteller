@@ -74,8 +74,8 @@ export interface StoryBrief {
 
 export type TextProviderId = 'openai' | 'anthropic' | 'google' | 'xai';
 export type ImageProviderId = 'openai' | 'google' | 'xai' | 'none';
-export type VideoProviderId = 'google' | 'openai' | 'none';
-export type TtsProviderId = 'openai' | 'browser' | 'none';
+export type VideoProviderId = 'google' | 'openai' | 'xai' | 'none';
+export type TtsProviderId = 'openai' | 'xai' | 'browser' | 'none';
 
 export interface ProviderKeys {
   openai: string;

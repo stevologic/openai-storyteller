@@ -339,6 +339,8 @@ export default function Studio() {
                 <b>
                   {settings.tts.provider === 'openai'
                     ? `OpenAI · ${settings.tts.voice}`
+                    : settings.tts.provider === 'xai'
+                      ? `Grok Voice · ${settings.tts.voice}`
                     : settings.tts.provider === 'browser'
                       ? 'Browser voice'
                       : 'Off'}

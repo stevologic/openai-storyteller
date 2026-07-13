@@ -77,7 +77,7 @@ export async function weaveStory(
   const doVideo = settings.video.enabled && settings.video.provider !== 'none';
   // Pre-render narration to audio (captured into the exported video) when a
   // cloud voice is selected. The live "browser" voice can't be captured.
-  const doNarration = settings.tts.provider === 'openai';
+  const doNarration = settings.tts.provider === 'openai' || settings.tts.provider === 'xai';
 
   // Weight the progress bar across the stages we'll actually run.
   const imageUnits = doImages ? story.pages.length + 1 : 0; // pages + cover

@@ -84,10 +84,13 @@ export const IMAGE_PROVIDERS: ProviderCatalogEntry<ImageProviderId>[] = [
   },
   {
     id: 'xai',
-    label: 'xAI Grok',
+    label: 'xAI Grok Imagine',
     keyField: 'xai',
-    docsUrl: 'https://docs.x.ai/docs/guides/image-generations',
-    models: [{ id: 'grok-2-image', label: 'grok-2-image', note: 'Aurora' }],
+    docsUrl: 'https://docs.x.ai/developers/model-capabilities/images/generation',
+    models: [
+      { id: 'grok-imagine-image-quality', label: 'Grok Imagine Image Quality', note: 'Best quality' },
+      { id: 'grok-imagine-image', label: 'Grok Imagine Image' },
+    ],
   },
   {
     id: 'none',
@@ -124,6 +127,13 @@ export const VIDEO_PROVIDERS: ProviderCatalogEntry<VideoProviderId>[] = [
       { id: 'sora-2-pro', label: 'Sora 2 Pro' },
     ],
   },
+  {
+    id: 'xai',
+    label: 'xAI Grok Imagine',
+    keyField: 'xai',
+    docsUrl: 'https://docs.x.ai/developers/model-capabilities/video/generation',
+    models: [{ id: 'grok-imagine-video', label: 'Grok Imagine Video', note: 'Text to video' }],
+  },
 ];
 
 export const TTS_PROVIDERS: ProviderCatalogEntry<TtsProviderId>[] = [
@@ -136,6 +146,13 @@ export const TTS_PROVIDERS: ProviderCatalogEntry<TtsProviderId>[] = [
       { id: 'gpt-4o-mini-tts', label: 'gpt-4o-mini-tts', note: 'Steerable · in the video' },
       { id: 'tts-1-hd', label: 'tts-1-hd' },
     ],
+  },
+  {
+    id: 'xai',
+    label: 'xAI Grok Voice',
+    keyField: 'xai',
+    docsUrl: 'https://docs.x.ai/developers/model-capabilities/audio/text-to-speech',
+    models: [{ id: 'text-to-speech', label: 'Grok Text to Speech', note: 'Expressive' }],
   },
   {
     id: 'browser',
@@ -157,6 +174,16 @@ export const OPENAI_VOICES: ModelOption[] = [
   { id: 'fable', label: 'Fable — storyteller' },
   { id: 'alloy', label: 'Alloy — neutral' },
   { id: 'onyx', label: 'Onyx — deep' },
+];
+
+export const XAI_VOICES: ModelOption[] = [
+  { id: 'luna', label: 'Luna — gentle, nurturing' },
+  { id: 'orion', label: 'Orion — rich, cinematic' },
+  { id: 'carina', label: 'Carina — soft, soothing' },
+  { id: 'cosmo', label: 'Cosmo — bright, educational' },
+  { id: 'zagan', label: 'Zagan — dramatic character voice' },
+  { id: 'ara', label: 'Ara — warm, friendly' },
+  { id: 'eve', label: 'Eve — energetic, upbeat' },
 ];
 
 export interface LanguageOption {
