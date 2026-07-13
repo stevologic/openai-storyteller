@@ -95,11 +95,11 @@ async function buildSlides(story: RenderedStory, onProgress: VideoProgress): Pro
 
   slides.push({
     kind: 'cover',
-    eyebrow: story.ageRange ? `Ages ${story.ageRange}` : '',
+    eyebrow: '',
     title: story.title,
     sub: story.dedication ?? '',
     body: '',
-    motion: 'zoom-in',
+    motion: 'still',
     img: await resolveImage(story.coverImageUrl, story.demo ? story.coverSceneId : undefined),
     duration: 4.5,
   });
@@ -140,6 +140,8 @@ async function buildSlides(story: RenderedStory, onProgress: VideoProgress): Pro
 function kenBurns(motion: string, t: number): { scale: number; ox: number; oy: number } {
   const e = t; // 0..1
   switch (motion) {
+    case 'still':
+      return { scale: 1, ox: 0, oy: 0 };
     case 'zoom-in':
       return { scale: 1.02 + 0.14 * e, ox: 0, oy: 0 };
     case 'zoom-out':
