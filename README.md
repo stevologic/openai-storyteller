@@ -12,8 +12,8 @@ using whichever frontier AI models you already have keys for.
 <br/>
 
 **Sample stories** (full books written, illustrated, narrated & filmed with the app):
-[▶ Chewie and the Big Big World](https://www.youtube.com/watch?v=RqU2gaAgoIM) ·
-[▶ Stella’s Moonlight Pawprints](https://www.youtube.com/watch?v=I3egwJkdkC8)
+[▶ Stella’s Big Dream Adventure](https://www.youtube.com/watch?v=p-4xSAPUnfc) ·
+[▶ Chewie and the Big Big World](https://www.youtube.com/watch?v=SfOBy2t-fRs)
 
 </div>
 
