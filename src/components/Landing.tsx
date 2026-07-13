@@ -14,7 +14,7 @@ const FEATURES = [
   { icon: <IconBook />, title: 'A reader that feels alive', body: 'Full-bleed art with cinematic Ken Burns motion, elegant type, page-turn transitions and an ambient soundscape.' },
   { icon: <IconVolume />, title: 'Read aloud', body: 'Warm narration that highlights each word as it’s spoken — free in-browser, or studio-grade with an AI voice.' },
   { icon: <IconFilm />, title: 'Consistent & video-ready', body: 'A locked “character bible” keeps your hero on-model every page; animate spreads with Veo or Sora when you want real motion.' },
-  { icon: <IconDownload />, title: 'You own it', body: 'Everything runs in your browser. Export any book to a file or images. No account, no middleman, no data leaving your device.' },
+  { icon: <IconDownload />, title: 'You own it', body: 'Everything runs in your browser. Export any book to a file, its images, or a shareable video. No account, no middleman, no data leaving your device.' },
 ];
 
 const STEPS = [

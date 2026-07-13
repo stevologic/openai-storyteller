@@ -11,6 +11,7 @@ import {
   IconAuto,
   IconClose,
   IconDownload,
+  IconFilm,
   IconMute,
   IconNext,
   IconPause,
@@ -19,6 +20,7 @@ import {
   IconVolume,
 } from '../icons';
 import { downloadStoryImages, saveStoryJson, storyHasImages } from '../../lib/exportStory';
+import { downloadBlob, renderStoryToVideo, videoExportSupported } from '../../lib/exportVideo';
 import './reader.css';
 
 type Slide = { kind: 'cover' } | { kind: 'page'; index: number } | { kind: 'end' };
@@ -45,6 +47,7 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
   const [dir, setDir] = useState(1);
   const [autoplay, setAutoplay] = useState(false);
   const [ambientOn, setAmbientOn] = useState(false);
+  const [videoExport, setVideoExport] = useState<{ ratio: number; message: string } | null>(null);
   const ambient = useRef<Ambient>(new Ambient());
   const advanceTimer = useRef<number | undefined>(undefined);
 
@@ -80,6 +83,22 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
     ttsProvider,
     onEnd: onNarrationEnd,
   });
+
+  const onExportVideo = useCallback(async () => {
+    narration.stop();
+    ambient.current.stop();
+    setAmbientOn(false);
+    setAutoplay(false);
+    setVideoExport({ ratio: 0, message: 'Preparing…' });
+    try {
+      const { blob, filename } = await renderStoryToVideo(story, (p) => setVideoExport({ ratio: p.ratio, message: p.message }));
+      downloadBlob(blob, filename);
+      setVideoExport(null);
+    } catch (err) {
+      setVideoExport({ ratio: 1, message: err instanceof Error ? err.message : 'Video export failed.' });
+      window.setTimeout(() => setVideoExport(null), 4500);
+    }
+  }, [story, narration]);
 
   // Keyboard navigation.
   useEffect(() => {
@@ -216,6 +235,11 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
                       <IconDownload /> Download pictures
                     </button>
                   )}
+                  {videoExportSupported() && (
+                    <button className="btn btn-ghost" onClick={onExportVideo}>
+                      <IconFilm /> Export video
+                    </button>
+                  )}
                   <button className="btn btn-primary" onClick={close}>
                     {story.demo ? 'Create your own' : 'Back to studio'}
                   </button>
@@ -292,6 +316,22 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
           <IconNext />
         </button>
       </div>
+
+      <AnimatePresence>
+        {videoExport && (
+          <motion.div className="video-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="video-card">
+              <div className="video-spinner" />
+              <h2>Filming your storybook…</h2>
+              <div className="video-bar">
+                <motion.div className="video-fill" animate={{ width: `${Math.round(videoExport.ratio * 100)}%` }} transition={{ ease: 'easeOut' }} />
+              </div>
+              <p className="video-stage">{videoExport.message}</p>
+              <p className="video-hint">Recording plays out in real time — sit back and watch. The video downloads when it’s done.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
