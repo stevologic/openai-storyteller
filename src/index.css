@@ -48,6 +48,9 @@
   --sans: 'Nunito', system-ui, -apple-system, sans-serif;
 
   --maxw: 1180px;
+
+  /* Render native controls (selects, option popups, scrollbars) in dark mode. */
+  color-scheme: dark;
 }
 
 * {
@@ -248,10 +251,27 @@ textarea {
 }
 select {
   appearance: none;
+  /* Opaque so the native option popup renders dark, not white. */
+  background-color: #1c1440;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23b9aecb' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
   padding-right: 38px;
+  cursor: pointer;
+}
+select:hover {
+  border-color: var(--border-strong);
+}
+/* The dropdown list itself. */
+select option,
+select optgroup {
+  background-color: #1c1440;
+  color: var(--text);
+  padding: 8px 10px;
+}
+select option:checked {
+  background: linear-gradient(#2f1e5e, #2f1e5e);
+  color: #fff;
 }
 
 .scroll-lock {
