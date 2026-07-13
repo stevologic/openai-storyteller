@@ -1,0 +1,15 @@
+{
+  "name": "Tiny Book Buddies AI",
+  "short_name": "Tiny Book Buddies",
+  "description": "Living storybooks, told by AI.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fbf4e6",
+  "theme_color": "#fbf4e6",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
