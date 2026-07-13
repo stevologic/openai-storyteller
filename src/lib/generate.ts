@@ -7,33 +7,48 @@ import { buildWriterPrompt, WRITER_SYSTEM, composeIllustrationPrompt, composeCov
 
 type ProgressFn = (p: GenerationProgress) => void;
 
+/** Coerce a loosely-shaped page (common with small on-device models) into schema. */
+function coercePage(p: unknown, i: number): Record<string, unknown> {
+  const o = (p ?? {}) as Record<string, unknown>;
+  const text = String(o.text ?? o.body ?? o.content ?? '');
+  return {
+    header: String(o.header ?? o.title ?? `Page ${i + 1}`),
+    text: text || 'And the story went on.',
+    illustration: String(o.illustration ?? o.image ?? o.scene ?? text),
+    motion: typeof o.motion === 'string' ? o.motion : 'drift',
+  };
+}
+
 /** Write + validate the story text. */
-export async function writeStory(settings: Settings, brief: StoryBrief): Promise<Story> {
-  const data = await generateJson(settings, {
-    system: WRITER_SYSTEM,
-    user: buildWriterPrompt(brief),
-    json: true,
-    maxTokens: 6000,
-  });
+export async function writeStory(
+  settings: Settings,
+  brief: StoryBrief,
+  onProgress?: (msg: string) => void,
+): Promise<Story> {
+  const data = await generateJson(
+    settings,
+    { system: WRITER_SYSTEM, user: buildWriterPrompt(brief), json: true, maxTokens: 6000 },
+    onProgress,
+  );
   const parsed = StorySchema.safeParse(data);
-  if (!parsed.success) {
-    // Coerce loosely-shaped output rather than failing outright.
-    const loose = data as Record<string, unknown>;
-    const coerced = StorySchema.safeParse({
-      title: String(loose.title ?? brief.idea),
-      dedication: String(loose.dedication ?? ''),
-      ageRange: String(loose.ageRange ?? brief.ageRange),
-      characterBible: String(loose.characterBible ?? ''),
-      artStyle: String(loose.artStyle ?? brief.artStyle),
-      pages: Array.isArray(loose.pages) ? loose.pages : [],
-      moral: String(loose.moral ?? brief.lesson ?? ''),
-    });
-    if (!coerced.success) {
-      throw new Error('The story came back malformed. Try again, or switch to a stronger text model.');
-    }
-    return coerced.data;
+  if (parsed.success) return parsed.data;
+
+  // Coerce loosely-shaped output rather than failing outright.
+  const loose = data as Record<string, unknown>;
+  const rawPages = Array.isArray(loose.pages) ? loose.pages : Array.isArray(loose.story) ? loose.story : [];
+  const coerced = StorySchema.safeParse({
+    title: String(loose.title ?? brief.idea),
+    dedication: String(loose.dedication ?? ''),
+    ageRange: String(loose.ageRange ?? brief.ageRange),
+    characterBible: String(loose.characterBible ?? loose.character ?? ''),
+    artStyle: String(loose.artStyle ?? brief.artStyle),
+    pages: rawPages.map(coercePage),
+    moral: String(loose.moral ?? loose.lesson ?? brief.lesson ?? ''),
+  });
+  if (!coerced.success) {
+    throw new Error('The story came back malformed. Try again, or pick a stronger text model in Settings.');
   }
-  return parsed.data;
+  return coerced.data;
 }
 
 /** Full pipeline: text → cover → per-page illustration → (video) → (narration). */
@@ -43,7 +58,9 @@ export async function weaveStory(
   onProgress: ProgressFn,
 ): Promise<RenderedStory> {
   onProgress({ stage: 'writing', message: 'Writing your story…', ratio: 0.04 });
-  const story = await writeStory(settings, brief);
+  const story = await writeStory(settings, brief, (msg) =>
+    onProgress({ stage: 'writing', message: msg, ratio: 0.05 }),
+  );
 
   const doImages = settings.image.provider !== 'none';
   const doVideo = settings.video.enabled && settings.video.provider !== 'none';
@@ -70,6 +87,7 @@ export async function weaveStory(
       rendered.coverImageUrl = await generateImage(
         settings,
         composeCoverPrompt(story.title, story.artStyle, story.characterBible),
+        story.artStyle,
       );
     } catch (err) {
       console.warn('Cover generation failed:', err);
@@ -89,6 +107,7 @@ export async function weaveStory(
         rendered.pages[i].imageUrl = await generateImage(
           settings,
           composeIllustrationPrompt(story.artStyle, story.characterBible, story.pages[i].illustration),
+          story.artStyle,
         );
       } catch (err) {
         console.warn(`Illustration ${i + 1} failed:`, err);

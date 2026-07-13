@@ -11,7 +11,35 @@ import type {
 /* The catalog powers the Settings UI. Model ids reflect the current
    frontier lineups; new models can be typed in freely via "Custom model". */
 
+/** Default small instruct model for the Transformers.js path. */
+export const DEFAULT_TRANSFORMERS_MODEL = 'onnx-community/Llama-3.2-1B-Instruct';
+
 export const TEXT_PROVIDERS: ProviderCatalogEntry<TextProviderId>[] = [
+  {
+    id: 'ondevice',
+    label: 'On-device · Automatic',
+    keyField: null,
+    docsUrl: 'https://developer.chrome.com/docs/ai/built-in',
+    models: [{ id: 'auto', label: 'Auto — Chrome AI, then Transformers.js', note: 'No key needed' }],
+  },
+  {
+    id: 'chrome',
+    label: 'Chrome Built-in AI',
+    keyField: null,
+    docsUrl: 'https://developer.chrome.com/docs/ai/prompt-api',
+    models: [{ id: 'gemini-nano', label: 'Gemini Nano', note: 'Runs in Chrome, no download you manage' }],
+  },
+  {
+    id: 'transformers',
+    label: 'Transformers.js · in-browser',
+    keyField: null,
+    docsUrl: 'https://huggingface.co/docs/transformers.js',
+    models: [
+      { id: 'onnx-community/Llama-3.2-1B-Instruct', label: 'Llama 3.2 1B', note: 'Balanced' },
+      { id: 'onnx-community/Qwen2.5-1.5B-Instruct', label: 'Qwen2.5 1.5B', note: 'Best quality' },
+      { id: 'onnx-community/Qwen2.5-0.5B-Instruct', label: 'Qwen2.5 0.5B', note: 'Fastest' },
+    ],
+  },
   {
     id: 'anthropic',
     label: 'Anthropic Claude',
@@ -50,6 +78,12 @@ export const TEXT_PROVIDERS: ProviderCatalogEntry<TextProviderId>[] = [
 ];
 
 export const IMAGE_PROVIDERS: ProviderCatalogEntry<ImageProviderId>[] = [
+  {
+    id: 'procedural',
+    label: 'On-device · Procedural art',
+    keyField: null,
+    models: [{ id: 'procedural', label: 'Generative scenes — free & instant' }],
+  },
   {
     id: 'openai',
     label: 'OpenAI Images',
@@ -160,8 +194,9 @@ export const TONE_PRESETS = [
 
 export const DEFAULT_SETTINGS: Settings = {
   keys: { openai: '', anthropic: '', google: '' },
-  text: { provider: 'anthropic', model: 'claude-sonnet-5' },
-  image: { provider: 'openai', model: 'gpt-image-1' },
+  // Zero-config defaults: everything runs on the user's own device, no keys.
+  text: { provider: 'ondevice', model: 'auto' },
+  image: { provider: 'procedural', model: 'procedural' },
   video: { provider: 'none', model: 'none', enabled: false },
   tts: { provider: 'browser', model: 'system', voice: 'nova' },
 };

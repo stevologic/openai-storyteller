@@ -16,15 +16,18 @@ using whichever frontier AI models you already have keys for.
 Storyteller AI is a complete rewrite of the original _openai-storyteller_. The old Flask + DALL·E 2
 app is gone; in its place is a fast, single-page web app that:
 
-- **writes** an original, age-appropriate story with GPT, Claude, or Gemini,
-- **illustrates** every page and the cover with gpt-image, Imagen, or DALL·E — keeping the hero
-  visually consistent across pages via a locked "character bible,"
+- **writes** an original, age-appropriate story — **on-device by default** (Chrome Built-in AI or
+  Transformers.js), or with GPT / Claude / Gemini when you add a key,
+- **illustrates** every page — free procedural art on-device, or gpt-image / Imagen / DALL·E — keeping
+  the hero visually consistent across pages via a locked "character bible,"
 - **reads it aloud** with word-by-word highlighting (free in-browser voices, or an AI voice), and
 - **presents it** in an immersive, cinematic reader with full-bleed art, Ken Burns motion,
   page-turn transitions, and an ambient soundscape.
 
-Everything runs **in your browser**. You bring your own API keys; they're stored locally and sent
-directly to each provider — never to a Storyteller AI server (there isn't one).
+**It works with zero setup** — no key, no sign-up, no cost — because the default models run entirely on
+your own computer. Add API keys anytime to upgrade the words and art. Everything runs **in your
+browser**; keys are stored locally and sent directly to each provider — never to a Storyteller AI
+server (there isn't one).
 
 ## 📖 A book it made — _Billy's Broccoli Path_
 
@@ -69,7 +72,8 @@ Billy looks like Billy from cover to end._
 
 | | |
 |---|---|
-| 🎛 **Any frontier model** | Choose providers and models for text, images, video, and narration right in the Settings panel. Type a custom model id for anything new. |
+| 🔌 **Zero setup** | Runs on-device out of the box — Chrome Built-in AI (Gemini Nano) or Transformers.js for the words, procedural vector art for the pictures. No key, no account, no cost. |
+| 🎛 **Any frontier model** | Then plug in keys to switch to GPT / Claude / Gemini and gpt-image / Imagen / DALL·E. Choose providers and models per task in Settings; type a custom model id for anything new. |
 | 📖 **Cinematic reader** | Autoplay "movie mode," swipe/keyboard navigation, ambient audio, and a page-turn feel. |
 | 🗣 **Read aloud** | Live browser narration with karaoke-style word highlighting, or studio-grade OpenAI voices. |
 | 🎨 **Consistent characters** | A generated character description is fused into every illustration prompt so your hero stays the same. |
@@ -79,9 +83,10 @@ Billy looks like Billy from cover to end._
 
 ## Supported models
 
-Configured entirely in the UI (**Settings → Models**). All calls go straight from your browser to
-the provider.
+Configured entirely in the UI (**Settings → Models**). Cloud calls go straight from your browser to
+the provider; on-device models never leave your machine.
 
+- **On-device (no key):** Chrome Built-in AI (Gemini Nano) · Transformers.js (Llama 3.2 1B, Qwen2.5) for text · procedural vector art for illustrations
 - **Text:** OpenAI GPT-5.1 / GPT-5 / GPT-4.1 / GPT-4o · Anthropic Claude Fable 5 / Opus 4.8 / Opus 4.7 / Sonnet 5 / Haiku 4.5 · Google Gemini 2.5 Pro / Flash
 - **Images:** OpenAI `gpt-image-1`, DALL·E 3 · Google Imagen 4 / 3
 - **Video (optional):** Google Veo 3 · OpenAI Sora 2 — or free Ken Burns motion

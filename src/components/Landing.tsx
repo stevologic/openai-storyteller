@@ -9,12 +9,12 @@ import './landing.css';
 const PROVIDERS = ['OpenAI GPT', 'Claude', 'Gemini', 'gpt-image', 'Imagen', 'DALL·E', 'Veo', 'Sora'];
 
 const FEATURES = [
-  { icon: <IconKey />, title: 'Any frontier model', body: 'Bring your own keys and mix providers — GPT, Claude, or Gemini for words; gpt-image, Imagen, or DALL·E for art. Swap models in the UI.' },
+  { icon: <IconSpark />, title: 'Works with zero setup', body: 'By default it runs entirely on your device — Chrome Built-in AI or Transformers.js for the words, procedural art for the pictures. No key, no sign-up, no cost.' },
+  { icon: <IconKey />, title: 'Then plug in the best', body: 'Add OpenAI, Anthropic, or Google keys to upgrade to GPT / Claude / Gemini words and gpt-image / Imagen / DALL·E art. Mix and match in the UI.' },
   { icon: <IconBook />, title: 'A reader that feels alive', body: 'Full-bleed art with cinematic Ken Burns motion, elegant type, page-turn transitions and an ambient soundscape.' },
   { icon: <IconVolume />, title: 'Read aloud', body: 'Warm narration that highlights each word as it’s spoken — free in-browser, or studio-grade with an AI voice.' },
-  { icon: <IconSpark />, title: 'Consistent characters', body: 'A locked “character bible” travels into every illustration prompt, so your hero looks the same on every page.' },
-  { icon: <IconFilm />, title: 'Video-ready', body: 'Animate pages into short clips with Veo or Sora when you want motion — or let the free cinematic pan carry the mood.' },
-  { icon: <IconDownload />, title: 'You own it', body: 'Everything runs in your browser and calls the providers directly. No account, no middleman, no data leaving your device.' },
+  { icon: <IconFilm />, title: 'Consistent & video-ready', body: 'A locked “character bible” keeps your hero on-model every page; animate spreads with Veo or Sora when you want real motion.' },
+  { icon: <IconDownload />, title: 'You own it', body: 'Everything runs in your browser. Export any book to a file or images. No account, no middleman, no data leaving your device.' },
 ];
 
 const STEPS = [
@@ -61,7 +61,7 @@ export default function Landing() {
               <IconSpark /> Create your own
             </button>
           </motion.div>
-          <p className="hero-note">Live, interactive demo — no sign-up, no API key required.</p>
+          <p className="hero-note">Runs on-device by default — no sign-up, no API key, no cost. Bring keys for the best quality.</p>
         </div>
 
         <motion.button

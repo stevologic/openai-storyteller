@@ -61,8 +61,8 @@ export interface StoryBrief {
 
 /* ---------- Provider configuration ---------- */
 
-export type TextProviderId = 'openai' | 'anthropic' | 'google';
-export type ImageProviderId = 'openai' | 'google' | 'none';
+export type TextProviderId = 'ondevice' | 'chrome' | 'transformers' | 'openai' | 'anthropic' | 'google';
+export type ImageProviderId = 'procedural' | 'openai' | 'google' | 'none';
 export type VideoProviderId = 'google' | 'openai' | 'none';
 export type TtsProviderId = 'openai' | 'browser' | 'none';
 

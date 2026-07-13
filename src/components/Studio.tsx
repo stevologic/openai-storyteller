@@ -19,7 +19,6 @@ export default function Studio() {
   const setView = useStore((s) => s.setView);
   const progress = useStore((s) => s.progress);
   const setProgress = useStore((s) => s.setProgress);
-  const hasKey = useStore((s) => s.hasAnyKey());
 
   const [brief, setBrief] = useState<StoryBrief>({
     idea: '',
@@ -48,7 +47,10 @@ export default function Studio() {
     }
   }
 
-  const textKeyMissing = !settings.keys[TEXT_PROVIDERS.find((p) => p.id === settings.text.provider)!.keyField ?? 'openai'];
+  const textProvider = TEXT_PROVIDERS.find((p) => p.id === settings.text.provider);
+  // On-device providers have no keyField, so they never need a key.
+  const textKeyMissing = textProvider?.keyField ? !settings.keys[textProvider.keyField] : false;
+  const onDeviceText = !textProvider?.keyField;
 
   const set = <K extends keyof StoryBrief>(k: K, v: StoryBrief[K]) => setBrief((b) => ({ ...b, [k]: v }));
 
@@ -223,10 +225,18 @@ export default function Studio() {
                 <b>{settings.tts.provider === 'openai' ? `OpenAI · ${settings.tts.voice}` : settings.tts.provider === 'browser' ? 'Browser voice' : 'Off'}</b>
               </li>
             </ul>
-            {!hasKey && (
-              <p className="studio-nokey">
-                No API keys yet. Add at least a text-model key to start creating.
+            {onDeviceText ? (
+              <p className="studio-ondevice">
+                ✓ Runs entirely on your device — no API key needed. The first on-device run downloads a
+                small model, then it’s instant. Add a key in Settings for higher-quality writing and art.
               </p>
+            ) : (
+              textKeyMissing && (
+                <p className="studio-nokey">
+                  Add your {providerLabel(TEXT_PROVIDERS, settings.text.provider)} key in Settings — or switch
+                  Text to “On-device” to run with no key.
+                </p>
+              )
             )}
           </div>
 

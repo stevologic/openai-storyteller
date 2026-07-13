@@ -1,5 +1,8 @@
 import type { Settings } from '../types';
 import { describeHttpError, extractJson } from './util';
+import { chromeAvailable, chromeText, type OnProgress } from './onDeviceText';
+import { transformersText } from './transformers';
+import { DEFAULT_TRANSFORMERS_MODEL } from '../catalog';
 
 export interface TextRequest {
   system: string;
@@ -10,9 +13,17 @@ export interface TextRequest {
 }
 
 /** Returns raw model text. JSON parsing happens in the caller. */
-export async function generateText(settings: Settings, req: TextRequest): Promise<string> {
+export async function generateText(
+  settings: Settings,
+  req: TextRequest,
+  onProgress?: OnProgress,
+): Promise<string> {
   const { provider, model } = settings.text;
   const maxTokens = req.maxTokens ?? 4096;
+  // On-device models need the JSON instruction folded into the system prompt.
+  const onDeviceSystem = req.json
+    ? `${req.system}\n\nReply with ONLY a single valid JSON object — no markdown, no commentary.`
+    : req.system;
   switch (provider) {
     case 'openai':
       return openaiText(settings.keys.openai, model, req, maxTokens);
@@ -20,14 +31,25 @@ export async function generateText(settings: Settings, req: TextRequest): Promis
       return anthropicText(settings.keys.anthropic, model, req, maxTokens);
     case 'google':
       return googleText(settings.keys.google, model, req, maxTokens);
+    case 'chrome':
+      return chromeText(onDeviceSystem, req.user, onProgress);
+    case 'transformers':
+      return transformersText(model || DEFAULT_TRANSFORMERS_MODEL, onDeviceSystem, req.user, Math.min(maxTokens, 2048), onProgress);
+    case 'ondevice':
+      if (await chromeAvailable()) return chromeText(onDeviceSystem, req.user, onProgress);
+      return transformersText(DEFAULT_TRANSFORMERS_MODEL, onDeviceSystem, req.user, Math.min(maxTokens, 2048), onProgress);
     default:
       throw new Error(`Unknown text provider: ${provider}`);
   }
 }
 
 /** Convenience: generate text and parse it as JSON. */
-export async function generateJson<T = unknown>(settings: Settings, req: TextRequest): Promise<T> {
-  const raw = await generateText(settings, { ...req, json: true });
+export async function generateJson<T = unknown>(
+  settings: Settings,
+  req: TextRequest,
+  onProgress?: OnProgress,
+): Promise<T> {
+  const raw = await generateText(settings, { ...req, json: true }, onProgress);
   return extractJson(raw) as T;
 }
 

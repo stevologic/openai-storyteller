@@ -1,10 +1,19 @@
 import type { Settings } from '../types';
 import { base64ToDataUrl, describeHttpError } from './util';
+import { proceduralImage } from './proceduralImage';
 
-/** Generate one illustration; returns a data URL, or undefined if disabled. */
-export async function generateImage(settings: Settings, prompt: string): Promise<string | undefined> {
+/** Generate one illustration; returns a data URL, or undefined if disabled.
+ *  `styleKey` (the story's art-style sentence) keeps procedural palettes
+ *  consistent across a book. */
+export async function generateImage(
+  settings: Settings,
+  prompt: string,
+  styleKey?: string,
+): Promise<string | undefined> {
   const { provider, model } = settings.image;
   switch (provider) {
+    case 'procedural':
+      return proceduralImage(prompt, styleKey ?? prompt);
     case 'openai':
       return openaiImage(settings.keys.openai, model, prompt);
     case 'google':
