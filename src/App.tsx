@@ -29,9 +29,9 @@ export default function App() {
       {!inReader && (
         <header className="nav">
           <div className="nav-inner container">
-            <button className="brand" onClick={() => setView('landing')} aria-label="Storyteller AI home">
+            <button className="brand" onClick={() => setView('landing')} aria-label="Tiny Book Buddies AI home">
               <span className="brand-mark">✦</span>
-              <span className="brand-name">Storyteller&nbsp;AI</span>
+              <span className="brand-name">Tiny Book Buddies&nbsp;AI</span>
             </button>
             <nav className="nav-actions">
               <button

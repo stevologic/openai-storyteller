@@ -61,6 +61,9 @@
 .hero-book-art {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .hero-book-art svg {
   width: 100%;
@@ -322,6 +325,7 @@
   margin-bottom: 26px;
 }
 .niche-book {
+  position: relative;
   border: 1px solid var(--border);
   background: transparent;
   padding: 0;
@@ -331,10 +335,66 @@
   box-shadow: var(--shadow);
   cursor: pointer;
 }
-.niche-book svg {
+.niche-book svg,
+.niche-book img {
   width: 100%;
   height: 100%;
   display: block;
+  object-fit: cover;
+}
+.niche-book-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  color: #fff;
+  background: rgba(6, 4, 16, 0.28);
+  transition: background 0.2s;
+}
+.niche-book:hover .niche-book-play {
+  background: rgba(6, 4, 16, 0.12);
+}
+
+/* SAMPLE STORY VIDEOS */
+.samples-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.sample-card {
+  margin: 0;
+}
+.video-frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  background: #000;
+}
+.video-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.sample-card figcaption {
+  margin-top: 12px;
+  text-align: center;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 19px;
+  color: var(--text);
+}
+
+@media (max-width: 760px) {
+  .samples-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* FOOTER */

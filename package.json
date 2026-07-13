@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Storyteller AI — living, illustrated children's storybooks generated with any frontier AI model.",
+  "description": "Tiny Book Buddies AI — living, illustrated children's storybooks generated on-device or with any frontier AI model.",
   "author": "Stephen M Abbott",
   "license": "SEE LICENSE IN LICENSE",
   "homepage": "https://stevologic.github.io/storyteller-ai/",

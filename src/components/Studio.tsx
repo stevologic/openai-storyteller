@@ -159,9 +159,9 @@ export default function Studio() {
   return (
     <div className="studio container">
       <div className="studio-head">
-        <span className="eyebrow">Storyteller AI Studio</span>
+        <span className="eyebrow">Tiny Book Buddies AI Studio</span>
         <h1>Create a new storybook</h1>
-        <p>Describe the tale. Storyteller AI writes it, illustrates every page, and reads it aloud.</p>
+        <p>Describe the tale. Tiny Book Buddies AI writes it, illustrates every page, and reads it aloud.</p>
         <p className="studio-open">
           or{' '}
           <button type="button" className="linklike" onClick={() => fileRef.current?.click()}>

@@ -57,7 +57,7 @@ export async function openStoryFile(file: File): Promise<RenderedStory> {
   // Validate the story shape; media fields are passed through untouched.
   const parsed = StorySchema.safeParse(data);
   if (!parsed.success) {
-    throw new Error('That file does not look like a Storyteller story.');
+    throw new Error('That file does not look like a Tiny Book Buddies story.');
   }
   return {
     ...(data as unknown as RenderedStory),

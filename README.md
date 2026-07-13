@@ -1,29 +1,25 @@
 <div align="center">
 
-# ✦ Storyteller AI
+# ✦ Tiny Book Buddies AI
 
 ### Living storybooks, told by AI.
 
 Turn a single bedtime idea into a **fully illustrated, narrated children's picture book** —
 using whichever frontier AI models you already have keys for.
 
-**[▶ Live demo & sample story →](https://stevologic.github.io/storyteller-ai/)**
+**[▶ Live demo →](https://stevologic.github.io/storyteller-ai/)**
 
 <br/>
 
-<!-- HERO IMAGE — export a cover from the app ("Download pictures"), drop it at
-     docs/showcase/hero.png, then replace this comment with:
-     <img src="docs/showcase/hero.png" width="88%" alt="A storybook made with Storyteller AI" /> -->
-
-_“The world is full of busy, friendly trucks, and each one makes our big, exciting home feel safe and wonderful.”_
-
-<sub>— the closing line of a storybook made in a single click</sub>
+**Sample stories** (full books written, illustrated, narrated & filmed with the app):
+[▶ Chewie and the Big Big World](https://www.youtube.com/watch?v=RqU2gaAgoIM) ·
+[▶ Stella’s Moonlight Pawprints](https://www.youtube.com/watch?v=I3egwJkdkC8)
 
 </div>
 
 ---
 
-Storyteller AI is a complete rewrite of the original _openai-storyteller_. The old Flask + DALL·E 2
+Tiny Book Buddies AI is a complete rewrite of the original _openai-storyteller_. The old Flask + DALL·E 2
 app is gone; in its place is a fast, single-page web app that:
 
 - **writes** an original, age-appropriate story — **on-device by default** (Chrome Built-in AI or
@@ -37,12 +33,12 @@ app is gone; in its place is a fast, single-page web app that:
 
 **It works with zero setup** — no key, no sign-up, no cost — because the default models run entirely on
 your own computer. Add API keys anytime to upgrade the words and art. Everything runs **in your
-browser**; keys are stored locally and sent directly to each provider — never to a Storyteller AI
+browser**; keys are stored locally and sent directly to each provider — never to a Tiny Book Buddies AI
 server (there isn't one).
 
 ## 📖 A book it made — _Billy's Broccoli Path_
 
-A real storybook Storyteller AI generated end-to-end from a one-line idea about a picky eater who
+A real storybook Tiny Book Buddies AI generated end-to-end from a one-line idea about a picky eater who
 gets a little lost — original prose, a **Pixar-style hero kept consistent on every page**, and warm
 narration. A few spreads:
 
@@ -171,7 +167,7 @@ src/
 ## Privacy
 
 - API keys live only in your browser's `localStorage`.
-- Requests go **directly** to OpenAI / Anthropic / Google. Storyteller AI has no server and collects nothing.
+- Requests go **directly** to OpenAI / Anthropic / Google. Tiny Book Buddies AI has no server and collects nothing.
 - Generated stories are kept in memory for the session.
 
 ## License
@@ -183,5 +179,5 @@ children's-book product on top of this. For commercial use or licensing, contact
 ---
 
 <div align="center">
-<sub>Storyteller AI · a rewrite of the original openai-storyteller · © 2022–2026 Stephen M Abbott</sub>
+<sub>Tiny Book Buddies AI · a rewrite of the original openai-storyteller · © 2022–2026 Stephen M Abbott</sub>
 </div>

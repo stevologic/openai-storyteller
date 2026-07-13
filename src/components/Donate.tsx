@@ -89,7 +89,7 @@ function DonateModal({ onClose }: { onClose: () => void }) {
         <button className="donate-close" onClick={onClose} aria-label="Close">
           ×
         </button>
-        <h3>Enjoying Storyteller AI?</h3>
+        <h3>Enjoying Tiny Book Buddies AI?</h3>
         <p className="donate-sub">
           It’s free and runs on your own device. If it brought a little joy, a tiny tip helps keep it growing. 💜
         </p>
