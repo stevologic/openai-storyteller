@@ -41,6 +41,10 @@
   gap: 24px;
   align-items: start;
 }
+/* Let the columns shrink instead of overflowing the screen on mobile */
+.studio-grid > * {
+  min-width: 0;
+}
 .studio-form {
   padding: 28px;
 }
