@@ -222,7 +222,15 @@ export default function Studio() {
               </li>
               <li>
                 <span>Narration</span>
-                <b>{settings.tts.provider === 'openai' ? `OpenAI · ${settings.tts.voice}` : settings.tts.provider === 'browser' ? 'Browser voice' : 'Off'}</b>
+                <b>
+                  {settings.tts.provider === 'kokoro'
+                    ? `On-device · ${settings.tts.voice}`
+                    : settings.tts.provider === 'openai'
+                      ? `OpenAI · ${settings.tts.voice}`
+                      : settings.tts.provider === 'browser'
+                        ? 'Browser voice'
+                        : 'Off'}
+                </b>
               </li>
             </ul>
             {onDeviceText ? (

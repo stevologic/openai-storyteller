@@ -143,10 +143,17 @@ export const VIDEO_PROVIDERS: ProviderCatalogEntry<VideoProviderId>[] = [
 
 export const TTS_PROVIDERS: ProviderCatalogEntry<TtsProviderId>[] = [
   {
-    id: 'browser',
-    label: 'Browser narration (free)',
+    id: 'kokoro',
+    label: 'On-device voice (Kokoro)',
     keyField: null,
-    models: [{ id: 'system', label: 'System voices' }],
+    docsUrl: 'https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX',
+    models: [{ id: 'onnx-community/Kokoro-82M-v1.0-ONNX', label: 'Kokoro 82M', note: 'Neural, in the video' }],
+  },
+  {
+    id: 'browser',
+    label: 'Browser voice (live only)',
+    keyField: null,
+    models: [{ id: 'system', label: 'System voices — not saved to video' }],
   },
   {
     id: 'openai',
@@ -174,6 +181,18 @@ export const OPENAI_VOICES: ModelOption[] = [
   { id: 'onyx', label: 'Onyx — deep' },
 ];
 
+/** Kokoro on-device voices (a curated subset of the 28 available). */
+export const KOKORO_VOICES: ModelOption[] = [
+  { id: 'af_heart', label: 'Heart — warm (US, f)' },
+  { id: 'af_bella', label: 'Bella — bright (US, f)' },
+  { id: 'af_nicole', label: 'Nicole — soft (US, f)' },
+  { id: 'af_nova', label: 'Nova — clear (US, f)' },
+  { id: 'am_michael', label: 'Michael — friendly (US, m)' },
+  { id: 'am_puck', label: 'Puck — playful (US, m)' },
+  { id: 'bf_emma', label: 'Emma — gentle (UK, f)' },
+  { id: 'bm_george', label: 'George — storyteller (UK, m)' },
+];
+
 export const ART_STYLE_PRESETS = [
   'Soft watercolor picture book, gentle washes, cozy',
   'Pixar-style 3D render, warm cinematic lighting',
@@ -198,7 +217,8 @@ export const DEFAULT_SETTINGS: Settings = {
   text: { provider: 'ondevice', model: 'auto' },
   image: { provider: 'procedural', model: 'procedural' },
   video: { provider: 'none', model: 'none', enabled: false },
-  tts: { provider: 'browser', model: 'system', voice: 'nova' },
+  // On-device neural voice by default so the selected voice is captured in the video.
+  tts: { provider: 'kokoro', model: 'onnx-community/Kokoro-82M-v1.0-ONNX', voice: 'af_heart' },
   storyVideo: { enabled: true },
 };
 

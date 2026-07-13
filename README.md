@@ -95,7 +95,7 @@ Billy looks like Billy from cover to end._
 | 🔌 **Zero setup** | Runs on-device out of the box — Chrome Built-in AI (Gemini Nano) or Transformers.js for the words, procedural vector art for the pictures. No key, no account, no cost. |
 | 🎛 **Any frontier model** | Then plug in keys to switch to GPT / Claude / Gemini and gpt-image / Imagen / DALL·E. Choose providers and models per task in Settings; type a custom model id for anything new. |
 | 📖 **Cinematic reader** | Autoplay "movie mode," swipe/keyboard navigation, ambient audio, and a page-turn feel. |
-| 🎥 **Auto video** | Every book is also rendered to a shareable **MP4** while it generates — art, Ken Burns motion, text, and soundtrack, entirely in the browser (canvas + MediaRecorder, H.264/AAC with a WebM fallback). Toggle it off in Settings. Also export to a story file or PNGs. |
+| 🎥 **Auto video, narrated** | Every book is also rendered to a shareable **MP4** while it generates — art, Ken Burns motion, text, and the **selected narration voice baked in** (on-device Kokoro by default), entirely in the browser (canvas + MediaRecorder, H.264/AAC with a WebM fallback). Toggle it off in Settings. Also export to a story file or PNGs. |
 | 🗣 **Read aloud** | Live browser narration with karaoke-style word highlighting, or studio-grade OpenAI voices. |
 | 🎨 **Consistent characters** | A generated character description is fused into every illustration prompt so your hero stays the same. |
 | 🎬 **Video-ready** | Animate pages into short clips with Veo or Sora when you want motion — or let the free cinematic pan carry the mood. |
@@ -107,9 +107,10 @@ Billy looks like Billy from cover to end._
 Configured entirely in the UI (**Settings → Models**). Cloud calls go straight from your browser to
 the provider; on-device models never leave your machine.
 
-- **On-device (no key):** Chrome Built-in AI (Gemini Nano) · Transformers.js (Llama 3.2 1B, Qwen2.5) for text · procedural vector art for illustrations
+- **On-device (no key):** Chrome Built-in AI (Gemini Nano) · Transformers.js (Llama 3.2 1B, Qwen2.5) for text · procedural vector art for illustrations · **Kokoro** neural narration
 - **Text:** OpenAI GPT-5.1 / GPT-5 / GPT-4.1 / GPT-4o · Anthropic Claude Fable 5 / Opus 4.8 / Opus 4.7 / Sonnet 5 / Haiku 4.5 · Google Gemini 2.5 Pro / Flash
 - **Images:** OpenAI `gpt-image-1`, DALL·E 3 · Google Imagen 4 / 3
+- **Narration:** On-device Kokoro (8 voices, in the video) · OpenAI speech · live browser voices
 - **Video (optional):** Google Veo 3 · OpenAI Sora 2 — or free Ken Burns motion
 - **Narration:** Browser voices (free) · OpenAI speech (`gpt-4o-mini-tts`, `tts-1-hd`)
 

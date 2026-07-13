@@ -67,7 +67,7 @@ export interface StoryBrief {
 export type TextProviderId = 'ondevice' | 'chrome' | 'transformers' | 'openai' | 'anthropic' | 'google';
 export type ImageProviderId = 'procedural' | 'openai' | 'google' | 'none';
 export type VideoProviderId = 'google' | 'openai' | 'none';
-export type TtsProviderId = 'openai' | 'browser' | 'none';
+export type TtsProviderId = 'kokoro' | 'openai' | 'browser' | 'none';
 
 export interface ProviderKeys {
   openai: string;

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from '../lib/store';
 import {
   IMAGE_PROVIDERS,
+  KOKORO_VOICES,
   OPENAI_VOICES,
   TEXT_PROVIDERS,
   TTS_PROVIDERS,
@@ -250,18 +251,25 @@ export default function SettingsPanel() {
                   providerId={settings.tts.provider}
                   model={settings.tts.model}
                   onProvider={(provider) =>
-                    update({ tts: { ...settings.tts, provider, model: firstModel(TTS_PROVIDERS, provider) } })
+                    update({
+                      tts: {
+                        ...settings.tts,
+                        provider,
+                        model: firstModel(TTS_PROVIDERS, provider),
+                        voice: provider === 'kokoro' ? 'af_heart' : provider === 'openai' ? 'nova' : settings.tts.voice,
+                      },
+                    })
                   }
                   onModel={(model) => update({ tts: { ...settings.tts, model } })}
                   extra={
-                    settings.tts.provider === 'openai' && (
+                    (settings.tts.provider === 'openai' || settings.tts.provider === 'kokoro') && (
                       <label className="field inline-field">
                         <span className="field-label">Voice</span>
                         <select
                           value={settings.tts.voice}
                           onChange={(e) => update({ tts: { ...settings.tts, voice: e.target.value } })}
                         >
-                          {OPENAI_VOICES.map((v) => (
+                          {(settings.tts.provider === 'kokoro' ? KOKORO_VOICES : OPENAI_VOICES).map((v) => (
                             <option key={v.id} value={v.id}>
                               {v.label}
                             </option>

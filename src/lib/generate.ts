@@ -65,7 +65,8 @@ export async function weaveStory(
 
   const doImages = settings.image.provider !== 'none';
   const doVideo = settings.video.enabled && settings.video.provider !== 'none';
-  const doNarration = settings.tts.provider === 'openai';
+  // Pre-render narration to audio when the voice can be captured into the video.
+  const doNarration = settings.tts.provider === 'openai' || settings.tts.provider === 'kokoro';
 
   // Weight the progress bar across the stages we'll actually run.
   const imageUnits = doImages ? story.pages.length + 1 : 0; // pages + cover
@@ -143,7 +144,9 @@ export async function weaveStory(
         ratio: bump(),
       });
       try {
-        rendered.pages[i].audioUrl = await generateNarration(settings, story.pages[i].text);
+        rendered.pages[i].audioUrl = await generateNarration(settings, story.pages[i].text, (msg) =>
+          onProgress({ stage: 'narrating', message: msg, ratio: bump() }),
+        );
       } catch (err) {
         console.warn(`Narration ${i + 1} failed:`, err);
       }
