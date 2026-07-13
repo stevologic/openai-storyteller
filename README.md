@@ -95,7 +95,8 @@ Billy looks like Billy from cover to end._
 | 🔌 **Zero setup** | Runs on-device out of the box — Chrome Built-in AI (Gemini Nano) or Transformers.js for the words, procedural vector art for the pictures. No key, no account, no cost. |
 | 🎛 **Any frontier model** | Then plug in keys to switch to GPT / Claude / Gemini and gpt-image / Imagen / DALL·E. Choose providers and models per task in Settings; type a custom model id for anything new. |
 | 📖 **Cinematic reader** | Autoplay "movie mode," swipe/keyboard navigation, ambient audio, and a page-turn feel. |
-| 🎥 **Auto video, narrated** | Every book is also rendered to a shareable **MP4** while it generates — art, Ken Burns motion, text, and the **selected narration voice baked in** (on-device Kokoro by default), entirely in the browser (canvas + MediaRecorder, H.264/AAC with a WebM fallback). Toggle it off in Settings. Also export to a story file or PNGs. |
+| 🌍 **Any language** | Write the story in 12 languages (English, Spanish, French, German, Italian, Japanese, Chinese, …). Narration follows where the voice supports it. |
+| 🎥 **Auto video, narrated** | Every book is also rendered to a shareable **MP4** while it generates — art, Ken Burns motion, text, and the **selected narration voice baked in** (on-device Kokoro, American by default) with **no background music**. Grab a **silent version** too, ready to attach to social. Entirely in the browser (canvas + MediaRecorder, H.264/AAC with a WebM fallback). Toggle it off in Settings. |
 | 🗣 **Read aloud** | Live browser narration with karaoke-style word highlighting, or studio-grade OpenAI voices. |
 | 🎨 **Consistent characters** | A generated character description is fused into every illustration prompt so your hero stays the same. |
 | 🖼 **Hero from a photo** | Upload a reference photo and a vision model (cloud, or on-device captioning) describes the character; that look drives every page. Or just type the description. |

@@ -193,6 +193,32 @@ export const KOKORO_VOICES: ModelOption[] = [
   { id: 'bm_george', label: 'George — storyteller (UK, m)' },
 ];
 
+export interface LanguageOption {
+  label: string;
+  bcp47: string;
+  /** True if the free on-device (Kokoro) voice can narrate it. */
+  kokoro: boolean;
+}
+
+export const LANGUAGES: LanguageOption[] = [
+  { label: 'English (US)', bcp47: 'en-US', kokoro: true },
+  { label: 'English (UK)', bcp47: 'en-GB', kokoro: true },
+  { label: 'Spanish', bcp47: 'es-ES', kokoro: false },
+  { label: 'French', bcp47: 'fr-FR', kokoro: false },
+  { label: 'German', bcp47: 'de-DE', kokoro: false },
+  { label: 'Italian', bcp47: 'it-IT', kokoro: false },
+  { label: 'Portuguese', bcp47: 'pt-BR', kokoro: false },
+  { label: 'Dutch', bcp47: 'nl-NL', kokoro: false },
+  { label: 'Japanese', bcp47: 'ja-JP', kokoro: false },
+  { label: 'Chinese (Mandarin)', bcp47: 'zh-CN', kokoro: false },
+  { label: 'Hindi', bcp47: 'hi-IN', kokoro: false },
+  { label: 'Arabic', bcp47: 'ar', kokoro: false },
+];
+
+export function findLanguage(label: string): LanguageOption {
+  return LANGUAGES.find((l) => l.label === label) ?? LANGUAGES[0];
+}
+
 export const ART_STYLE_PRESETS = [
   'Soft watercolor picture book, gentle washes, cozy',
   'Pixar-style 3D render, warm cinematic lighting',

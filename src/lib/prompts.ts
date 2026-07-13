@@ -9,7 +9,10 @@ and you describe each page's illustration so vividly that an image model can ren
 export function buildWriterPrompt(brief: StoryBrief): string {
   const hero = brief.heroName.trim() || 'the hero';
   const look = brief.characterDescription?.trim();
+  const lang = brief.language || 'English (US)';
   return `Write an original illustrated children's picture book.
+
+Write ALL text (title, dedication, page prose, moral) in ${lang}. Keep the JSON keys in English, and write the "illustration" scene descriptions in English (they go to an image model). Everything the reader sees must be in ${lang}.
 
 BRIEF
 - Big idea: ${brief.idea}
@@ -59,7 +62,7 @@ export const WRITER_SYSTEM_COMPACT =
 export function buildWriterPromptCompact(brief: StoryBrief): string {
   const hero = brief.heroName.trim() || 'the hero';
   const look = brief.characterDescription?.trim();
-  return `Write a ${brief.pageCount}-page children's picture book as JSON.
+  return `Write a ${brief.pageCount}-page children's picture book as JSON, with all reader-facing text in ${brief.language || 'English (US)'} (JSON keys and "illustration" scenes stay in English).
 Idea: ${brief.idea}. Hero: ${hero}. Ages: ${brief.ageRange}. Tone: ${brief.tone}. Art style: ${brief.artStyle}.${
     look ? ` The hero looks like: ${look}.` : ''
 }${brief.lesson ? ` Lesson: ${brief.lesson}.` : ''}

@@ -268,47 +268,6 @@ function fadeFor(localElapsed: number, duration: number): number {
   return Math.max(0, Math.min(1, localElapsed / f, (duration - localElapsed) / f));
 }
 
-/* ---------- ambient pad routed to the recording ---------- */
-
-function startAmbient(actx: AudioContext, dest: AudioNode): { stop: () => void } {
-  const master = actx.createGain();
-  master.gain.value = 0;
-  master.connect(dest);
-
-  const filter = actx.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.value = 700;
-  filter.connect(master);
-
-  const nodes: AudioNode[] = [filter, master];
-  [130.81, 196.0, 293.66, 329.63].forEach((f, i) => {
-    const osc = actx.createOscillator();
-    osc.type = i % 2 === 0 ? 'sine' : 'triangle';
-    osc.frequency.value = f;
-    osc.detune.value = (i - 1.5) * 4;
-    const g = actx.createGain();
-    g.gain.value = 0.1 / 4;
-    osc.connect(g).connect(filter);
-    osc.start();
-    nodes.push(osc, g);
-  });
-  master.gain.setTargetAtTime(0.5, actx.currentTime, 1.2);
-
-  return {
-    stop() {
-      master.gain.setTargetAtTime(0, actx.currentTime, 0.3);
-      nodes.forEach((n) => {
-        try {
-          (n as OscillatorNode).stop?.();
-        } catch {
-          /* ignore */
-        }
-        n.disconnect();
-      });
-    },
-  };
-}
-
 function pickMime(preferMp4: boolean): string {
   const mp4 = [
     'video/mp4;codecs=avc1.640028,mp4a.40.2',
@@ -334,7 +293,7 @@ export interface VideoResult {
 export async function renderStoryToVideo(
   story: RenderedStory,
   onProgress: VideoProgress,
-  opts: { preferMp4?: boolean } = {},
+  opts: { preferMp4?: boolean; audio?: 'narration' | 'none' } = {},
 ): Promise<VideoResult> {
   if (!videoExportSupported()) throw new Error('Video export is not supported in this browser. Try Chrome, Edge, or Firefox.');
 
@@ -354,30 +313,37 @@ export async function renderStoryToVideo(
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Could not create a drawing canvas.');
 
-  const AudioCtor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-  const actx = new AudioCtor();
-  await actx.resume().catch(() => {});
-  const dest = actx.createMediaStreamDestination();
-  const ambient = startAmbient(actx, dest);
-
-  // Narration audio (only pre-rendered clips can be captured; browser TTS cannot).
+  // Audio: the selected narration voice only — no ambient/background track, so
+  // the video is clean. Omit the audio track entirely for a silent file (or when
+  // there's no narration), giving a social-ready, no-audio video.
+  const wantAudio = (opts.audio ?? 'narration') !== 'none';
+  const hasNarration = slides.some((s) => s.audioUrl);
   const audioEls = new Map<number, HTMLAudioElement>();
-  slides.forEach((s, i) => {
-    if (!s.audioUrl) return;
-    try {
-      const a = new Audio(s.audioUrl);
-      a.crossOrigin = 'anonymous';
-      const src = actx.createMediaElementSource(a);
-      src.connect(dest);
-      src.connect(actx.destination);
-      audioEls.set(i, a);
-    } catch {
-      /* skip narration for this page */
-    }
-  });
+  const audioTracks: MediaStreamTrack[] = [];
+  let actx: AudioContext | null = null;
+  if (wantAudio && hasNarration) {
+    const AudioCtor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    actx = new AudioCtor();
+    await actx.resume().catch(() => {});
+    const dest = actx.createMediaStreamDestination();
+    slides.forEach((s, i) => {
+      if (!s.audioUrl) return;
+      try {
+        const a = new Audio(s.audioUrl);
+        a.crossOrigin = 'anonymous';
+        const src = actx!.createMediaElementSource(a);
+        src.connect(dest);
+        src.connect(actx!.destination);
+        audioEls.set(i, a);
+      } catch {
+        /* skip narration for this page */
+      }
+    });
+    audioTracks.push(...dest.stream.getAudioTracks());
+  }
 
   const videoStream = canvas.captureStream(30);
-  const stream = new MediaStream([...videoStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
+  const stream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
   const mime = pickMime(opts.preferMp4 ?? true);
   const ext = mime.includes('mp4') ? 'mp4' : 'webm';
   const recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 4_500_000 } : undefined);
@@ -427,8 +393,7 @@ export async function renderStoryToVideo(
   const blob = await finished;
 
   audioEls.forEach((a) => a.pause());
-  ambient.stop();
-  setTimeout(() => actx.close().catch(() => {}), 300);
+  if (actx) setTimeout(() => actx.close().catch(() => {}), 300);
 
   onProgress({ message: 'Done', ratio: 1 });
   return { blob, filename: `${slugify(story.title)}.${ext}`, mime: mime || 'video/webm' };

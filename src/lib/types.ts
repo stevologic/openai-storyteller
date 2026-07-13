@@ -16,6 +16,8 @@ export type StoryPage = z.infer<typeof StoryPageSchema>;
 
 export const StorySchema = z.object({
   title: z.string(),
+  /** Language the story is written in (label, e.g. "Spanish"). */
+  language: z.string().default(''),
   /** One-line dedication, e.g. "For everyone who looks up at night." */
   dedication: z.string().default(''),
   /** Reading age band, echoed back for the cover. */
@@ -60,6 +62,8 @@ export interface StoryBrief {
   pageCount: number;
   lesson: string;
   tone: string;
+  /** Language to write the story in (label from the LANGUAGES catalog). */
+  language: string;
   /** Optional reference photo (data URL) to base the hero's look on. */
   characterImage?: string;
   /** Fixed description of the hero's appearance (from the photo, or typed). */

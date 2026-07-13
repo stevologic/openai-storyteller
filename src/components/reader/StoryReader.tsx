@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { TouchEvent as RTouchEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { RenderedStory } from '../../lib/types';
+import { findLanguage } from '../../lib/catalog';
 import { useStore } from '../../lib/store';
 import { DemoScene } from '../../sample/scenes';
 import { CinematicMedia } from './CinematicMedia';
@@ -81,24 +82,32 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
     text: page?.text ?? '',
     audioUrl: page?.audioUrl,
     ttsProvider,
+    lang: findLanguage(story.language ?? '').bcp47,
     onEnd: onNarrationEnd,
   });
 
-  const onExportVideo = useCallback(async () => {
-    narration.stop();
-    ambient.current.stop();
-    setAmbientOn(false);
-    setAutoplay(false);
-    setVideoExport({ ratio: 0, message: 'Preparing…' });
-    try {
-      const { blob, filename } = await renderStoryToVideo(story, (p) => setVideoExport({ ratio: p.ratio, message: p.message }));
-      downloadBlob(blob, filename);
-      setVideoExport(null);
-    } catch (err) {
-      setVideoExport({ ratio: 1, message: err instanceof Error ? err.message : 'Video export failed.' });
-      window.setTimeout(() => setVideoExport(null), 4500);
-    }
-  }, [story, narration]);
+  const onExportVideo = useCallback(
+    async (silent = false) => {
+      narration.stop();
+      ambient.current.stop();
+      setAmbientOn(false);
+      setAutoplay(false);
+      setVideoExport({ ratio: 0, message: 'Preparing…' });
+      try {
+        const { blob, filename } = await renderStoryToVideo(
+          story,
+          (p) => setVideoExport({ ratio: p.ratio, message: p.message }),
+          { preferMp4: true, audio: silent ? 'none' : 'narration' },
+        );
+        downloadBlob(blob, silent ? filename.replace(/(\.\w+)$/, '-silent$1') : filename);
+        setVideoExport(null);
+      } catch (err) {
+        setVideoExport({ ratio: 1, message: err instanceof Error ? err.message : 'Video export failed.' });
+        window.setTimeout(() => setVideoExport(null), 4500);
+      }
+    },
+    [story, narration],
+  );
 
   // Keyboard navigation.
   useEffect(() => {
@@ -240,10 +249,15 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
                       <IconFilm /> Download video
                     </a>
                   ) : videoExportSupported() ? (
-                    <button className="btn btn-ghost" onClick={onExportVideo}>
+                    <button className="btn btn-ghost" onClick={() => onExportVideo(false)}>
                       <IconFilm /> Export video
                     </button>
                   ) : null}
+                  {videoExportSupported() && (
+                    <button className="btn btn-ghost" onClick={() => onExportVideo(true)} title="No audio — ready for social media">
+                      <IconFilm /> Silent video
+                    </button>
+                  )}
                   <button className="btn btn-primary" onClick={close}>
                     {story.demo ? 'Create your own' : 'Back to studio'}
                   </button>

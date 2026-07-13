@@ -45,19 +45,23 @@ export function primeBrowserVoices(): void {
   };
 }
 
-function pickWarmVoice(): SpeechSynthesisVoice | undefined {
+function pickWarmVoice(lang = 'en-US'): SpeechSynthesisVoice | undefined {
   if (!cachedVoices.length) cachedVoices = window.speechSynthesis?.getVoices() ?? [];
-  const en = cachedVoices.filter((v) => v.lang.startsWith('en'));
-  const preferred = ['Samantha', 'Google US English', 'Jenny', 'Aria', 'Zira', 'Female'];
-  for (const name of preferred) {
-    const found = en.find((v) => v.name.includes(name));
-    if (found) return found;
+  const base = lang.slice(0, 2).toLowerCase();
+  const matching = cachedVoices.filter((v) => v.lang.toLowerCase().startsWith(base));
+  if (base === 'en') {
+    // Prefer warm American voices for the free English narration.
+    const preferred = ['Samantha', 'Google US English', 'Jenny', 'Aria', 'Zira', 'Female'];
+    for (const name of preferred) {
+      const found = matching.find((v) => v.name.includes(name));
+      if (found) return found;
+    }
   }
-  return en[0] ?? cachedVoices[0];
+  return matching[0] ?? cachedVoices[0];
 }
 
 export interface BrowserNarration {
-  speak: (text: string, opts?: { onEnd?: () => void; onBoundary?: (charIndex: number) => void }) => void;
+  speak: (text: string, opts?: { onEnd?: () => void; onBoundary?: (charIndex: number) => void; lang?: string }) => void;
   cancel: () => void;
   supported: boolean;
 }
@@ -70,7 +74,9 @@ export function browserNarration(): BrowserNarration {
       if (!supported) return;
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      const voice = pickWarmVoice();
+      const lang = opts?.lang || 'en-US';
+      u.lang = lang;
+      const voice = pickWarmVoice(lang);
       if (voice) u.voice = voice;
       u.rate = 0.92;
       u.pitch = 1.05;

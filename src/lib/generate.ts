@@ -1,4 +1,5 @@
 import { StorySchema, type GenerationProgress, type RenderedStory, type Settings, type Story, type StoryBrief } from './types';
+import { findLanguage } from './catalog';
 import { generateJson } from './providers/text';
 import { generateImage } from './providers/image';
 import { generateVideo } from './providers/video';
@@ -84,7 +85,10 @@ export async function weaveStory(
   const doImages = settings.image.provider !== 'none';
   const doVideo = settings.video.enabled && settings.video.provider !== 'none';
   // Pre-render narration to audio when the voice can be captured into the video.
-  const doNarration = settings.tts.provider === 'openai' || settings.tts.provider === 'kokoro';
+  // The free on-device voice (Kokoro) only speaks English, so skip it otherwise.
+  const language = findLanguage(brief.language);
+  const doNarration =
+    settings.tts.provider === 'openai' || (settings.tts.provider === 'kokoro' && language.kokoro);
 
   // Weight the progress bar across the stages we'll actually run.
   const imageUnits = doImages ? story.pages.length + 1 : 0; // pages + cover
@@ -99,6 +103,8 @@ export async function weaveStory(
     pages: story.pages.map((p) => ({ ...p })),
     createdAt: Date.now(),
   };
+
+  rendered.language = brief.language;
 
   // A user-supplied character look (from a photo or typed) is authoritative —
   // it drives the character bible fused into every illustration prompt.

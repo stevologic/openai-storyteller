@@ -14,9 +14,10 @@ export function useNarration(opts: {
   text: string;
   audioUrl?: string;
   ttsProvider: TtsProviderId;
+  lang?: string;
   onEnd?: () => void;
 }) {
-  const { text, audioUrl, ttsProvider, onEnd } = opts;
+  const { text, audioUrl, ttsProvider, lang, onEnd } = opts;
   const [state, setState] = useState<NarrationState>({ playing: false, charIndex: -1 });
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const browser = useRef(browserNarration());
@@ -51,13 +52,14 @@ export function useNarration(opts: {
     if (!browser.current.supported) return;
     setState({ playing: true, charIndex: 0 });
     browser.current.speak(text, {
+      lang,
       onBoundary: (ci) => setState((s) => ({ ...s, charIndex: ci })),
       onEnd: () => {
         setState({ playing: false, charIndex: -1 });
         onEndRef.current?.();
       },
     });
-  }, [audioUrl, text, ttsProvider]);
+  }, [audioUrl, text, ttsProvider, lang]);
 
   const toggle = useCallback(() => {
     if (state.playing) stop();

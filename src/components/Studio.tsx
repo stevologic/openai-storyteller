@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from '../lib/store';
-import { ART_STYLE_PRESETS, TONE_PRESETS, providerLabel, TEXT_PROVIDERS, IMAGE_PROVIDERS } from '../lib/catalog';
+import { ART_STYLE_PRESETS, TONE_PRESETS, LANGUAGES, providerLabel, TEXT_PROVIDERS, IMAGE_PROVIDERS } from '../lib/catalog';
 import { weaveStory } from '../lib/generate';
 import { openStoryFile } from '../lib/exportStory';
 import { describeCharacter } from '../lib/providers/vision';
@@ -67,6 +67,7 @@ export default function Studio() {
     pageCount: 6,
     lesson: '',
     tone: TONE_PRESETS[0],
+    language: 'English (US)',
   });
   const [customStyle, setCustomStyle] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -267,6 +268,14 @@ export default function Studio() {
 
           <div className="field-row">
             <label className="field">
+              <span className="field-label">Language</span>
+              <Dropdown
+                value={brief.language}
+                onChange={(v) => set('language', v)}
+                options={LANGUAGES.map((l) => ({ value: l.label, label: l.label }))}
+              />
+            </label>
+            <label className="field">
               <span className="field-label">Tone</span>
               <Dropdown
                 value={brief.tone}
@@ -274,18 +283,19 @@ export default function Studio() {
                 options={TONE_PRESETS.map((t) => ({ value: t, label: t }))}
               />
             </label>
-            <label className="field">
-              <span className="field-label">Pages: {brief.pageCount}</span>
-              <input
-                type="range"
-                min={4}
-                max={12}
-                value={brief.pageCount}
-                onChange={(e) => set('pageCount', Number(e.target.value))}
-                className="slider"
-              />
-            </label>
           </div>
+
+          <label className="field">
+            <span className="field-label">Pages: {brief.pageCount}</span>
+            <input
+              type="range"
+              min={4}
+              max={12}
+              value={brief.pageCount}
+              onChange={(e) => set('pageCount', Number(e.target.value))}
+              className="slider"
+            />
+          </label>
 
           <label className="field">
             <span className="field-label">A gentle lesson (optional)</span>

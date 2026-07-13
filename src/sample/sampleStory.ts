@@ -4,6 +4,7 @@ import type { RenderedStory } from '../lib/types';
  *  so the whole reader experience works with zero API keys. */
 export const SAMPLE_STORY: RenderedStory = {
   title: 'Pip and the Lantern Moon',
+  language: 'English (US)',
   dedication: 'For everyone who is a little brave in the dark.',
   ageRange: '3–6',
   characterBible:
