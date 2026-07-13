@@ -1,12 +1,12 @@
 {
-  "name": "storyteller-ai",
+  "name": "tiny-book-buddies-ai",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "description": "Tiny Book Buddies AI — living, illustrated children's storybooks generated on-device or with any frontier AI model.",
   "author": "Stephen M Abbott",
   "license": "SEE LICENSE IN LICENSE",
-  "homepage": "https://stevologic.github.io/storyteller-ai/",
+  "homepage": "https://stevologic.github.io/tiny-book-buddies-ai/",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

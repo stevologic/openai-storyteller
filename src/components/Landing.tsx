@@ -69,7 +69,6 @@ export default function Landing() {
         >
           <img className="hero-book-art" src={`https://i.ytimg.com/vi/${featured.id}/hqdefault.jpg`} alt={featured.title} />
           <div className="hero-book-plate">
-            <span className="hero-book-age">Made with Tiny Book Buddies AI</span>
             <span className="hero-book-title">{featured.title}</span>
           </div>
           <span className="hero-book-play">▶ Watch</span>
@@ -187,7 +186,7 @@ export default function Landing() {
         </div>
         <div className="footer-links">
           <DonateButton />
-          <a href="https://github.com/stevologic/storyteller-ai" target="_blank" rel="noreferrer">
+          <a href="https://github.com/stevologic/tiny-book-buddies-ai" target="_blank" rel="noreferrer">
             GitHub
           </a>
           <span className="footer-license">PolyForm Noncommercial 1.0.0</span>

@@ -9,7 +9,7 @@
 }
 
 .settings-panel {
-  width: min(480px, 100%);
+  width: min(660px, 100%);
   height: 100%;
   background: linear-gradient(180deg, #fdf6e6 0%, #f4e9d4 100%);
   border-left: 1px solid var(--border-strong);
@@ -22,12 +22,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px 24px 18px;
+  padding: 16px 24px 14px;
   border-bottom: 1px solid var(--border);
 }
 .settings-header h2 {
-  font-size: 26px;
-  margin-top: 4px;
+  font-size: 24px;
+  margin-top: 2px;
 }
 .icon-btn {
   padding: 9px;
@@ -37,52 +37,94 @@
 .settings-body {
   flex: 1;
   overflow-y: auto;
-  padding: 22px 24px 8px;
+  padding: 12px 24px 8px;
 }
 
 .settings-section {
-  margin-bottom: 30px;
+  margin-bottom: 12px;
 }
 .section-title {
   display: flex;
   align-items: center;
   gap: 9px;
   color: var(--amber);
-  margin-bottom: 6px;
+  margin-bottom: 3px;
 }
 .section-title h3 {
-  font-size: 18px;
+  font-size: 17px;
   color: var(--text);
 }
 .section-note {
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--text-faint);
-  line-height: 1.5;
-  margin-bottom: 16px;
+  line-height: 1.4;
+  margin-bottom: 8px;
 }
 
+/* Compact API keys into a row so the panel never has to scroll */
+.keys-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.keys-grid .field {
+  margin-bottom: 0;
+}
+.keys-grid .field-label {
+  margin-bottom: 5px;
+}
+.keys-grid input {
+  padding: 9px 12px;
+  font-size: 14px;
+}
+
+/* Two-up provider cards; the whole-book video spans the full width */
+.provider-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: start;
+}
+/* Let 1fr tracks shrink instead of being blown out by long model names */
+.provider-grid > .provider-row,
+.keys-grid > .field {
+  min-width: 0;
+}
 .provider-row {
-  padding: 16px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.5);
-  margin-bottom: 14px;
+}
+.provider-row--wide {
+  grid-column: 1 / -1;
 }
 .provider-row-head h4 {
   font-family: var(--sans);
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 800;
 }
 .provider-row-head p {
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--text-faint);
   margin-top: 2px;
-  margin-bottom: 12px;
+  margin-bottom: 7px;
+  line-height: 1.35;
 }
 .provider-row-controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
+}
+.provider-row-controls > *,
+.model-picker,
+.model-picker .dd {
+  min-width: 0;
+}
+.provider-row-controls .dd-btn,
+.provider-row-controls input {
+  padding: 9px 12px;
+  font-size: 14px;
 }
 .model-picker {
   display: flex;
@@ -91,7 +133,7 @@
 }
 .provider-docs {
   display: inline-block;
-  margin-top: 10px;
+  margin-top: 6px;
   font-size: 12px;
   font-weight: 700;
   color: var(--accent);
@@ -104,8 +146,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 12px;
-  font-size: 14px;
+  margin-top: 10px;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--text-dim);
   cursor: pointer;
@@ -116,20 +158,24 @@
   accent-color: var(--accent);
 }
 .inline-field {
-  margin-top: 12px;
+  margin-top: 8px;
   margin-bottom: 0;
+}
+.inline-field .field-label {
+  margin-bottom: 5px;
 }
 
 .settings-footer {
-  padding: 16px 24px;
+  padding: 14px 24px;
   border-top: 1px solid var(--border);
 }
 .settings-footer .btn {
   width: 100%;
 }
 
-@media (max-width: 520px) {
-  .provider-row-controls {
+@media (max-width: 680px) {
+  .keys-grid,
+  .provider-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -7,7 +7,7 @@
 Turn a single bedtime idea into a **fully illustrated, narrated children's picture book** —
 using whichever frontier AI models you already have keys for.
 
-**[▶ Live demo →](https://stevologic.github.io/storyteller-ai/)**
+**[▶ Live demo →](https://stevologic.github.io/tiny-book-buddies-ai/)**
 
 <br/>
 
@@ -137,9 +137,9 @@ A workflow at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) bui
 Pages on every push to `main`.
 
 1. In the repo: **Settings → Pages → Build and deployment → Source → GitHub Actions**.
-2. Push to `main`. The site deploys to `https://<user>.github.io/storyteller-ai/`.
+2. Push to `main`. The site deploys to `https://<user>.github.io/tiny-book-buddies-ai/`.
 
-The Vite `base` is already set to `/storyteller-ai/` for production builds. If you fork under a
+The Vite `base` is already set to `/tiny-book-buddies-ai/` for production builds. If you fork under a
 different repo name, update `base` in [`vite.config.ts`](vite.config.ts).
 
 ## How it's built

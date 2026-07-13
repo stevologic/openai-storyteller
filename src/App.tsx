@@ -31,7 +31,8 @@ export default function App() {
           <div className="nav-inner container">
             <button className="brand" onClick={() => setView('landing')} aria-label="Tiny Book Buddies AI home">
               <span className="brand-mark">✦</span>
-              <span className="brand-name">Tiny Book Buddies&nbsp;AI</span>
+              <span className="brand-name">Tiny Book Buddies</span>
+              <span className="brand-badge">AI</span>
             </button>
             <nav className="nav-actions">
               <button

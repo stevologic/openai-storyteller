@@ -137,40 +137,41 @@ export default function SettingsPanel() {
                   <h3>API keys</h3>
                 </div>
                 <p className="section-note">
-                  Bring your own keys. They are stored only in this browser (localStorage) and sent
-                  directly to each provider — never to us.
+                  Stored only in this browser and sent straight to each provider — never to us.
                 </p>
 
-                <label className="field">
-                  <span className="field-label">OpenAI</span>
-                  <input
-                    type="password"
-                    placeholder="sk-…"
-                    value={settings.keys.openai}
-                    onChange={(e) => setKey('openai', e.target.value)}
-                    autoComplete="off"
-                  />
-                </label>
-                <label className="field">
-                  <span className="field-label">Anthropic</span>
-                  <input
-                    type="password"
-                    placeholder="sk-ant-…"
-                    value={settings.keys.anthropic}
-                    onChange={(e) => setKey('anthropic', e.target.value)}
-                    autoComplete="off"
-                  />
-                </label>
-                <label className="field">
-                  <span className="field-label">Google AI</span>
-                  <input
-                    type="password"
-                    placeholder="AIza…"
-                    value={settings.keys.google}
-                    onChange={(e) => setKey('google', e.target.value)}
-                    autoComplete="off"
-                  />
-                </label>
+                <div className="keys-grid">
+                  <label className="field">
+                    <span className="field-label">OpenAI</span>
+                    <input
+                      type="password"
+                      placeholder="sk-…"
+                      value={settings.keys.openai}
+                      onChange={(e) => setKey('openai', e.target.value)}
+                      autoComplete="off"
+                    />
+                  </label>
+                  <label className="field">
+                    <span className="field-label">Anthropic</span>
+                    <input
+                      type="password"
+                      placeholder="sk-ant-…"
+                      value={settings.keys.anthropic}
+                      onChange={(e) => setKey('anthropic', e.target.value)}
+                      autoComplete="off"
+                    />
+                  </label>
+                  <label className="field">
+                    <span className="field-label">Google AI</span>
+                    <input
+                      type="password"
+                      placeholder="AIza…"
+                      value={settings.keys.google}
+                      onChange={(e) => setKey('google', e.target.value)}
+                      autoComplete="off"
+                    />
+                  </label>
+                </div>
               </section>
 
               <section className="settings-section">
@@ -178,6 +179,7 @@ export default function SettingsPanel() {
                   <h3>Generation models</h3>
                 </div>
 
+                <div className="provider-grid">
                 <ProviderRow
                   title="Story text"
                   hint="Writes the tale and art direction."
@@ -266,7 +268,7 @@ export default function SettingsPanel() {
                   }
                 />
 
-                <div className="provider-row">
+                <div className="provider-row provider-row--wide">
                   <div className="provider-row-head">
                     <h4>Story video</h4>
                     <p>Render the whole book to a downloadable video while generating (MP4 where supported).</p>
@@ -279,6 +281,7 @@ export default function SettingsPanel() {
                     />
                     <span>Also make a video of the finished book</span>
                   </label>
+                </div>
                 </div>
               </section>
             </div>
