@@ -1,28 +1,39 @@
 import type { Settings } from '../types';
 import { base64ToDataUrl, describeHttpError } from './util';
-import { proceduralImage } from './proceduralImage';
 
-/** Generate one illustration; returns a data URL, or undefined if disabled.
- *  `styleKey` (the story's art-style sentence) keeps procedural palettes
- *  consistent across a book. */
+/** Generate one illustration; returns a data URL, or undefined if disabled. */
 export async function generateImage(
   settings: Settings,
   prompt: string,
-  styleKey?: string,
+  _styleKey?: string,
 ): Promise<string | undefined> {
   const { provider, model } = settings.image;
   switch (provider) {
-    case 'procedural':
-      return proceduralImage(prompt, styleKey ?? prompt);
     case 'openai':
       return openaiImage(settings.keys.openai, model, prompt);
     case 'google':
       return googleImagen(settings.keys.google, model, prompt);
+    case 'xai':
+      return xaiImage(settings.keys.xai, model, prompt);
     case 'none':
       return undefined;
     default:
       return undefined;
   }
+}
+
+async function xaiImage(key: string, model: string, prompt: string): Promise<string> {
+  if (!key) throw new Error('Add your xAI API key in Settings to generate illustrations.');
+  const res = await fetch('https://api.x.ai/v1/images/generations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+    body: JSON.stringify({ model, prompt, n: 1, response_format: 'b64_json' }),
+  });
+  if (!res.ok) throw await describeHttpError(res, 'xAI Images');
+  const data = await res.json();
+  const b64 = data.data?.[0]?.b64_json;
+  if (!b64) throw new Error('xAI returned no image data.');
+  return base64ToDataUrl(b64, 'image/jpeg');
 }
 
 async function openaiImage(key: string, model: string, prompt: string): Promise<string> {

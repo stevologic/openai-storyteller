@@ -1,8 +1,5 @@
 import type { Settings } from '../types';
-import { describeHttpError, extractJson } from './util';
-import { chromeAvailable, chromeText, type OnProgress } from './onDeviceText';
-import { transformersText } from './transformers';
-import { DEFAULT_TRANSFORMERS_MODEL } from '../catalog';
+import { describeHttpError, extractJson, type OnProgress } from './util';
 
 export interface TextRequest {
   system: string;
@@ -16,28 +13,19 @@ export interface TextRequest {
 export async function generateText(
   settings: Settings,
   req: TextRequest,
-  onProgress?: OnProgress,
+  _onProgress?: OnProgress,
 ): Promise<string> {
   const { provider, model } = settings.text;
   const maxTokens = req.maxTokens ?? 4096;
-  // On-device models need the JSON instruction folded into the system prompt.
-  const onDeviceSystem = req.json
-    ? `${req.system}\n\nReply with ONLY a single valid JSON object — no markdown, no commentary.`
-    : req.system;
   switch (provider) {
     case 'openai':
-      return openaiText(settings.keys.openai, model, req, maxTokens);
+      return openaiChat('https://api.openai.com/v1', settings.keys.openai, 'OpenAI', 'OpenAI', 'max_completion_tokens', model, req, maxTokens);
+    case 'xai':
+      return openaiChat('https://api.x.ai/v1', settings.keys.xai, 'xAI', 'Grok', 'max_tokens', model, req, maxTokens);
     case 'anthropic':
       return anthropicText(settings.keys.anthropic, model, req, maxTokens);
     case 'google':
       return googleText(settings.keys.google, model, req, maxTokens);
-    case 'chrome':
-      return chromeText(onDeviceSystem, req.user, onProgress);
-    case 'transformers':
-      return transformersText(model || DEFAULT_TRANSFORMERS_MODEL, onDeviceSystem, req.user, Math.min(maxTokens, 2048), onProgress);
-    case 'ondevice':
-      if (await chromeAvailable()) return chromeText(onDeviceSystem, req.user, onProgress);
-      return transformersText(DEFAULT_TRANSFORMERS_MODEL, onDeviceSystem, req.user, Math.min(maxTokens, 2048), onProgress);
     default:
       throw new Error(`Unknown text provider: ${provider}`);
   }
@@ -53,14 +41,19 @@ export async function generateJson<T = unknown>(
   return extractJson(raw) as T;
 }
 
-async function openaiText(
+/** OpenAI-compatible chat completions (OpenAI and xAI share this shape). */
+async function openaiChat(
+  baseUrl: string,
   key: string,
+  providerName: string,
+  productName: string,
+  tokenField: 'max_completion_tokens' | 'max_tokens',
   model: string,
   req: TextRequest,
   maxTokens: number,
 ): Promise<string> {
-  if (!key) throw new Error('Add your OpenAI API key in Settings to use GPT.');
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+  if (!key) throw new Error(`Add your ${providerName} API key in Settings to use ${productName}.`);
+  const res = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -72,11 +65,11 @@ async function openaiText(
         { role: 'system', content: req.system },
         { role: 'user', content: req.user },
       ],
-      max_completion_tokens: maxTokens,
+      [tokenField]: maxTokens,
       ...(req.json ? { response_format: { type: 'json_object' } } : {}),
     }),
   });
-  if (!res.ok) throw await describeHttpError(res, 'OpenAI');
+  if (!res.ok) throw await describeHttpError(res, providerName);
   const data = await res.json();
   return data.choices?.[0]?.message?.content ?? '';
 }

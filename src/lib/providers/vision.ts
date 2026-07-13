@@ -1,7 +1,5 @@
 import type { Settings } from '../types';
-import { describeHttpError } from './util';
-import { transformersCaption } from './transformers';
-import type { OnProgress } from './onDeviceText';
+import { describeHttpError, type OnProgress } from './util';
 
 const DESCRIBE_PROMPT = `Look at this reference image and write a character description an illustrator could follow for a children's picture book.
 In 2–3 sentences describe only the character's appearance: what kind of character (a child, a person, an animal, a toy…), approximate age, hair, skin/fur colour, notable features, and clothing colours.
@@ -14,34 +12,39 @@ function parseDataUrl(dataUrl: string): { mediaType: string; base64: string } {
   return { mediaType: m[1], base64: m[2] };
 }
 
-/** Describe the uploaded character. Uses a cloud vision model when a key is
- *  available, otherwise on-device image captioning. */
+/** Describe the uploaded character with a vision-capable cloud model. */
 export async function describeCharacter(
   settings: Settings,
   imageDataUrl: string,
-  onProgress?: OnProgress,
+  _onProgress?: OnProgress,
 ): Promise<string> {
   const { keys, text } = settings;
-  // Prefer the selected cloud provider if it has a key (it's vision-capable).
-  if (text.provider === 'openai' && keys.openai) return openaiVision(keys.openai, text.model, imageDataUrl);
+  // Prefer the selected provider if it has a key (all four are vision-capable).
+  if (text.provider === 'openai' && keys.openai) return openaiCompatVision('https://api.openai.com/v1', keys.openai, 'OpenAI Vision', text.model, imageDataUrl);
+  if (text.provider === 'xai' && keys.xai) return openaiCompatVision('https://api.x.ai/v1', keys.xai, 'xAI Vision', text.model, imageDataUrl);
   if (text.provider === 'anthropic' && keys.anthropic) return anthropicVision(keys.anthropic, text.model, imageDataUrl);
   if (text.provider === 'google' && keys.google) return googleVision(keys.google, text.model, imageDataUrl);
   // Otherwise any available cloud key, with a known vision model.
-  if (keys.openai) return openaiVision(keys.openai, 'gpt-4o', imageDataUrl);
+  if (keys.openai) return openaiCompatVision('https://api.openai.com/v1', keys.openai, 'OpenAI Vision', 'gpt-4o', imageDataUrl);
+  if (keys.xai) return openaiCompatVision('https://api.x.ai/v1', keys.xai, 'xAI Vision', 'grok-4', imageDataUrl);
   if (keys.anthropic) return anthropicVision(keys.anthropic, 'claude-sonnet-5', imageDataUrl);
   if (keys.google) return googleVision(keys.google, 'gemini-2.5-flash', imageDataUrl);
-  // Fully on-device.
-  onProgress?.('Loading the vision model…');
-  return transformersCaption(imageDataUrl, onProgress);
+  throw new Error('Add an API key in Settings to describe the photo — or type the hero’s look below.');
 }
 
-async function openaiVision(key: string, model: string, imageDataUrl: string): Promise<string> {
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+/** OpenAI-compatible vision call (OpenAI and xAI share the image_url shape). */
+async function openaiCompatVision(
+  baseUrl: string,
+  key: string,
+  providerName: string,
+  model: string,
+  imageDataUrl: string,
+): Promise<string> {
+  const res = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model,
-      max_completion_tokens: 300,
       messages: [
         {
           role: 'user',
@@ -53,7 +56,7 @@ async function openaiVision(key: string, model: string, imageDataUrl: string): P
       ],
     }),
   });
-  if (!res.ok) throw await describeHttpError(res, 'OpenAI Vision');
+  if (!res.ok) throw await describeHttpError(res, providerName);
   const data = await res.json();
   return (data.choices?.[0]?.message?.content ?? '').trim();
 }

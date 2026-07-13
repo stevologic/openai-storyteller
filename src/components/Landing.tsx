@@ -5,15 +5,15 @@ import { DonateButton } from './Donate';
 import { IconSpark, IconBook, IconFilm, IconVolume, IconKey, IconDownload, IconAuto } from './icons';
 import './landing.css';
 
-const PROVIDERS = ['OpenAI GPT', 'Claude', 'Gemini', 'gpt-image', 'Imagen', 'DALL·E', 'Veo', 'Sora'];
+const PROVIDERS = ['OpenAI GPT', 'Claude', 'Gemini', 'Grok', 'gpt-image', 'Imagen', 'DALL·E', 'Veo', 'Sora'];
 
 const FEATURES = [
-  { icon: <IconSpark />, title: 'Works with zero setup', body: 'By default it runs entirely on your device — Chrome Built-in AI or Transformers.js for the words, procedural art for the pictures. No key, no sign-up, no cost.' },
-  { icon: <IconKey />, title: 'Then plug in the best', body: 'Add OpenAI, Anthropic, or Google keys to upgrade to GPT / Claude / Gemini words and gpt-image / Imagen / DALL·E art. Mix and match in the UI.' },
+  { icon: <IconKey />, title: 'Your choice of frontier AI', body: 'OpenAI GPT, Anthropic Claude, Google Gemini, or xAI Grok write the words; gpt-image, Imagen, or Grok paint the art. Mix and match in Settings.' },
   { icon: <IconBook />, title: 'A reader that feels alive', body: 'Full-bleed art with cinematic Ken Burns motion, elegant type, page-turn transitions and an ambient soundscape.' },
-  { icon: <IconVolume />, title: 'Read aloud', body: 'Warm narration that highlights each word as it’s spoken — free in-browser, or studio-grade with an AI voice.' },
+  { icon: <IconVolume />, title: 'Read aloud', body: 'Warm narration highlights each word as it’s spoken — add an OpenAI Speech voice to bake it right into the exported video.' },
   { icon: <IconFilm />, title: 'Consistent & video-ready', body: 'A locked “character bible” keeps your hero on-model every page; every book is filmed to a shareable MP4.' },
-  { icon: <IconDownload />, title: 'You own it', body: 'Everything runs in your browser. Export any book to a file, its images, or a shareable video. No account, no middleman, no data leaving your device.' },
+  { icon: <IconAuto />, title: 'In any language', body: 'Write the whole story in any of a dozen languages — from Spanish and French to Japanese, Hindi and Arabic.' },
+  { icon: <IconDownload />, title: 'You own it', body: 'Everything runs in your browser and your API keys never leave your device. Export any book to a file, its images, or a shareable video.' },
 ];
 
 const STEPS = [
@@ -45,7 +45,8 @@ export default function Landing() {
           </motion.h1>
           <motion.p className="hero-sub" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             Tiny Book Buddies AI writes an original children’s story, illustrates every page in a style you
-            choose — keeping your hero on-model from cover to end — and reads it aloud, all in your browser.
+            choose — keeping your hero on-model from cover to end — and reads it aloud. Powered by your choice
+            of OpenAI, Claude, Gemini, or Grok.
           </motion.p>
           <motion.div className="hero-cta" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}>
             <button className="btn btn-sunlit btn-lg" onClick={scrollToSamples}>
@@ -55,7 +56,7 @@ export default function Landing() {
               <IconSpark /> Create your own
             </button>
           </motion.div>
-          <p className="hero-note">Runs on-device by default — no sign-up, no API key, no cost. Bring keys for the best quality.</p>
+          <p className="hero-note">Bring an API key from OpenAI, Anthropic, Google, or xAI — it stays in your browser, never sent to us.</p>
         </div>
 
         <motion.button

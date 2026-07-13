@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from '../lib/store';
 import {
   IMAGE_PROVIDERS,
-  KOKORO_VOICES,
   OPENAI_VOICES,
   TEXT_PROVIDERS,
   TTS_PROVIDERS,
@@ -171,6 +170,16 @@ export default function SettingsPanel() {
                       autoComplete="off"
                     />
                   </label>
+                  <label className="field">
+                    <span className="field-label">xAI (Grok)</span>
+                    <input
+                      type="password"
+                      placeholder="xai-…"
+                      value={settings.keys.xai}
+                      onChange={(e) => setKey('xai', e.target.value)}
+                      autoComplete="off"
+                    />
+                  </label>
                 </div>
               </section>
 
@@ -246,22 +255,19 @@ export default function SettingsPanel() {
                         ...settings.tts,
                         provider,
                         model: firstModel(TTS_PROVIDERS, provider),
-                        voice: provider === 'kokoro' ? 'af_heart' : provider === 'openai' ? 'nova' : settings.tts.voice,
+                        voice: provider === 'openai' ? 'nova' : settings.tts.voice,
                       },
                     })
                   }
                   onModel={(model) => update({ tts: { ...settings.tts, model } })}
                   extra={
-                    (settings.tts.provider === 'openai' || settings.tts.provider === 'kokoro') && (
+                    settings.tts.provider === 'openai' && (
                       <label className="field inline-field">
                         <span className="field-label">Voice</span>
                         <Dropdown
                           value={settings.tts.voice}
                           onChange={(v) => update({ tts: { ...settings.tts, voice: v } })}
-                          options={(settings.tts.provider === 'kokoro' ? KOKORO_VOICES : OPENAI_VOICES).map((v) => ({
-                            value: v.id,
-                            label: v.label,
-                          }))}
+                          options={OPENAI_VOICES.map((v) => ({ value: v.id, label: v.label }))}
                         />
                       </label>
                     )

@@ -72,15 +72,16 @@ export interface StoryBrief {
 
 /* ---------- Provider configuration ---------- */
 
-export type TextProviderId = 'ondevice' | 'chrome' | 'transformers' | 'openai' | 'anthropic' | 'google';
-export type ImageProviderId = 'procedural' | 'openai' | 'google' | 'none';
+export type TextProviderId = 'openai' | 'anthropic' | 'google' | 'xai';
+export type ImageProviderId = 'openai' | 'google' | 'xai' | 'none';
 export type VideoProviderId = 'google' | 'openai' | 'none';
-export type TtsProviderId = 'kokoro' | 'openai' | 'browser' | 'none';
+export type TtsProviderId = 'openai' | 'browser' | 'none';
 
 export interface ProviderKeys {
   openai: string;
   anthropic: string;
   google: string;
+  xai: string;
 }
 
 export interface Settings {

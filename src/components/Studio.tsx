@@ -103,13 +103,11 @@ export default function Studio() {
   }
 
   // While the writer runs (an opaque single call), cycle descriptive sub-steps.
-  // On-device runs emit real download/inference messages, which take priority.
-  const deviceMsg = /download|device|model|ready|warming/i.test(progress.message);
   useEffect(() => {
-    if (!busy || progress.stage !== 'writing' || deviceMsg) return;
+    if (!busy || progress.stage !== 'writing') return;
     const id = window.setInterval(() => setWriteStep((s) => (s + 1) % WRITING_STEPS.length), 2300);
     return () => window.clearInterval(id);
-  }, [busy, progress.stage, deviceMsg]);
+  }, [busy, progress.stage]);
 
   async function onOpenFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -125,9 +123,7 @@ export default function Studio() {
   }
 
   const textProvider = TEXT_PROVIDERS.find((p) => p.id === settings.text.provider);
-  // On-device providers have no keyField, so they never need a key.
   const textKeyMissing = textProvider?.keyField ? !settings.keys[textProvider.keyField] : false;
-  const onDeviceText = !textProvider?.keyField;
 
   const set = <K extends keyof StoryBrief>(k: K, v: StoryBrief[K]) => setBrief((b) => ({ ...b, [k]: v }));
 
@@ -341,28 +337,19 @@ export default function Studio() {
               <li>
                 <span>Narration</span>
                 <b>
-                  {settings.tts.provider === 'kokoro'
-                    ? `On-device · ${settings.tts.voice}`
-                    : settings.tts.provider === 'openai'
-                      ? `OpenAI · ${settings.tts.voice}`
-                      : settings.tts.provider === 'browser'
-                        ? 'Browser voice'
-                        : 'Off'}
+                  {settings.tts.provider === 'openai'
+                    ? `OpenAI · ${settings.tts.voice}`
+                    : settings.tts.provider === 'browser'
+                      ? 'Browser voice'
+                      : 'Off'}
                 </b>
               </li>
             </ul>
-            {onDeviceText ? (
-              <p className="studio-ondevice">
-                ✓ Runs entirely on your device — no API key needed. The first on-device run downloads a
-                small model, then it’s instant. Add a key in Settings for higher-quality writing and art.
+            {textKeyMissing && (
+              <p className="studio-nokey">
+                Add your {providerLabel(TEXT_PROVIDERS, settings.text.provider)} API key in Settings to start
+                creating.
               </p>
-            ) : (
-              textKeyMissing && (
-                <p className="studio-nokey">
-                  Add your {providerLabel(TEXT_PROVIDERS, settings.text.provider)} key in Settings — or switch
-                  Text to “On-device” to run with no key.
-                </p>
-              )
             )}
           </div>
 
@@ -383,7 +370,7 @@ export default function Studio() {
             <div className="weave-card">
               <div className="weave-spinner" />
               <h2>
-                {progress.stage === 'writing' && !deviceMsg
+                {progress.stage === 'writing'
                   ? `${WRITING_STEPS[writeStep]}…`
                   : progress.message || 'Creating your story…'}
               </h2>

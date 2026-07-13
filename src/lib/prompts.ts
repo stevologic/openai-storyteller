@@ -54,22 +54,6 @@ Return ONLY a JSON object with this exact shape:
 }`;
 }
 
-/** A short system + prompt for small on-device models with tiny context windows
- *  (Chrome Gemini Nano, Transformers.js) — the full prompt overflows them. */
-export const WRITER_SYSTEM_COMPACT =
-  'You write warm, safe, age-appropriate children’s stories. Reply with ONLY a single valid JSON object.';
-
-export function buildWriterPromptCompact(brief: StoryBrief): string {
-  const hero = brief.heroName.trim() || 'the hero';
-  const look = brief.characterDescription?.trim();
-  return `Write a ${brief.pageCount}-page children's picture book as JSON, with all reader-facing text in ${brief.language || 'English (US)'} (JSON keys and "illustration" scenes stay in English).
-Idea: ${brief.idea}. Hero: ${hero}. Ages: ${brief.ageRange}. Tone: ${brief.tone}. Art style: ${brief.artStyle}.${
-    look ? ` The hero looks like: ${look}.` : ''
-}${brief.lesson ? ` Lesson: ${brief.lesson}.` : ''}
-Return ONLY this JSON (exactly ${brief.pageCount} pages):
-{"title":"","dedication":"","characterBible":"the hero's fixed look","artStyle":"${brief.artStyle}","pages":[{"header":"2-4 words","text":"2-3 sentences","illustration":"the scene, no words in the image","motion":"drift"}],"moral":"one warm sentence"}`;
-}
-
 /** Compose the final illustration prompt sent to the image model, fusing the
  *  global art direction + character bible with the per-page scene. */
 export function composeIllustrationPrompt(

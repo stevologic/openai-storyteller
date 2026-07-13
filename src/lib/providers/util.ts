@@ -1,3 +1,6 @@
+/** Progress callback for long-running provider work (model loads, etc.). */
+export type OnProgress = (msg: string) => void;
+
 /** Pull the first balanced JSON object out of a model response that may be
  *  wrapped in prose or ```json fences. */
 export function extractJson(raw: string): unknown {

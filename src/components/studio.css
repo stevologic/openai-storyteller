@@ -212,16 +212,6 @@
   color: var(--terracotta-deep);
   line-height: 1.5;
 }
-.studio-ondevice {
-  margin-top: 16px;
-  font-size: 13px;
-  color: #4d6b3a;
-  line-height: 1.55;
-  padding: 12px 14px;
-  background: rgba(138, 160, 111, 0.16);
-  border: 1px solid rgba(138, 160, 111, 0.4);
-  border-radius: var(--radius-sm);
-}
 
 .studio-tip {
   padding: 22px;

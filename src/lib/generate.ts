@@ -1,5 +1,4 @@
 import { StorySchema, type GenerationProgress, type RenderedStory, type Settings, type Story, type StoryBrief } from './types';
-import { findLanguage } from './catalog';
 import { generateJson } from './providers/text';
 import { generateImage } from './providers/image';
 import { generateVideo } from './providers/video';
@@ -7,18 +6,14 @@ import { generateNarration } from './providers/tts';
 import { renderStoryToVideo, videoExportSupported } from './exportVideo';
 import {
   buildWriterPrompt,
-  buildWriterPromptCompact,
   WRITER_SYSTEM,
-  WRITER_SYSTEM_COMPACT,
   composeIllustrationPrompt,
   composeCoverPrompt,
 } from './prompts';
 
-const ON_DEVICE_TEXT = new Set(['ondevice', 'chrome', 'transformers']);
-
 type ProgressFn = (p: GenerationProgress) => void;
 
-/** Coerce a loosely-shaped page (common with small on-device models) into schema. */
+/** Coerce a loosely-shaped page into schema, rather than failing outright. */
 function coercePage(p: unknown, i: number): Record<string, unknown> {
   const o = (p ?? {}) as Record<string, unknown>;
   const text = String(o.text ?? o.body ?? o.content ?? '');
@@ -36,17 +31,13 @@ export async function writeStory(
   brief: StoryBrief,
   onProgress?: (msg: string) => void,
 ): Promise<Story> {
-  // Small on-device models have tiny context windows and struggle with long
-  // structured output — use a compact prompt and cap the length.
-  const onDevice = ON_DEVICE_TEXT.has(settings.text.provider);
-  const effectiveBrief = onDevice ? { ...brief, pageCount: Math.min(brief.pageCount, 5) } : brief;
   const data = await generateJson(
     settings,
     {
-      system: onDevice ? WRITER_SYSTEM_COMPACT : WRITER_SYSTEM,
-      user: onDevice ? buildWriterPromptCompact(effectiveBrief) : buildWriterPrompt(effectiveBrief),
+      system: WRITER_SYSTEM,
+      user: buildWriterPrompt(brief),
       json: true,
-      maxTokens: onDevice ? 2000 : 6000,
+      maxTokens: 6000,
     },
     onProgress,
   );
@@ -84,11 +75,9 @@ export async function weaveStory(
 
   const doImages = settings.image.provider !== 'none';
   const doVideo = settings.video.enabled && settings.video.provider !== 'none';
-  // Pre-render narration to audio when the voice can be captured into the video.
-  // The free on-device voice (Kokoro) only speaks English, so skip it otherwise.
-  const language = findLanguage(brief.language);
-  const doNarration =
-    settings.tts.provider === 'openai' || (settings.tts.provider === 'kokoro' && language.kokoro);
+  // Pre-render narration to audio (captured into the exported video) when a
+  // cloud voice is selected. The live "browser" voice can't be captured.
+  const doNarration = settings.tts.provider === 'openai';
 
   // Weight the progress bar across the stages we'll actually run.
   const imageUnits = doImages ? story.pages.length + 1 : 0; // pages + cover

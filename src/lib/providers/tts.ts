@@ -1,19 +1,13 @@
 import type { Settings } from '../types';
-import { describeHttpError } from './util';
-import { kokoroSynthesize } from './kokoro';
-import type { OnProgress } from './onDeviceText';
+import { describeHttpError, type OnProgress } from './util';
 
 /** Pre-generate narration audio for a block of text.
  *  Returns an object URL, or undefined when narration plays live / is off. */
 export async function generateNarration(
   settings: Settings,
   text: string,
-  onProgress?: OnProgress,
+  _onProgress?: OnProgress,
 ): Promise<string | undefined> {
-  // On-device neural voice — real audio, captured into the exported video.
-  if (settings.tts.provider === 'kokoro') {
-    return kokoroSynthesize(settings.tts.model, settings.tts.voice, text, onProgress);
-  }
   if (settings.tts.provider !== 'openai') return undefined; // 'browser' narrates live; 'none' is silent
   const key = settings.keys.openai;
   if (!key) throw new Error('Add your OpenAI API key in Settings to generate narration.');

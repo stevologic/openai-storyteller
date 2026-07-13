@@ -11,33 +11,17 @@ import type {
 /* The catalog powers the Settings UI. Model ids reflect the current
    frontier lineups; new models can be typed in freely via "Custom model". */
 
-/** Default small instruct model for the Transformers.js path. */
-export const DEFAULT_TRANSFORMERS_MODEL = 'onnx-community/Llama-3.2-1B-Instruct';
-
 export const TEXT_PROVIDERS: ProviderCatalogEntry<TextProviderId>[] = [
   {
-    id: 'ondevice',
-    label: 'On-device · Automatic',
-    keyField: null,
-    docsUrl: 'https://developer.chrome.com/docs/ai/built-in',
-    models: [{ id: 'auto', label: 'Auto — Chrome AI, then Transformers.js', note: 'No key needed' }],
-  },
-  {
-    id: 'chrome',
-    label: 'Chrome Built-in AI',
-    keyField: null,
-    docsUrl: 'https://developer.chrome.com/docs/ai/prompt-api',
-    models: [{ id: 'gemini-nano', label: 'Gemini Nano', note: 'Runs in Chrome, no download you manage' }],
-  },
-  {
-    id: 'transformers',
-    label: 'Transformers.js · in-browser',
-    keyField: null,
-    docsUrl: 'https://huggingface.co/docs/transformers.js',
+    id: 'openai',
+    label: 'OpenAI GPT',
+    keyField: 'openai',
+    docsUrl: 'https://platform.openai.com/docs/models',
     models: [
-      { id: 'onnx-community/Llama-3.2-1B-Instruct', label: 'Llama 3.2 1B', note: 'Balanced' },
-      { id: 'onnx-community/Qwen2.5-1.5B-Instruct', label: 'Qwen2.5 1.5B', note: 'Best quality' },
-      { id: 'onnx-community/Qwen2.5-0.5B-Instruct', label: 'Qwen2.5 0.5B', note: 'Fastest' },
+      { id: 'gpt-5.1', label: 'GPT-5.1', note: 'Flagship' },
+      { id: 'gpt-5', label: 'GPT-5' },
+      { id: 'gpt-4.1', label: 'GPT-4.1' },
+      { id: 'gpt-4o', label: 'GPT-4o', note: 'Fast' },
     ],
   },
   {
@@ -54,18 +38,6 @@ export const TEXT_PROVIDERS: ProviderCatalogEntry<TextProviderId>[] = [
     ],
   },
   {
-    id: 'openai',
-    label: 'OpenAI GPT',
-    keyField: 'openai',
-    docsUrl: 'https://platform.openai.com/docs/models',
-    models: [
-      { id: 'gpt-5.1', label: 'GPT-5.1', note: 'Flagship' },
-      { id: 'gpt-5', label: 'GPT-5' },
-      { id: 'gpt-4.1', label: 'GPT-4.1' },
-      { id: 'gpt-4o', label: 'GPT-4o', note: 'Fast' },
-    ],
-  },
-  {
     id: 'google',
     label: 'Google Gemini',
     keyField: 'google',
@@ -75,15 +47,21 @@ export const TEXT_PROVIDERS: ProviderCatalogEntry<TextProviderId>[] = [
       { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', note: 'Fast' },
     ],
   },
+  {
+    id: 'xai',
+    label: 'xAI Grok',
+    keyField: 'xai',
+    docsUrl: 'https://docs.x.ai/docs/models',
+    models: [
+      { id: 'grok-4', label: 'Grok 4', note: 'Flagship' },
+      { id: 'grok-4-fast', label: 'Grok 4 Fast', note: 'Fast' },
+      { id: 'grok-3', label: 'Grok 3' },
+      { id: 'grok-3-mini', label: 'Grok 3 Mini', note: 'Cheapest' },
+    ],
+  },
 ];
 
 export const IMAGE_PROVIDERS: ProviderCatalogEntry<ImageProviderId>[] = [
-  {
-    id: 'procedural',
-    label: 'On-device · Procedural art',
-    keyField: null,
-    models: [{ id: 'procedural', label: 'Generative scenes — free & instant' }],
-  },
   {
     id: 'openai',
     label: 'OpenAI Images',
@@ -103,6 +81,13 @@ export const IMAGE_PROVIDERS: ProviderCatalogEntry<ImageProviderId>[] = [
       { id: 'imagen-4.0-generate-001', label: 'Imagen 4', note: 'Painterly detail' },
       { id: 'imagen-3.0-generate-002', label: 'Imagen 3' },
     ],
+  },
+  {
+    id: 'xai',
+    label: 'xAI Grok',
+    keyField: 'xai',
+    docsUrl: 'https://docs.x.ai/docs/guides/image-generations',
+    models: [{ id: 'grok-2-image', label: 'grok-2-image', note: 'Aurora' }],
   },
   {
     id: 'none',
@@ -143,27 +128,20 @@ export const VIDEO_PROVIDERS: ProviderCatalogEntry<VideoProviderId>[] = [
 
 export const TTS_PROVIDERS: ProviderCatalogEntry<TtsProviderId>[] = [
   {
-    id: 'kokoro',
-    label: 'On-device voice (Kokoro)',
-    keyField: null,
-    docsUrl: 'https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX',
-    models: [{ id: 'onnx-community/Kokoro-82M-v1.0-ONNX', label: 'Kokoro 82M', note: 'Neural, in the video' }],
+    id: 'openai',
+    label: 'OpenAI Speech',
+    keyField: 'openai',
+    docsUrl: 'https://platform.openai.com/docs/guides/text-to-speech',
+    models: [
+      { id: 'gpt-4o-mini-tts', label: 'gpt-4o-mini-tts', note: 'Steerable · in the video' },
+      { id: 'tts-1-hd', label: 'tts-1-hd' },
+    ],
   },
   {
     id: 'browser',
     label: 'Browser voice (live only)',
     keyField: null,
     models: [{ id: 'system', label: 'System voices — not saved to video' }],
-  },
-  {
-    id: 'openai',
-    label: 'OpenAI Speech',
-    keyField: 'openai',
-    docsUrl: 'https://platform.openai.com/docs/guides/text-to-speech',
-    models: [
-      { id: 'gpt-4o-mini-tts', label: 'gpt-4o-mini-tts', note: 'Steerable' },
-      { id: 'tts-1-hd', label: 'tts-1-hd' },
-    ],
   },
   {
     id: 'none',
@@ -181,38 +159,24 @@ export const OPENAI_VOICES: ModelOption[] = [
   { id: 'onyx', label: 'Onyx — deep' },
 ];
 
-/** Kokoro on-device voices (a curated subset of the 28 available). */
-export const KOKORO_VOICES: ModelOption[] = [
-  { id: 'af_heart', label: 'Heart — warm (US, f)' },
-  { id: 'af_bella', label: 'Bella — bright (US, f)' },
-  { id: 'af_nicole', label: 'Nicole — soft (US, f)' },
-  { id: 'af_nova', label: 'Nova — clear (US, f)' },
-  { id: 'am_michael', label: 'Michael — friendly (US, m)' },
-  { id: 'am_puck', label: 'Puck — playful (US, m)' },
-  { id: 'bf_emma', label: 'Emma — gentle (UK, f)' },
-  { id: 'bm_george', label: 'George — storyteller (UK, m)' },
-];
-
 export interface LanguageOption {
   label: string;
   bcp47: string;
-  /** True if the free on-device (Kokoro) voice can narrate it. */
-  kokoro: boolean;
 }
 
 export const LANGUAGES: LanguageOption[] = [
-  { label: 'English (US)', bcp47: 'en-US', kokoro: true },
-  { label: 'English (UK)', bcp47: 'en-GB', kokoro: true },
-  { label: 'Spanish', bcp47: 'es-ES', kokoro: false },
-  { label: 'French', bcp47: 'fr-FR', kokoro: false },
-  { label: 'German', bcp47: 'de-DE', kokoro: false },
-  { label: 'Italian', bcp47: 'it-IT', kokoro: false },
-  { label: 'Portuguese', bcp47: 'pt-BR', kokoro: false },
-  { label: 'Dutch', bcp47: 'nl-NL', kokoro: false },
-  { label: 'Japanese', bcp47: 'ja-JP', kokoro: false },
-  { label: 'Chinese (Mandarin)', bcp47: 'zh-CN', kokoro: false },
-  { label: 'Hindi', bcp47: 'hi-IN', kokoro: false },
-  { label: 'Arabic', bcp47: 'ar', kokoro: false },
+  { label: 'English (US)', bcp47: 'en-US' },
+  { label: 'English (UK)', bcp47: 'en-GB' },
+  { label: 'Spanish', bcp47: 'es-ES' },
+  { label: 'French', bcp47: 'fr-FR' },
+  { label: 'German', bcp47: 'de-DE' },
+  { label: 'Italian', bcp47: 'it-IT' },
+  { label: 'Portuguese', bcp47: 'pt-BR' },
+  { label: 'Dutch', bcp47: 'nl-NL' },
+  { label: 'Japanese', bcp47: 'ja-JP' },
+  { label: 'Chinese (Mandarin)', bcp47: 'zh-CN' },
+  { label: 'Hindi', bcp47: 'hi-IN' },
+  { label: 'Arabic', bcp47: 'ar' },
 ];
 
 export function findLanguage(label: string): LanguageOption {
@@ -238,13 +202,13 @@ export const TONE_PRESETS = [
 ];
 
 export const DEFAULT_SETTINGS: Settings = {
-  keys: { openai: '', anthropic: '', google: '' },
-  // Zero-config defaults: everything runs on the user's own device, no keys.
-  text: { provider: 'ondevice', model: 'auto' },
-  image: { provider: 'procedural', model: 'procedural' },
+  keys: { openai: '', anthropic: '', google: '', xai: '' },
+  // Bring-your-own-key: pick a frontier provider and add its key in Settings.
+  text: { provider: 'openai', model: 'gpt-5.1' },
+  image: { provider: 'openai', model: 'gpt-image-1' },
   video: { provider: 'none', model: 'none', enabled: false },
-  // On-device neural voice by default so the selected voice is captured in the video.
-  tts: { provider: 'kokoro', model: 'onnx-community/Kokoro-82M-v1.0-ONNX', voice: 'af_heart' },
+  // Cloud voice so the narration is captured into the exported video.
+  tts: { provider: 'openai', model: 'gpt-4o-mini-tts', voice: 'nova' },
   storyVideo: { enabled: true },
 };
 

@@ -64,7 +64,7 @@
 /* Compact API keys into a row so the panel never has to scroll */
 .keys-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 10px;
 }
 .keys-grid .field {
