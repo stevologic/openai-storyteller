@@ -10,6 +10,7 @@ import {
   VIDEO_PROVIDERS,
 } from '../lib/catalog';
 import type { ModelOption, ProviderCatalogEntry } from '../lib/types';
+import { Dropdown } from './Dropdown';
 import { IconClose, IconKey } from './icons';
 import './settings.css';
 
@@ -26,23 +27,11 @@ function ModelPicker({
 }) {
   const isKnown = models.some((m) => m.id === value);
   const selectValue = isKnown ? value : CUSTOM;
+  const opts = models.map((m) => ({ value: m.id, label: m.note ? `${m.label} — ${m.note}` : m.label }));
+  if (models.length > 1) opts.push({ value: CUSTOM, label: 'Custom model…' });
   return (
     <div className="model-picker">
-      <select
-        value={selectValue}
-        onChange={(e) => {
-          const v = e.target.value;
-          onChange(v === CUSTOM ? '' : v);
-        }}
-      >
-        {models.map((m) => (
-          <option key={m.id} value={m.id}>
-            {m.label}
-            {m.note ? ` — ${m.note}` : ''}
-          </option>
-        ))}
-        {models.length > 1 && <option value={CUSTOM}>Custom model…</option>}
-      </select>
+      <Dropdown value={selectValue} onChange={(v) => onChange(v === CUSTOM ? '' : v)} options={opts} />
       {!isKnown && (
         <input
           type="text"
@@ -82,13 +71,12 @@ function ProviderRow<T extends string>({
         <p>{hint}</p>
       </div>
       <div className="provider-row-controls">
-        <select value={providerId} onChange={(e) => onProvider(e.target.value as T)}>
-          {providers.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.label}
-            </option>
-          ))}
-        </select>
+        <Dropdown
+          value={providerId}
+          onChange={(v) => onProvider(v as T)}
+          options={providers.map((p) => ({ value: p.id, label: p.label }))}
+          ariaLabel={`${title} provider`}
+        />
         <ModelPicker models={current.models} value={model} onChange={onModel} />
       </div>
       {extra}
@@ -265,16 +253,14 @@ export default function SettingsPanel() {
                     (settings.tts.provider === 'openai' || settings.tts.provider === 'kokoro') && (
                       <label className="field inline-field">
                         <span className="field-label">Voice</span>
-                        <select
+                        <Dropdown
                           value={settings.tts.voice}
-                          onChange={(e) => update({ tts: { ...settings.tts, voice: e.target.value } })}
-                        >
-                          {(settings.tts.provider === 'kokoro' ? KOKORO_VOICES : OPENAI_VOICES).map((v) => (
-                            <option key={v.id} value={v.id}>
-                              {v.label}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(v) => update({ tts: { ...settings.tts, voice: v } })}
+                          options={(settings.tts.provider === 'kokoro' ? KOKORO_VOICES : OPENAI_VOICES).map((v) => ({
+                            value: v.id,
+                            label: v.label,
+                          }))}
+                        />
                       </label>
                     )
                   }

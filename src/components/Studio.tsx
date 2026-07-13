@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from '../lib/store';
@@ -6,11 +6,23 @@ import { ART_STYLE_PRESETS, TONE_PRESETS, providerLabel, TEXT_PROVIDERS, IMAGE_P
 import { weaveStory } from '../lib/generate';
 import { openStoryFile } from '../lib/exportStory';
 import type { StoryBrief } from '../lib/types';
+import { Dropdown } from './Dropdown';
 import { IconSpark, IconSettings } from './icons';
 import './studio.css';
 
 const AGE_BANDS = ['0–3', '3–6', '4–7', '6–9', '8–12'];
 const CUSTOM = '__custom__';
+
+// Shown one at a time while the writer model works (a single opaque call).
+const WRITING_STEPS = [
+  'Dreaming up the story',
+  'Imagining your hero',
+  'Shaping the plot, beat by beat',
+  'Writing the pages',
+  'Deciding the art direction',
+  'Landing the gentle lesson',
+  'Naming the book',
+];
 
 export default function Studio() {
   const settings = useStore((s) => s.settings);
@@ -32,7 +44,17 @@ export default function Studio() {
   const [customStyle, setCustomStyle] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [writeStep, setWriteStep] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // While the writer runs (an opaque single call), cycle descriptive sub-steps.
+  // On-device runs emit real download/inference messages, which take priority.
+  const deviceMsg = /download|device|model|ready|warming/i.test(progress.message);
+  useEffect(() => {
+    if (!busy || progress.stage !== 'writing' || deviceMsg) return;
+    const id = window.setInterval(() => setWriteStep((s) => (s + 1) % WRITING_STEPS.length), 2300);
+    return () => window.clearInterval(id);
+  }, [busy, progress.stage, deviceMsg]);
 
   async function onOpenFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -113,37 +135,32 @@ export default function Studio() {
             </label>
             <label className="field">
               <span className="field-label">Reading age</span>
-              <select value={brief.ageRange} onChange={(e) => set('ageRange', e.target.value)}>
-                {AGE_BANDS.map((a) => (
-                  <option key={a} value={a}>
-                    Ages {a}
-                  </option>
-                ))}
-              </select>
+              <Dropdown
+                value={brief.ageRange}
+                onChange={(v) => set('ageRange', v)}
+                options={AGE_BANDS.map((a) => ({ value: a, label: `Ages ${a}` }))}
+              />
             </label>
           </div>
 
           <label className="field">
             <span className="field-label">Art style</span>
-            <select
+            <Dropdown
               value={customStyle ? CUSTOM : brief.artStyle}
-              onChange={(e) => {
-                if (e.target.value === CUSTOM) {
+              onChange={(v) => {
+                if (v === CUSTOM) {
                   setCustomStyle(true);
                   set('artStyle', '');
                 } else {
                   setCustomStyle(false);
-                  set('artStyle', e.target.value);
+                  set('artStyle', v);
                 }
               }}
-            >
-              {ART_STYLE_PRESETS.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-              <option value={CUSTOM}>Custom style…</option>
-            </select>
+              options={[
+                ...ART_STYLE_PRESETS.map((a) => ({ value: a, label: a })),
+                { value: CUSTOM, label: 'Custom style…' },
+              ]}
+            />
             {customStyle && (
               <input
                 type="text"
@@ -158,13 +175,11 @@ export default function Studio() {
           <div className="field-row">
             <label className="field">
               <span className="field-label">Tone</span>
-              <select value={brief.tone} onChange={(e) => set('tone', e.target.value)}>
-                {TONE_PRESETS.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
+              <Dropdown
+                value={brief.tone}
+                onChange={(v) => set('tone', v)}
+                options={TONE_PRESETS.map((t) => ({ value: t, label: t }))}
+              />
             </label>
             <label className="field">
               <span className="field-label">Pages: {brief.pageCount}</span>
@@ -264,7 +279,11 @@ export default function Studio() {
           <motion.div className="weave-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="weave-card">
               <div className="weave-spinner" />
-              <h2>{progress.message || 'Creating your story…'}</h2>
+              <h2>
+                {progress.stage === 'writing' && !deviceMsg
+                  ? `${WRITING_STEPS[writeStep]}…`
+                  : progress.message || 'Creating your story…'}
+              </h2>
               <div className="weave-bar">
                 <motion.div className="weave-fill" animate={{ width: `${Math.round(progress.ratio * 100)}%` }} transition={{ ease: 'easeOut' }} />
               </div>

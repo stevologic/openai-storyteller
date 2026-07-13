@@ -102,7 +102,7 @@ export async function weaveStory(
     for (let i = 0; i < story.pages.length; i++) {
       onProgress({
         stage: 'illustrating',
-        message: `Illustrating page ${i + 1} of ${story.pages.length}…`,
+        message: `Illustrating “${story.pages[i].header}” (${i + 1}/${story.pages.length})…`,
         ratio: bump(),
       });
       try {
@@ -140,7 +140,7 @@ export async function weaveStory(
     for (let i = 0; i < story.pages.length; i++) {
       onProgress({
         stage: 'narrating',
-        message: `Recording narration ${i + 1} of ${story.pages.length}…`,
+        message: `Narrating “${story.pages[i].header}” (${i + 1}/${story.pages.length})…`,
         ratio: bump(),
       });
       try {
