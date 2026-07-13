@@ -1,0 +1,155 @@
+.donate-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-faint);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.donate-trigger:hover {
+  color: var(--rose);
+}
+.donate-trigger span {
+  color: var(--rose);
+}
+
+/* Ghost variant for use on dark overlays (reader end page) */
+.donate-ghost {
+  color: rgba(255, 255, 255, 0.55);
+}
+.donate-ghost:hover {
+  color: #fff;
+}
+
+.donate-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(6, 4, 16, 0.72);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+}
+.donate-card {
+  position: relative;
+  width: min(460px, 100%);
+  background: linear-gradient(180deg, #1c1440 0%, #150e2b 100%);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 30px 26px 24px;
+  text-align: center;
+}
+.donate-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.donate-close:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.donate-card h3 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+.donate-sub {
+  color: var(--text-dim);
+  font-size: 14.5px;
+  line-height: 1.55;
+  max-width: 40ch;
+  margin: 0 auto 22px;
+}
+.donate-wallets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.donate-wallet {
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.donate-qr {
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px;
+  line-height: 0;
+}
+.donate-qr img {
+  width: 130px;
+  height: 130px;
+  display: block;
+  image-rendering: pixelated;
+}
+.donate-coin {
+  font-weight: 800;
+  font-size: 15px;
+}
+.donate-glyph {
+  font-size: 17px;
+}
+.donate-addr {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.donate-addr:hover {
+  border-color: var(--accent);
+  background: rgba(181, 123, 255, 0.1);
+}
+.donate-addr-text {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  word-break: break-all;
+  line-height: 1.35;
+}
+.donate-copy {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.donate-note {
+  margin-top: 18px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+@media (max-width: 420px) {
+  .donate-wallets {
+    grid-template-columns: 1fr;
+  }
+}

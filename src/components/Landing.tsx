@@ -3,6 +3,7 @@ import { useStore } from '../lib/store';
 import { SAMPLE_STORY } from '../sample/sampleStory';
 import { DemoScene } from '../sample/scenes';
 import { SHOWCASE, showcaseSrc } from '../showcase/manifest';
+import { DonateButton } from './Donate';
 import { IconSpark, IconBook, IconFilm, IconVolume, IconKey, IconDownload, IconAuto } from './icons';
 import './landing.css';
 
@@ -202,6 +203,7 @@ export default function Landing() {
           <span> — living storybooks, told by AI.</span>
         </div>
         <div className="footer-links">
+          <DonateButton />
           <a href="https://github.com/stevologic/storyteller-ai" target="_blank" rel="noreferrer">
             GitHub
           </a>

@@ -194,6 +194,9 @@
   flex-wrap: wrap;
   justify-content: center;
 }
+.reader-end-tip {
+  margin-top: 22px;
+}
 
 /* ---------- Chrome ---------- */
 .reader-topbar {

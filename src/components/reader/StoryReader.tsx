@@ -22,6 +22,7 @@ import {
 } from '../icons';
 import { downloadStoryImages, saveStoryJson, storyHasImages } from '../../lib/exportStory';
 import { downloadBlob, renderStoryToVideo, videoExportSupported } from '../../lib/exportVideo';
+import { DonateButton } from '../Donate';
 import './reader.css';
 
 type Slide = { kind: 'cover' } | { kind: 'page'; index: number } | { kind: 'end' };
@@ -261,6 +262,9 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
                   <button className="btn btn-primary" onClick={close}>
                     {story.demo ? 'Create your own' : 'Back to studio'}
                   </button>
+                </div>
+                <div className="reader-end-tip">
+                  <DonateButton label="Loved it? Tip the maker" className="donate-ghost" />
                 </div>
               </div>
             </>
