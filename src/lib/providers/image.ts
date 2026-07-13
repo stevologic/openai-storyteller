@@ -27,12 +27,19 @@ async function xaiImage(key: string, model: string, prompt: string): Promise<str
   const res = await fetch('https://api.x.ai/v1/images/generations', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify({ model, prompt, n: 1, response_format: 'b64_json' }),
+    body: JSON.stringify({
+      model,
+      prompt,
+      n: 1,
+      response_format: 'b64_json',
+      aspect_ratio: '16:9',
+      resolution: '2k',
+    }),
   });
   if (!res.ok) throw await describeHttpError(res, 'xAI Images');
   const data = await res.json();
   const b64 = data.data?.[0]?.b64_json;
-  if (!b64) throw new Error('xAI returned no image data.');
+  if (!b64) throw new Error('xAI Imagine returned no image data.');
   return base64ToDataUrl(b64, 'image/jpeg');
 }
 

@@ -8,6 +8,7 @@ export async function generateNarration(
   text: string,
   _onProgress?: OnProgress,
 ): Promise<string | undefined> {
+  if (settings.tts.provider === 'xai') return xaiNarration(settings, text);
   if (settings.tts.provider !== 'openai') return undefined; // 'browser' narrates live; 'none' is silent
   const key = settings.keys.openai;
   if (!key) throw new Error('Add your OpenAI API key in Settings to generate narration.');
@@ -25,6 +26,23 @@ export async function generateNarration(
   if (!res.ok) throw await describeHttpError(res, 'OpenAI Speech');
   const blob = await res.blob();
   return URL.createObjectURL(blob);
+}
+
+async function xaiNarration(settings: Settings, text: string): Promise<string> {
+  const key = settings.keys.xai;
+  if (!key) throw new Error('Add your xAI API key in Settings to generate narration.');
+  const res = await fetch('https://api.x.ai/v1/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      text,
+      voice_id: settings.tts.voice,
+      language: 'auto',
+      output_format: { codec: 'mp3', sample_rate: 24000, bit_rate: 128000 },
+    }),
+  });
+  if (!res.ok) throw await describeHttpError(res, 'xAI Grok Voice');
+  return URL.createObjectURL(await res.blob());
 }
 
 /* ---------- Live browser narration (Web Speech API) ---------- */

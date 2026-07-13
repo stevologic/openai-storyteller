@@ -94,7 +94,10 @@ function categorize(p: ProviderKey, models: RawModel[], cat: ModelCategory): Raw
       return models.filter(
         (m) => m.methods?.includes('generateContent') && m.id.startsWith('gemini') && !includesAny(m.id, 'embedding'),
       );
-    if (p === 'xai') return models.filter((m) => m.id.startsWith('grok') && !includesAny(m.id, 'image'));
+    if (p === 'xai')
+      return models.filter(
+        (m) => m.id.startsWith('grok') && !includesAny(m.id, 'image', 'video', 'voice', 'audio'),
+      );
     return models.filter(
       (m) =>
         /^(gpt-|o1|o3|o4|chatgpt)/.test(m.id) &&
@@ -114,6 +117,7 @@ function categorize(p: ProviderKey, models: RawModel[], cat: ModelCategory): Raw
   // video
   if (p === 'openai') return models.filter((m) => includesAny(m.id, 'sora'));
   if (p === 'google') return models.filter((m) => includesAny(m.id, 'veo'));
+  if (p === 'xai') return models.filter((m) => includesAny(m.id, 'imagine-video'));
   return [];
 }
 

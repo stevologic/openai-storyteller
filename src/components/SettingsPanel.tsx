@@ -8,6 +8,7 @@ import {
   TEXT_PROVIDERS,
   TTS_PROVIDERS,
   VIDEO_PROVIDERS,
+  XAI_VOICES,
 } from '../lib/catalog';
 import type { ModelOption, ProviderCatalogEntry, ProviderKeys, Settings } from '../lib/types';
 import { generateNarration, browserNarration } from '../lib/providers/tts';
@@ -23,7 +24,7 @@ const CUSTOM = '__custom__';
 const PREVIEW_LINE = 'Once upon a time, a tiny star wished to shine as bright as the moon.';
 
 /** Play a short sample so the user can hear a narration voice before choosing it.
- *  OpenAI voices are synthesized via the API (needs a key); the browser voice
+ *  Cloud voices are synthesized via the API (needs a key); the browser voice
  *  speaks live for free. */
 function NarrationPreview({ settings }: { settings: Settings }) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'playing' | 'error'>('idle');
@@ -64,10 +65,11 @@ function NarrationPreview({ settings }: { settings: Settings }) {
       browserRef.current.speak(PREVIEW_LINE, { onEnd: () => setStatus('idle') });
       return;
     }
-    // OpenAI voice — synthesize a sample through the API.
-    if (!settings.keys.openai) {
+    // Cloud voice — synthesize a sample through the selected provider's API.
+    const cloudKey = provider === 'xai' ? settings.keys.xai : settings.keys.openai;
+    if (!cloudKey) {
       setStatus('error');
-      setMessage('Add your OpenAI key above to preview.');
+      setMessage(`Add your ${provider === 'xai' ? 'xAI' : 'OpenAI'} key above to preview.`);
       return;
     }
     setStatus('loading');
@@ -388,13 +390,13 @@ export default function SettingsPanel() {
                         ...settings.tts,
                         provider,
                         model: firstModel(TTS_PROVIDERS, provider),
-                        voice: provider === 'openai' ? 'nova' : settings.tts.voice,
+                        voice: provider === 'openai' ? 'nova' : provider === 'xai' ? 'luna' : settings.tts.voice,
                       },
                     })
                   }
                   onModel={(model) => update({ tts: { ...settings.tts, model } })}
                   extra={
-                    settings.tts.provider === 'openai' ? (
+                    settings.tts.provider === 'openai' || settings.tts.provider === 'xai' ? (
                       <label className="field inline-field">
                         <div className="voice-head">
                           <span className="field-label">Voice</span>
@@ -403,7 +405,10 @@ export default function SettingsPanel() {
                         <Dropdown
                           value={settings.tts.voice}
                           onChange={(v) => update({ tts: { ...settings.tts, voice: v } })}
-                          options={OPENAI_VOICES.map((v) => ({ value: v.id, label: v.label }))}
+                          options={(settings.tts.provider === 'xai' ? XAI_VOICES : OPENAI_VOICES).map((v) => ({
+                            value: v.id,
+                            label: v.label,
+                          }))}
                         />
                       </label>
                     ) : settings.tts.provider === 'browser' ? (

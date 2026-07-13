@@ -332,8 +332,10 @@ export async function renderStoryToVideo(
         const a = new Audio(s.audioUrl);
         a.crossOrigin = 'anonymous';
         const src = actx!.createMediaElementSource(a);
+        // Feed narration only to the MediaRecorder mix. Connecting this source
+        // to actx.destination also plays it through the user's speakers while
+        // the real-time video render is still being saved.
         src.connect(dest);
-        src.connect(actx!.destination);
         audioEls.set(i, a);
       } catch {
         /* skip narration for this page */

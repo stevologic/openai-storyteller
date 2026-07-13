@@ -90,11 +90,11 @@ Billy looks like Billy from cover to end._
 | 🔑 **Your keys, your browser** | Add an OpenAI, Anthropic, Google, or xAI key in Settings. Keys are stored in localStorage and sent straight to each provider — never to us. |
 | 📖 **Cinematic reader** | Autoplay "movie mode," swipe/keyboard navigation, ambient audio, and a page-turn feel. |
 | 🌍 **Any language** | Write the story in 12 languages (English, Spanish, French, German, Italian, Japanese, Chinese, Hindi, Arabic, …). |
-| 🎥 **Auto video, narrated** | Every book is also rendered to a shareable **MP4** while it generates — art, Ken Burns motion, text, and the **selected OpenAI narration voice baked in** with **no background music**. Grab a **silent version** too, ready to attach to social. Entirely in the browser (canvas + MediaRecorder, H.264/AAC with a WebM fallback). Toggle it off in Settings. |
-| 🗣 **Read aloud** | Live browser narration with karaoke-style word highlighting, or studio-grade OpenAI voices baked into the video. |
+| 🎥 **Auto video, narrated** | Every book is also rendered to a shareable **MP4** while it generates — art, Ken Burns motion, text, and the **selected OpenAI or Grok narration voice baked in** with **no background music**. Grab a **silent version** too, ready to attach to social. Entirely in the browser (canvas + MediaRecorder, H.264/AAC with a WebM fallback). Toggle it off in Settings. |
+| 🗣 **Read aloud** | Live browser narration with karaoke-style word highlighting, or studio-grade OpenAI and Grok voices baked into the video. |
 | 🎨 **Consistent characters** | A generated character description is fused into every illustration prompt so your hero stays the same. |
 | 🖼 **Hero from a photo** | Upload a reference photo and a vision model describes the character; that look drives every page. Or just type the description. |
-| 🎬 **Video-ready** | Animate pages into short clips with Veo or Sora when you want motion — or let the free cinematic pan carry the mood. |
+| 🎬 **Video-ready** | Animate pages into short clips with Veo, Sora, or Grok Imagine when you want motion — or let the free cinematic pan carry the mood. |
 | 🧸 **Made for kids' books** | Prompts, guardrails, and layout tuned for warm, safe picture books. |
 
 ## Supported models
@@ -103,8 +103,9 @@ Configured entirely in the UI (**Settings → Models**). Cloud calls go straight
 the provider — bring a key for at least one.
 
 - **Text:** OpenAI GPT-5.1 / GPT-5 / GPT-4.1 / GPT-4o · Anthropic Claude Fable 5 / Opus 4.8 / Opus 4.7 / Sonnet 5 / Haiku 4.5 · Google Gemini 2.5 Pro / Flash · xAI Grok 4 / 4 Fast / 3 / 3 Mini
-- **Images:** OpenAI `gpt-image-1`, DALL·E 3 · Google Imagen 4 / 3 · xAI `grok-2-image`
-- **Video (optional):** Google Veo 3 · OpenAI Sora 2 — or free Ken Burns motion
+- **Images:** OpenAI `gpt-image-1`, DALL·E 3 · Google Imagen 4 / 3 · xAI Grok Imagine Image
+- **Video (optional):** Google Veo 3 · OpenAI Sora 2 · xAI Grok Imagine Video — or free Ken Burns motion
+- **Narration:** OpenAI Speech · xAI Grok Voice · browser speech
 - **Narration:** OpenAI speech (`gpt-4o-mini-tts`, `tts-1-hd`, baked into the video) · live browser voices (free)
 
 When you add a key, each dropdown **loads that provider's live model list** (OpenAI / Anthropic / Google /

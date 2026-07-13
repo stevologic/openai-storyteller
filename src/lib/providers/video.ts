@@ -17,8 +17,49 @@ export async function generateVideo(
     if (settings.video.provider === 'openai') {
       return await sora(settings.keys.openai, settings.video.model, prompt, onTick);
     }
+    if (settings.video.provider === 'xai') {
+      return await grokImagine(settings.keys.xai, settings.video.model, prompt, onTick);
+    }
   } catch (err) {
     console.warn('Video generation failed, falling back to motion:', err);
+  }
+  return undefined;
+}
+
+async function grokImagine(
+  key: string,
+  model: string,
+  prompt: string,
+  onTick?: (msg: string) => void,
+): Promise<string | undefined> {
+  if (!key) throw new Error('xAI API key required for Grok Imagine video.');
+  const startRes = await fetch('https://api.x.ai/v1/videos/generations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+    body: JSON.stringify({ model, prompt, duration: 6, aspect_ratio: '16:9', resolution: '720p' }),
+  });
+  if (!startRes.ok) throw await describeHttpError(startRes, 'xAI Grok Imagine');
+  const requestId: string | undefined = (await startRes.json()).request_id;
+  if (!requestId) throw new Error('xAI Grok Imagine returned no request id.');
+
+  for (let i = 0; i < 60; i++) {
+    onTick?.(`Rendering video… (${i * 5}s)`);
+    await sleep(5000);
+    const pollRes = await fetch(`https://api.x.ai/v1/videos/${encodeURIComponent(requestId)}`, {
+      headers: { Authorization: `Bearer ${key}` },
+    });
+    if (!pollRes.ok) throw await describeHttpError(pollRes, 'xAI Grok Imagine');
+    const status = await pollRes.json();
+    if (status.status === 'done') {
+      const url = status.video?.url ?? findUri(status.video);
+      if (!url) return undefined;
+      const download = await fetch(url);
+      if (!download.ok) throw await describeHttpError(download, 'xAI Grok Imagine download');
+      return URL.createObjectURL(await download.blob());
+    }
+    if (status.status === 'expired' || status.status === 'failed') {
+      throw new Error(`xAI Grok Imagine reported the job ${status.status}.`);
+    }
   }
   return undefined;
 }
