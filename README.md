@@ -7,7 +7,7 @@
 Turn a single bedtime idea into a **fully illustrated, narrated children's picture book** —
 using whichever frontier AI models you already have keys for.
 
-**[▶ Live demo →](https://stevologic.github.io/tiny-book-buddies-ai/)**
+**[▶ Live demo → tinybookbuddies.ai](https://tinybookbuddies.ai/)**
 
 <br/>
 
@@ -132,10 +132,11 @@ A workflow at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) bui
 Pages on every push to `main`.
 
 1. In the repo: **Settings → Pages → Build and deployment → Source → GitHub Actions**.
-2. Push to `main`. The site deploys to `https://<user>.github.io/tiny-book-buddies-ai/`.
+2. Push to `main`. The site publishes to the custom domain **[tinybookbuddies.ai](https://tinybookbuddies.ai/)**.
 
-The Vite `base` is already set to `/tiny-book-buddies-ai/` for production builds. If you fork under a
-different repo name, update `base` in [`vite.config.ts`](vite.config.ts).
+The apex custom domain serves from the root, so Vite `base` is `/` and [`public/CNAME`](public/CNAME)
+pins the domain on every deploy. If you fork to a project page (`<user>.github.io/<repo>/`) instead,
+set `base` to `/<repo>/` in [`vite.config.ts`](vite.config.ts) and remove `public/CNAME`.
 
 ## How it's built
 

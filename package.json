@@ -6,7 +6,7 @@
   "description": "Tiny Book Buddies AI — living, illustrated children's storybooks generated with your choice of frontier AI (OpenAI, Anthropic, Google, or xAI Grok).",
   "author": "Stephen M Abbott",
   "license": "SEE LICENSE IN LICENSE",
-  "homepage": "https://stevologic.github.io/tiny-book-buddies-ai/",
+  "homepage": "https://tinybookbuddies.ai/",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

@@ -1,10 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Project site lives at https://stevologic.github.io/tiny-book-buddies-ai/
-// so production assets need that base path. Local dev serves from root.
-export default defineConfig(({ mode }) => ({
-  base: mode === 'production' ? '/tiny-book-buddies-ai/' : '/',
+// The site is served from the apex custom domain https://tinybookbuddies.ai/,
+// so assets live at the root path in both dev and production.
+export default defineConfig(() => ({
+  base: '/',
   plugins: [react()],
   build: {
     target: 'es2020',
