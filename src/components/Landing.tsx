@@ -24,6 +24,11 @@ const STEPS = [
 
 export default function Landing() {
   const setView = useStore((s) => s.setView);
+  const setStoryBrief = useStore((s) => s.setStoryBrief);
+  const createNew = () => {
+    setStoryBrief(null);
+    setView('studio');
+  };
   const scrollToSamples = () => document.getElementById('samples')?.scrollIntoView({ behavior: 'smooth' });
   const featured = SAMPLE_VIDEOS[0];
 
@@ -52,7 +57,7 @@ export default function Landing() {
             <button className="btn btn-sunlit btn-lg" onClick={scrollToSamples}>
               <IconAuto /> Watch sample stories
             </button>
-            <button className="btn btn-primary btn-lg" onClick={() => setView('studio')}>
+            <button className="btn btn-primary btn-lg" onClick={createNew}>
               <IconSpark /> Create your own
             </button>
           </motion.div>
@@ -108,7 +113,7 @@ export default function Landing() {
           ))}
         </div>
         <div className="showcase-cta">
-          <button className="btn btn-primary btn-lg" onClick={() => setView('studio')}>
+          <button className="btn btn-primary btn-lg" onClick={createNew}>
             <IconSpark /> Make one like this
           </button>
         </div>
@@ -166,7 +171,7 @@ export default function Landing() {
               family will read a hundred times. Personalize the hero, choose the lesson, and keep a
               keepsake — or build a whole shelf.
             </p>
-            <button className="btn btn-primary btn-lg" onClick={() => setView('studio')}>
+            <button className="btn btn-primary btn-lg" onClick={createNew}>
               <IconSpark /> Start your first book
             </button>
           </div>

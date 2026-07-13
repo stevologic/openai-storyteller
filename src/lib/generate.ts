@@ -78,6 +78,13 @@ export async function weaveStory(
   // Pre-render narration to audio (captured into the exported video) when a
   // cloud voice is selected. The live "browser" voice can't be captured.
   const doNarration = settings.tts.provider === 'openai' || settings.tts.provider === 'xai';
+  // Freeze the chosen provider/model/voice for the entire book. This avoids a
+  // settings change during a long render producing mixed voices across pages.
+  const narrationSettings: Settings = {
+    ...settings,
+    keys: { ...settings.keys },
+    tts: { ...settings.tts },
+  };
 
   // Weight the progress bar across the stages we'll actually run.
   const imageUnits = doImages ? story.pages.length + 1 : 0; // pages + cover
@@ -163,7 +170,7 @@ export async function weaveStory(
         ratio: bump(),
       });
       try {
-        rendered.pages[i].audioUrl = await generateNarration(settings, story.pages[i].text, (msg) =>
+        rendered.pages[i].audioUrl = await generateNarration(narrationSettings, story.pages[i].text, (msg) =>
           onProgress({ stage: 'narrating', message: msg, ratio: bump() }),
         );
       } catch (err) {

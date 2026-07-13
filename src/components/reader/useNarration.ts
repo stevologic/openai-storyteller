@@ -48,7 +48,9 @@ export function useNarration(opts: {
       );
       return;
     }
-    if (ttsProvider === 'none') return;
+    // Cloud narration is pre-rendered. If a clip is unavailable, stay silent
+    // instead of switching that page to a different system/browser voice.
+    if (ttsProvider !== 'browser') return;
     if (!browser.current.supported) return;
     setState({ playing: true, charIndex: 0 });
     browser.current.speak(text, {
@@ -74,7 +76,7 @@ export function useNarration(opts: {
     };
   }, [text]);
 
-  const available = Boolean(audioUrl) || (ttsProvider !== 'none' && browser.current.supported);
+  const available = Boolean(audioUrl) || (ttsProvider === 'browser' && browser.current.supported);
 
   return { ...state, start, stop, toggle, available };
 }

@@ -12,6 +12,7 @@ export default function App() {
   const view = useStore((s) => s.view);
   const story = useStore((s) => s.story);
   const setView = useStore((s) => s.setView);
+  const setStoryBrief = useStore((s) => s.setStoryBrief);
   const openSettings = useStore((s) => s.openSettings);
 
   useEffect(() => {
@@ -38,7 +39,13 @@ export default function App() {
               <button className="btn btn-ghost btn-sm nav-models" onClick={openSettings} aria-label="Models">
                 <IconSettings /> <span className="btn-text">Models</span>
               </button>
-              <button className="btn btn-primary btn-sm" onClick={() => setView('studio')}>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => {
+                  setStoryBrief(null);
+                  setView('studio');
+                }}
+              >
                 <IconSpark /> Create
               </button>
             </nav>

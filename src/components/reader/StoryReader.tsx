@@ -260,7 +260,7 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
                     </button>
                   )}
                   <button className="btn btn-primary" onClick={close}>
-                    {story.demo ? 'Create your own' : 'Back to studio'}
+                    {story.demo ? 'Create your own' : 'Modify this story'}
                   </button>
                 </div>
                 <div className="reader-end-tip">
