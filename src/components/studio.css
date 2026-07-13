@@ -72,7 +72,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: rgba(0, 0, 0, 0.24);
+  background: rgba(58, 40, 26, 0.04);
   border: 1px dashed var(--border-strong);
   border-radius: var(--radius-sm);
   color: var(--text-dim);
@@ -133,9 +133,9 @@
   align-self: flex-start;
 }
 .studio-error {
-  background: rgba(239, 125, 125, 0.14);
-  border: 1px solid rgba(239, 125, 125, 0.4);
-  color: #ffd9d9;
+  background: rgba(197, 74, 52, 0.12);
+  border: 1px solid rgba(197, 74, 52, 0.35);
+  color: #8f3a24;
   padding: 12px 14px;
   border-radius: var(--radius-sm);
   font-size: 14px;
@@ -209,17 +209,17 @@
 .studio-nokey {
   margin-top: 16px;
   font-size: 13px;
-  color: var(--amber);
+  color: var(--terracotta-deep);
   line-height: 1.5;
 }
 .studio-ondevice {
   margin-top: 16px;
   font-size: 13px;
-  color: var(--leaf);
+  color: #4d6b3a;
   line-height: 1.55;
   padding: 12px 14px;
-  background: rgba(142, 203, 154, 0.1);
-  border: 1px solid rgba(142, 203, 154, 0.3);
+  background: rgba(138, 160, 111, 0.16);
+  border: 1px solid rgba(138, 160, 111, 0.4);
   border-radius: var(--radius-sm);
 }
 
@@ -248,7 +248,7 @@
   position: fixed;
   inset: 0;
   z-index: 70;
-  background: rgba(6, 4, 16, 0.82);
+  background: rgba(251, 244, 230, 0.92);
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
@@ -270,7 +270,7 @@
   height: 58px;
   margin: 0 auto 24px;
   border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.14);
+  border: 3px solid rgba(58, 40, 26, 0.14);
   border-top-color: var(--accent);
   animation: weave-spin 0.9s linear infinite;
 }
@@ -282,7 +282,7 @@
 .weave-bar {
   height: 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(58, 40, 26, 0.12);
   overflow: hidden;
 }
 .weave-fill {

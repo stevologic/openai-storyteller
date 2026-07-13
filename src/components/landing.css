@@ -12,9 +12,9 @@
   padding-bottom: 40px;
 }
 .hero-chip {
-  color: var(--amber);
-  border-color: rgba(244, 184, 96, 0.3);
-  background: rgba(244, 184, 96, 0.08);
+  color: var(--terracotta-deep);
+  border-color: rgba(201, 106, 69, 0.32);
+  background: rgba(201, 106, 69, 0.1);
 }
 .hero-copy h1 {
   font-size: clamp(40px, 6.4vw, 74px);
@@ -24,7 +24,7 @@
   letter-spacing: -0.02em;
 }
 .grad {
-  background: linear-gradient(120deg, var(--amber) 0%, var(--rose) 55%, var(--accent) 100%);
+  background: linear-gradient(120deg, var(--terracotta) 0%, var(--coral) 45%, var(--gold-deep) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -258,8 +258,8 @@
   width: 46px;
   height: 46px;
   border-radius: 13px;
-  background: linear-gradient(135deg, rgba(181, 123, 255, 0.28), rgba(244, 184, 96, 0.18));
-  color: var(--amber);
+  background: linear-gradient(135deg, rgba(201, 106, 69, 0.22), rgba(221, 166, 58, 0.22));
+  color: var(--terracotta-deep);
   margin-bottom: 16px;
 }
 .feature h3 {
@@ -311,7 +311,7 @@
   padding: 44px;
   overflow: hidden;
   align-items: center;
-  background: linear-gradient(135deg, rgba(181, 123, 255, 0.14), rgba(244, 184, 96, 0.08));
+  background: linear-gradient(135deg, rgba(201, 106, 69, 0.12), rgba(221, 166, 58, 0.14));
 }
 .niche-copy h2 {
   font-size: clamp(26px, 4vw, 40px);

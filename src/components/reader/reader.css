@@ -5,6 +5,15 @@
   background: #05030f;
   overflow: hidden;
   user-select: none;
+  /* The reader is a dark theater — keep shared tokens light in here. */
+  color-scheme: dark;
+  --text: #f4eefc;
+  --text-dim: #c8bcd6;
+  --text-faint: #9a8fac;
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-2: rgba(255, 255, 255, 0.1);
+  --border: rgba(255, 255, 255, 0.14);
+  --border-strong: rgba(255, 255, 255, 0.24);
 }
 
 .reader-slide {

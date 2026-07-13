@@ -4,53 +4,56 @@
    ============================================================ */
 
 :root {
-  /* Brand palette — dusk & lantern */
-  --ink: #1c1330;
-  --ink-soft: #3a2f52;
-  --cream: #fdf6ec;
-  --paper: #fbf3e4;
-  --parchment: #f3e6cf;
+  /* Brand palette — Tiny Book Buddies (warm watercolor storybook) */
+  --cream: #fbf4e6;
+  --paper: #f6ecd6;
+  --parchment: #efe1c6;
+  --ink: #3a2a1e;
+  --ink-soft: #5c4636;
 
-  --plum-900: #0d0a1f;
-  --plum-800: #171033;
-  --plum-700: #221646;
-  --plum-600: #2f1e5e;
+  --gold: #dda63a;
+  --gold-deep: #bd851f;
+  --terracotta: #c96a45;
+  --terracotta-deep: #a54e2f;
+  --navy: #34507c;
+  --navy-deep: #263d61;
+  --sage: #8aa06f;
+  --coral: #e0876b;
 
-  --amber: #f4b860;
-  --amber-deep: #e0902f;
-  --rose: #ef7d7d;
+  /* Aliases kept so existing component CSS stays warm */
+  --amber: var(--gold);
+  --amber-deep: var(--gold-deep);
+  --rose: var(--coral);
   --sky: #7cc4e8;
-  --leaf: #8ecb9a;
-  --lilac: #b79ce0;
+  --leaf: var(--sage);
 
-  --accent: #b57bff;
-  --accent-2: #ffb347;
+  --accent: var(--terracotta);
+  --accent-2: var(--gold);
 
-  /* Semantic (light UI surfaces) */
-  --bg: var(--plum-900);
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-2: rgba(255, 255, 255, 0.07);
-  --border: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(255, 255, 255, 0.22);
-  --text: #f4eefc;
-  --text-dim: #b9aecb;
-  --text-faint: #7d738f;
+  /* Semantic — warm light surfaces */
+  --bg: var(--cream);
+  --surface: rgba(255, 255, 255, 0.55);
+  --surface-2: rgba(255, 255, 255, 0.85);
+  --border: rgba(58, 40, 26, 0.14);
+  --border-strong: rgba(58, 40, 26, 0.3);
+  --text: #3a2a1e;
+  --text-dim: #6c5744;
+  --text-faint: #9c876f;
 
   --radius: 18px;
   --radius-sm: 11px;
   --radius-lg: 28px;
 
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
-  --shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
-  --shadow-glow: 0 0 60px rgba(181, 123, 255, 0.35);
+  --shadow-sm: 0 2px 8px rgba(90, 60, 30, 0.12);
+  --shadow: 0 18px 44px rgba(90, 60, 30, 0.18);
+  --shadow-glow: 0 0 60px rgba(221, 166, 58, 0.32);
 
   --serif: 'Fraunces', 'Georgia', serif;
   --sans: 'Nunito', system-ui, -apple-system, sans-serif;
 
   --maxw: 1180px;
 
-  /* Render native controls (selects, option popups, scrollbars) in dark mode. */
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 * {
@@ -67,12 +70,12 @@ body {
 body {
   font-family: var(--sans);
   color: var(--text);
-  background: var(--plum-900);
+  background: var(--paper);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* Fixed atmosphere layer — avoids background-attachment:fixed scroll jank. */
+/* Fixed atmosphere layer — soft watercolor washes like the logo. */
 body::before {
   content: '';
   position: fixed;
@@ -80,9 +83,9 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(1200px 700px at 12% -10%, rgba(181, 123, 255, 0.22), transparent 60%),
-    radial-gradient(900px 700px at 100% 0%, rgba(244, 184, 96, 0.16), transparent 55%),
-    radial-gradient(1000px 900px at 50% 120%, rgba(124, 196, 232, 0.14), transparent 60%);
+    radial-gradient(1200px 700px at 12% -10%, rgba(221, 166, 58, 0.18), transparent 60%),
+    radial-gradient(900px 700px at 100% 0%, rgba(201, 106, 69, 0.14), transparent 55%),
+    radial-gradient(1000px 900px at 50% 120%, rgba(138, 160, 111, 0.16), transparent 60%);
 }
 
 h1,
@@ -154,19 +157,19 @@ button {
   transform: none;
 }
 .btn-primary {
-  --btn-bg: linear-gradient(135deg, var(--accent) 0%, #8a5cff 100%);
+  --btn-bg: linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta-deep) 100%);
   --btn-fg: #fff;
   border-color: transparent;
-  box-shadow: 0 10px 30px rgba(138, 92, 255, 0.4);
+  box-shadow: 0 10px 26px rgba(165, 78, 47, 0.34);
 }
 .btn-primary:hover {
-  box-shadow: 0 14px 40px rgba(138, 92, 255, 0.55);
+  box-shadow: 0 14px 34px rgba(165, 78, 47, 0.46);
 }
 .btn-sunlit {
-  --btn-bg: linear-gradient(135deg, var(--amber) 0%, var(--amber-deep) 100%);
-  --btn-fg: #3a2400;
+  --btn-bg: linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%);
+  --btn-fg: #4a2f0e;
   border-color: transparent;
-  box-shadow: 0 10px 30px rgba(224, 144, 47, 0.35);
+  box-shadow: 0 10px 26px rgba(189, 133, 31, 0.34);
 }
 .btn-ghost {
   --btn-bg: transparent;
@@ -205,7 +208,7 @@ button {
   letter-spacing: 0.22em;
   font-size: 12px;
   font-weight: 800;
-  color: var(--accent-2);
+  color: var(--terracotta);
 }
 
 /* Form controls -------------------------------------------------- */
@@ -228,7 +231,7 @@ input[type='number'],
 textarea,
 select {
   width: 100%;
-  background: rgba(0, 0, 0, 0.28);
+  background: rgba(255, 255, 255, 0.7);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
@@ -237,12 +240,16 @@ select {
   padding: 12px 14px;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-faint);
+}
 input:focus,
 textarea:focus,
 select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(181, 123, 255, 0.22);
+  box-shadow: 0 0 0 3px rgba(201, 106, 69, 0.2);
 }
 textarea {
   resize: vertical;
@@ -260,7 +267,7 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  background: rgba(0, 0, 0, 0.28);
+  background: rgba(255, 255, 255, 0.7);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
@@ -277,7 +284,7 @@ textarea {
 .dd-btn:focus-visible {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(181, 123, 255, 0.22);
+  box-shadow: 0 0 0 3px rgba(201, 106, 69, 0.2);
 }
 .dd-value {
   overflow: hidden;
@@ -297,7 +304,7 @@ textarea {
   margin: 0;
   padding: 6px;
   list-style: none;
-  background: #1a1236;
+  background: #fffaf0;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow);
@@ -313,12 +320,13 @@ textarea {
   cursor: pointer;
 }
 .dd-opt.active {
-  background: var(--surface-2);
+  background: rgba(58, 40, 26, 0.06);
   color: var(--text);
 }
 .dd-opt.sel {
-  background: rgba(181, 123, 255, 0.2);
-  color: #fff;
+  background: rgba(201, 106, 69, 0.16);
+  color: var(--terracotta-deep);
+  font-weight: 700;
 }
 
 .scroll-lock {
