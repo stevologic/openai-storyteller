@@ -9,6 +9,16 @@ using whichever frontier AI models you already have keys for.
 
 **[▶ Live demo & sample story →](https://stevologic.github.io/storyteller-ai/)**
 
+<br/>
+
+<!-- HERO IMAGE — export a cover from the app ("Download pictures"), drop it at
+     docs/showcase/hero.png, then replace this comment with:
+     <img src="docs/showcase/hero.png" width="88%" alt="A storybook made with Storyteller AI" /> -->
+
+_“The world is full of busy, friendly trucks, and each one makes our big, exciting home feel safe and wonderful.”_
+
+<sub>— the closing line of a storybook made in a single click</sub>
+
 </div>
 
 ---
@@ -35,7 +45,16 @@ A real storybook Storyteller AI generated end-to-end from a one-line idea about 
 gets a little lost — original prose, a **Pixar-style hero kept consistent on every page**, and warm
 narration. A few spreads:
 
-<!-- illustration gallery goes here once the exported page PNGs are added to docs/showcase/ -->
+<!-- ILLUSTRATION GALLERY — drop the exported page PNGs into docs/showcase/ (e.g. billy-00-cover.png,
+     billy-03.png, billy-04.png, billy-06.png) and replace this comment with:
+     <p align="center">
+       <img src="docs/showcase/billy-00-cover.png" width="80%" alt="Billy's Broccoli Path — cover" />
+     </p>
+     <p align="center">
+       <img src="docs/showcase/billy-03.png" width="32%" />
+       <img src="docs/showcase/billy-04.png" width="32%" />
+       <img src="docs/showcase/billy-06.png" width="32%" />
+     </p> -->
 
 > **Ages 4–7** — _"For every little explorer who finds their way home, one tiny green tree at a time."_
 
