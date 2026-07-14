@@ -40,6 +40,17 @@ function readImageResized(file: File, maxDim: number): Promise<string> {
 const AGE_BANDS = ['0–3', '3–6', '4–7', '6–9', '8–12'];
 const CUSTOM = '__custom__';
 
+const DEFAULT_BRIEF: StoryBrief = {
+  idea: '',
+  heroName: '',
+  ageRange: '4–7',
+  artStyle: ART_STYLE_PRESETS[0],
+  pageCount: 6,
+  lesson: '',
+  tone: TONE_PRESETS[0],
+  language: 'English (US)',
+};
+
 // Shown one at a time while the writer model works (a single opaque call).
 const WRITING_STEPS = [
   'Dreaming up the story',
@@ -55,21 +66,14 @@ export default function Studio() {
   const settings = useStore((s) => s.settings);
   const openSettings = useStore((s) => s.openSettings);
   const setStory = useStore((s) => s.setStory);
+  const storedBrief = useStore((s) => s.storyBrief);
+  const setStoryBrief = useStore((s) => s.setStoryBrief);
   const setView = useStore((s) => s.setView);
   const progress = useStore((s) => s.progress);
   const setProgress = useStore((s) => s.setProgress);
 
-  const [brief, setBrief] = useState<StoryBrief>({
-    idea: '',
-    heroName: '',
-    ageRange: '4–7',
-    artStyle: ART_STYLE_PRESETS[0],
-    pageCount: 6,
-    lesson: '',
-    tone: TONE_PRESETS[0],
-    language: 'English (US)',
-  });
-  const [customStyle, setCustomStyle] = useState(false);
+  const brief = storedBrief ?? DEFAULT_BRIEF;
+  const customStyle = !ART_STYLE_PRESETS.includes(brief.artStyle);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [writeStep, setWriteStep] = useState(0);
@@ -125,7 +129,8 @@ export default function Studio() {
   const textProvider = TEXT_PROVIDERS.find((p) => p.id === settings.text.provider);
   const textKeyMissing = textProvider?.keyField ? !settings.keys[textProvider.keyField] : false;
 
-  const set = <K extends keyof StoryBrief>(k: K, v: StoryBrief[K]) => setBrief((b) => ({ ...b, [k]: v }));
+  const set = <K extends keyof StoryBrief>(k: K, v: StoryBrief[K]) =>
+    setStoryBrief({ ...(useStore.getState().storyBrief ?? brief), [k]: v });
 
   async function onWeave() {
     setError(null);
@@ -239,10 +244,8 @@ export default function Studio() {
               value={customStyle ? CUSTOM : brief.artStyle}
               onChange={(v) => {
                 if (v === CUSTOM) {
-                  setCustomStyle(true);
                   set('artStyle', '');
                 } else {
-                  setCustomStyle(false);
                   set('artStyle', v);
                 }
               }}

@@ -43,6 +43,7 @@ function cacheSet(p: ProviderKey, models: RawModel[]): void {
 }
 
 async function fetchRaw(p: ProviderKey, key: string): Promise<RawModel[]> {
+  key = key.trim();
   if (p === 'openai' || p === 'xai') {
     const base = p === 'openai' ? 'https://api.openai.com/v1' : 'https://api.x.ai/v1';
     const res = await fetch(`${base}/models`, { headers: { Authorization: `Bearer ${key}` } });

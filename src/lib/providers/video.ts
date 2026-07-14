@@ -32,6 +32,7 @@ async function grokImagine(
   prompt: string,
   onTick?: (msg: string) => void,
 ): Promise<string | undefined> {
+  key = key.trim();
   if (!key) throw new Error('xAI API key required for Grok Imagine video.');
   const startRes = await fetch('https://api.x.ai/v1/videos/generations', {
     method: 'POST',

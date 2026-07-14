@@ -23,6 +23,7 @@ export async function generateImage(
 }
 
 async function xaiImage(key: string, model: string, prompt: string): Promise<string> {
+  key = key.trim();
   if (!key) throw new Error('Add your xAI API key in Settings to generate illustrations.');
   const res = await fetch('https://api.x.ai/v1/images/generations', {
     method: 'POST',

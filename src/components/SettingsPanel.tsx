@@ -204,7 +204,7 @@ export default function SettingsPanel() {
   const update = useStore((s) => s.updateSettings);
 
   const setKey = (k: keyof typeof settings.keys, v: string) =>
-    update({ keys: { ...settings.keys, [k]: v } });
+    update({ keys: { ...settings.keys, [k]: v.trim() } });
 
   // Load each keyed provider's live model list when the panel opens so the
   // newest models surface in the dropdowns automatically (cached for 12h).
