@@ -64,7 +64,7 @@
 /* Compact API keys into a row so the panel never has to scroll */
 .keys-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 10px;
 }
 .keys-grid .field {
@@ -77,6 +77,25 @@
   padding: 9px 12px;
   font-size: 14px;
 }
+.key-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+}
+.key-check-btn {
+  padding: 7px 9px;
+  white-space: nowrap;
+}
+.key-check-result {
+  display: block;
+  margin-top: 5px;
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--text-faint);
+  overflow-wrap: anywhere;
+}
+.key-check-result.success { color: #3f6b32; }
+.key-check-result.error { color: #a33a2b; }
 
 /* Two-up provider cards; the whole-book video spans the full width */
 .provider-grid {

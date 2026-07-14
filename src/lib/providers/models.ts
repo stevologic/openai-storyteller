@@ -114,6 +114,14 @@ export async function getProviderModels(p: ProviderKey, key: string, signal?: Ab
   return models;
 }
 
+/** Validate a credential with a fresh authenticated request, bypassing the
+ * model cache so an old successful lookup cannot mask a rejected key. */
+export async function checkProviderKey(p: ProviderKey, key: string, signal?: AbortSignal): Promise<number> {
+  key = normalizeApiKey(key);
+  if (!key) throw new Error('Enter an API key first.');
+  return (await fetchRaw(p, key, signal)).length;
+}
+
 const includesAny = (s: string, ...subs: string[]) => subs.some((x) => s.includes(x));
 
 /** Pick out the models relevant to one generation category. */

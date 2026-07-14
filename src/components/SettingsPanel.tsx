@@ -12,7 +12,7 @@ import {
 } from '../lib/catalog';
 import type { ModelOption, ProviderCatalogEntry, ProviderKeys, Settings } from '../lib/types';
 import { generateNarration, browserNarration, validateNarrationAccess } from '../lib/providers/tts';
-import { getProviderModels, resolveModels, type ModelCategory, type ProviderKey, type RawModel } from '../lib/providers/models';
+import { checkProviderKey, getProviderModels, resolveModels, type ModelCategory, type ProviderKey, type RawModel } from '../lib/providers/models';
 import { apiKeyEnding, normalizeApiKey } from '../lib/providers/util';
 import { Dropdown } from './Dropdown';
 import { IconClose, IconKey, IconVolume } from './icons';
@@ -173,6 +173,69 @@ function ModelPicker({
   );
 }
 
+function ApiKeyField({
+  provider,
+  label,
+  placeholder,
+  value,
+  onChange,
+}: {
+  provider: ProviderKey;
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [result, setResult] = useState<{ kind: 'idle' | 'checking' | 'success' | 'error'; message: string }>({
+    kind: 'idle',
+    message: '',
+  });
+
+  useEffect(() => setResult({ kind: 'idle', message: '' }), [value]);
+
+  async function check() {
+    setResult({ kind: 'checking', message: 'Checking…' });
+    try {
+      const count = await checkProviderKey(provider, value);
+      setResult({ kind: 'success', message: `Key works · ${count} models available` });
+    } catch (error) {
+      setResult({
+        kind: 'error',
+        message: error instanceof Error ? error.message : 'Key check failed.',
+      });
+    }
+  }
+
+  return (
+    <div className="field key-field">
+      <label className="field-label" htmlFor={`api-key-${provider}`}>{label}</label>
+      <div className="key-input-row">
+        <input
+          id={`api-key-${provider}`}
+          type="password"
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          autoComplete="off"
+        />
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm key-check-btn"
+          onClick={check}
+          disabled={!value || result.kind === 'checking'}
+        >
+          {result.kind === 'checking' ? 'Checking…' : 'Check key'}
+        </button>
+      </div>
+      {result.message && (
+        <span className={`key-check-result ${result.kind}`} role={result.kind === 'error' ? 'alert' : undefined}>
+          {result.kind === 'success' ? '✓ ' : ''}{result.message}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function ProviderRow<T extends string>({
   title,
   hint,
@@ -313,46 +376,10 @@ export default function SettingsPanel() {
                 </p>
 
                 <div className="keys-grid">
-                  <label className="field">
-                    <span className="field-label">OpenAI</span>
-                    <input
-                      type="password"
-                      placeholder="sk-…"
-                      value={settings.keys.openai}
-                      onChange={(e) => setKey('openai', e.target.value)}
-                      autoComplete="off"
-                    />
-                  </label>
-                  <label className="field">
-                    <span className="field-label">Anthropic</span>
-                    <input
-                      type="password"
-                      placeholder="sk-ant-…"
-                      value={settings.keys.anthropic}
-                      onChange={(e) => setKey('anthropic', e.target.value)}
-                      autoComplete="off"
-                    />
-                  </label>
-                  <label className="field">
-                    <span className="field-label">Google AI</span>
-                    <input
-                      type="password"
-                      placeholder="AIza…"
-                      value={settings.keys.google}
-                      onChange={(e) => setKey('google', e.target.value)}
-                      autoComplete="off"
-                    />
-                  </label>
-                  <label className="field">
-                    <span className="field-label">xAI (Grok)</span>
-                    <input
-                      type="password"
-                      placeholder="xai-…"
-                      value={settings.keys.xai}
-                      onChange={(e) => setKey('xai', e.target.value)}
-                      autoComplete="off"
-                    />
-                  </label>
+                  <ApiKeyField provider="openai" label="OpenAI" placeholder="sk-…" value={settings.keys.openai} onChange={(v) => setKey('openai', v)} />
+                  <ApiKeyField provider="anthropic" label="Anthropic" placeholder="sk-ant-…" value={settings.keys.anthropic} onChange={(v) => setKey('anthropic', v)} />
+                  <ApiKeyField provider="google" label="Google AI" placeholder="AIza…" value={settings.keys.google} onChange={(v) => setKey('google', v)} />
+                  <ApiKeyField provider="xai" label="xAI (Grok)" placeholder="xai-…" value={settings.keys.xai} onChange={(v) => setKey('xai', v)} />
                 </div>
                 <p className="section-note">
                   OpenAI API billing is separate from ChatGPT subscriptions. For xAI, use an inference key from
