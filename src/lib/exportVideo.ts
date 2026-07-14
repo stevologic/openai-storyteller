@@ -203,6 +203,36 @@ function drawLines(ctx: CanvasRenderingContext2D, lines: string[], cx: number, b
   return bottom - lines.length * lh;
 }
 
+function roundedPanel(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+): void {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + width, y, x + width, y + height, r);
+  ctx.arcTo(x + width, y + height, x, y + height, r);
+  ctx.arcTo(x, y + height, x, y, r);
+  ctx.arcTo(x, y, x + width, y, r);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(15, 9, 34, 0.42)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.13)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+function withGentleTextShadow(ctx: CanvasRenderingContext2D): void {
+  ctx.shadowColor = 'rgba(8, 3, 20, 0.9)';
+  ctx.shadowBlur = 9;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 2;
+}
+
 function drawSlide(ctx: CanvasRenderingContext2D, s: Slide, t: number, fade: number): void {
   ctx.fillStyle = '#05030f';
   ctx.fillRect(0, 0, CW, CH);
@@ -224,9 +254,13 @@ function drawSlide(ctx: CanvasRenderingContext2D, s: Slide, t: number, fade: num
   const maxW = CW * 0.82;
 
   if (s.kind === 'page') {
-    ctx.fillStyle = '#fdfbff';
     ctx.font = `500 34px ${SERIF}`;
     const lines = wrap(ctx, s.body, maxW);
+    const firstBaseline = CH - 70 - (lines.length - 1) * 46;
+    const panelTop = firstBaseline - (s.eyebrow ? 74 : 42);
+    roundedPanel(ctx, CW * 0.065, panelTop, CW * 0.87, CH - 30 - panelTop, 26);
+    withGentleTextShadow(ctx);
+    ctx.fillStyle = '#fdfbff';
     const top = drawLines(ctx, lines, cx, CH - 70, 46);
     if (s.eyebrow) {
       ctx.fillStyle = '#f4b860';
@@ -234,6 +268,7 @@ function drawSlide(ctx: CanvasRenderingContext2D, s: Slide, t: number, fade: num
       ctx.fillText(s.eyebrow, cx, top - 18);
     }
   } else if (s.kind === 'cover') {
+    withGentleTextShadow(ctx);
     ctx.fillStyle = '#ffffff';
     ctx.font = `900 68px ${SERIF}`;
     const lines = wrap(ctx, s.title, maxW);
@@ -251,6 +286,7 @@ function drawSlide(ctx: CanvasRenderingContext2D, s: Slide, t: number, fade: num
     }
   } else {
     // end
+    withGentleTextShadow(ctx);
     ctx.fillStyle = '#ffffff';
     ctx.font = `900 84px ${SERIF}`;
     ctx.fillText(s.title, cx, CH / 2);
