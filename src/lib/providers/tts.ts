@@ -1,5 +1,5 @@
 import type { Settings } from '../types';
-import { apiKeyEnding, describeHttpError, fetchWithRetry, normalizeApiKey, type OnProgress } from './util';
+import { describeHttpError, fetchWithRetry, normalizeApiKey, type OnProgress } from './util';
 
 /** Pre-generate narration audio for a block of text.
  *  Returns an object URL, or undefined when narration plays live / is off. */
@@ -54,28 +54,6 @@ async function xaiNarration(settings: Settings, text: string): Promise<string> {
   );
   if (!res.ok) throw await describeHttpError(res, 'xAI Grok Voice');
   return URL.createObjectURL(await res.blob());
-}
-
-/** Validate the selected narration credential without creating billable audio.
- * xAI uses its TTS voices endpoint so this checks both authentication and TTS
- * endpoint access, independently from a particular voice-generation payload.
- */
-export async function validateNarrationAccess(settings: Settings): Promise<string> {
-  const provider = settings.tts.provider;
-  if (provider !== 'openai' && provider !== 'xai') {
-    throw new Error('Select OpenAI Speech or xAI Grok Voice first.');
-  }
-  const key = normalizeApiKey(provider === 'xai' ? settings.keys.xai : settings.keys.openai);
-  if (!key) throw new Error(`Add your ${provider === 'xai' ? 'xAI' : 'OpenAI'} key first.`);
-  const url = provider === 'xai' ? 'https://api.x.ai/v1/tts/voices' : 'https://api.openai.com/v1/models';
-  const label = provider === 'xai' ? 'xAI TTS' : 'OpenAI';
-  const res = await fetchWithRetry(
-    url,
-    { headers: { Authorization: `Bearer ${key}` } },
-    { attempts: 2, timeoutMs: 20_000 },
-  );
-  if (!res.ok) throw await describeHttpError(res, label);
-  return `${label} accepted key ${apiKeyEnding(key)}.`;
 }
 
 /* ---------- Live browser narration (Web Speech API) ---------- */

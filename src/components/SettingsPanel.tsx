@@ -13,7 +13,7 @@ import {
 import type { ModelOption, ProviderCatalogEntry, ProviderKeys, Settings } from '../lib/types';
 import { generateNarration, browserNarration } from '../lib/providers/tts';
 import { checkProviderKey, getProviderModels, resolveModels, type ModelCategory, type ProviderKey, type RawModel } from '../lib/providers/models';
-import { apiKeyEnding, normalizeApiKey } from '../lib/providers/util';
+import { normalizeApiKey } from '../lib/providers/util';
 import { Dropdown } from './Dropdown';
 import { IconClose, IconKey, IconVolume } from './icons';
 import './settings.css';
@@ -36,7 +36,6 @@ function NarrationPreview({ settings }: { settings: Settings }) {
   const voice = settings.tts.voice;
   const model = settings.tts.model;
   const cloudKey = provider === 'xai' ? settings.keys.xai : provider === 'openai' ? settings.keys.openai : '';
-  const keyId = apiKeyEnding(cloudKey);
 
   function stop() {
     browserRef.current.cancel();
@@ -54,7 +53,7 @@ function NarrationPreview({ settings }: { settings: Settings }) {
   useEffect(() => {
     setMessage('');
     return stop;
-  }, [provider, voice, model, keyId]);
+  }, [provider, voice, model, cloudKey]);
 
   async function play() {
     if (status === 'loading' || status === 'playing') {
@@ -109,11 +108,6 @@ function NarrationPreview({ settings }: { settings: Settings }) {
       >
         <IconVolume /> {label}
       </button>
-      {(provider === 'openai' || provider === 'xai') && keyId && (
-        <span className="voice-key-id" title="Last four characters of the key this browser will send">
-          Using {keyId}
-        </span>
-      )}
       {message && <span className="voice-preview-msg">{message}</span>}
     </div>
   );
