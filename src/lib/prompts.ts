@@ -87,7 +87,8 @@ Return ONLY this JSON object:
 }
 
 Requirements:
-- youtubeTitle: under 90 characters; include the story title and a natural phrase a parent might search for.
+- youtubeTitle: under 90 characters; include the story title, a natural phrase a parent might search for,
+  and 1–2 relevant, family-friendly emojis. Every title must contain at least one emoji.
 - youtubeDescription: 2–3 warm sentences about the hero, journey, and takeaway without spoiling every beat.
 - youtubeHashtags: 5–8 concise relevant hashtags, mixing story themes with broad discovery terms.
 - Do not put timestamps or hashtags in youtubeDescription.`;

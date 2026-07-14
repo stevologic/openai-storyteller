@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { RenderedStory } from './types';
-import { buildYouTubeMetadata, formatYouTubeTimestamp, youtubePackageText } from './youtube';
+import { buildYouTubeMetadata, ensureYouTubeTitleEmoji, formatYouTubeTimestamp, youtubePackageText } from './youtube';
 
 const story: RenderedStory = {
   title: 'Mina and the Moonlit Way',
@@ -40,5 +40,11 @@ describe('YouTube metadata', () => {
 
   it('formats hour-long videos without dropping the hour', () => {
     expect(formatYouTubeTimestamp(3661)).toBe('1:01:01');
+  });
+
+  it('always includes emojis in the final YouTube title', () => {
+    expect(ensureYouTubeTitleEmoji('A Gentle Bedtime Story')).toBe('A Gentle Bedtime Story 📚✨');
+    expect(ensureYouTubeTitleEmoji('Moonlight Magic 🌙')).toBe('Moonlight Magic 🌙');
+    expect(buildYouTubeMetadata(story, []).title).toMatch(/\p{Extended_Pictographic}/u);
   });
 });

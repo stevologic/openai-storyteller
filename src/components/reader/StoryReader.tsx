@@ -52,6 +52,7 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
   const [autoplay, setAutoplay] = useState(false);
   const [ambientOn, setAmbientOn] = useState(false);
   const [videoExport, setVideoExport] = useState<{ ratio: number; message: string } | null>(null);
+  const [publishOpen, setPublishOpen] = useState(false);
   const [copied, setCopied] = useState('');
   const ambient = useRef<Ambient>(new Ambient());
   const advanceTimer = useRef<number | undefined>(undefined);
@@ -140,6 +141,10 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
   // Keyboard navigation.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (publishOpen) {
+        if (e.key === 'Escape') setPublishOpen(false);
+        return;
+      }
       if (e.key === 'ArrowRight') go(1);
       else if (e.key === 'ArrowLeft') go(-1);
       else if (e.key === 'Escape') close();
@@ -150,7 +155,7 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [go, close, narration, page]);
+  }, [go, close, narration, page, publishOpen]);
 
   // Autoplay driver: (re)start on each slide.
   useEffect(() => {
@@ -256,52 +261,9 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
                 )}
                 <div className="cinema-vignette" />
               </div>
-              <div className={`reader-end${story.youtubeMetadata ? ' reader-end-with-youtube' : ''}`}>
+              <div className="reader-end">
                 <h2>The End</h2>
                 {story.moral && <p className="reader-moral">“{story.moral}”</p>}
-                {story.youtubeMetadata && (
-                  <section className="reader-youtube" aria-label="YouTube publishing details">
-                    <div className="reader-youtube-head">
-                      <div>
-                        <span className="eyebrow">Ready to publish</span>
-                        <h3>YouTube package</h3>
-                      </div>
-                      <button
-                        type="button"
-                        className="btn btn-sunlit btn-sm"
-                        onClick={() => copyYouTube('all', youtubePackageText(story.youtubeMetadata!))}
-                      >
-                        {copied === 'all' ? 'Copied!' : 'Copy everything'}
-                      </button>
-                    </div>
-                    <YouTubeField
-                      label="Title"
-                      value={story.youtubeMetadata.title}
-                      copied={copied === 'title'}
-                      onCopy={() => copyYouTube('title', story.youtubeMetadata!.title)}
-                    />
-                    <YouTubeField
-                      label="Description"
-                      value={story.youtubeMetadata.description}
-                      copied={copied === 'description'}
-                      onCopy={() => copyYouTube('description', story.youtubeMetadata!.description)}
-                    />
-                    <YouTubeField
-                      label="Slide timestamps"
-                      value={story.youtubeMetadata.timestamps}
-                      copied={copied === 'timestamps'}
-                      onCopy={() => copyYouTube('timestamps', story.youtubeMetadata!.timestamps)}
-                      pre
-                    />
-                    <YouTubeField
-                      label="Hashtags"
-                      value={story.youtubeMetadata.hashtags}
-                      copied={copied === 'hashtags'}
-                      onCopy={() => copyYouTube('hashtags', story.youtubeMetadata!.hashtags)}
-                    />
-                    {copied === 'Copy failed' && <p className="reader-copy-error">Copy failed. Select the text and copy it manually.</p>}
-                  </section>
-                )}
                 <div className="reader-end-actions">
                   <button className="btn btn-ghost" onClick={() => setPos(0)}>
                     Read again
@@ -328,6 +290,11 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
                   {videoExportSupported() && (
                     <button className="btn btn-ghost" onClick={() => onExportVideo(true)} title="No audio — ready for social media">
                       <IconFilm /> Silent video
+                    </button>
+                  )}
+                  {story.youtubeMetadata && (
+                    <button className="btn btn-sunlit" onClick={() => setPublishOpen(true)}>
+                      Ready to publish
                     </button>
                   )}
                   <button className="btn btn-primary" onClick={close}>
@@ -422,6 +389,58 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
               <p className="video-stage">{videoExport.message}</p>
               <p className="video-hint">Recording plays out in real time — sit back and watch. The video downloads when it’s done.</p>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {publishOpen && story.youtubeMetadata && (
+          <motion.div
+            className="publish-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setPublishOpen(false)}
+          >
+            <motion.section
+              className="reader-youtube publish-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="publish-modal-title"
+              initial={{ opacity: 0, y: 24, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.98 }}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="reader-youtube-head">
+                <div>
+                  <span className="eyebrow">Ready to publish</span>
+                  <h3 id="publish-modal-title">YouTube package</h3>
+                </div>
+                <div className="publish-modal-actions">
+                  <button
+                    type="button"
+                    className="btn btn-sunlit btn-sm"
+                    onClick={() => copyYouTube('all', youtubePackageText(story.youtubeMetadata!))}
+                  >
+                    {copied === 'all' ? 'Copied!' : 'Copy everything'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm icon-btn"
+                    onClick={() => setPublishOpen(false)}
+                    aria-label="Close publishing details"
+                  >
+                    <IconClose />
+                  </button>
+                </div>
+              </div>
+              <YouTubeField label="Title" value={story.youtubeMetadata.title} copied={copied === 'title'} onCopy={() => copyYouTube('title', story.youtubeMetadata!.title)} />
+              <YouTubeField label="Description" value={story.youtubeMetadata.description} copied={copied === 'description'} onCopy={() => copyYouTube('description', story.youtubeMetadata!.description)} />
+              <YouTubeField label="Slide timestamps" value={story.youtubeMetadata.timestamps} copied={copied === 'timestamps'} onCopy={() => copyYouTube('timestamps', story.youtubeMetadata!.timestamps)} pre />
+              <YouTubeField label="Hashtags" value={story.youtubeMetadata.hashtags} copied={copied === 'hashtags'} onCopy={() => copyYouTube('hashtags', story.youtubeMetadata!.hashtags)} />
+              {copied === 'Copy failed' && <p className="reader-copy-error">Copy failed. Select the text and copy it manually.</p>}
+            </motion.section>
           </motion.div>
         )}
       </AnimatePresence>

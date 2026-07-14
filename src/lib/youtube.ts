@@ -26,6 +26,17 @@ function normalizeHashtag(value: string): string {
   return clean ? `#${clean}` : '';
 }
 
+const EMOJI_RE = /\p{Extended_Pictographic}/u;
+
+/** Models occasionally ignore formatting requests; guarantee that every final
+ * YouTube title includes a small, family-friendly emoji treatment. */
+export function ensureYouTubeTitleEmoji(value: string): string {
+  const title = value.trim();
+  if (EMOJI_RE.test(title)) return title;
+  const suffix = ' 📚✨';
+  return `${title.slice(0, Math.max(0, 90 - suffix.length)).trimEnd()}${suffix}`;
+}
+
 export function buildYouTubeMetadata(
   story: RenderedStory,
   chapters: YouTubeChapterInput[],
@@ -53,7 +64,7 @@ export function buildYouTubeMetadata(
     .slice(0, 8);
 
   return {
-    title: story.youtubeTitle?.trim() || story.title,
+    title: ensureYouTubeTitleEmoji(story.youtubeTitle?.trim() || story.title),
     description: story.youtubeDescription?.trim() || fallbackDescription || story.title,
     timestamps: timestamps.join('\n'),
     hashtags: hashtags.join(' '),
