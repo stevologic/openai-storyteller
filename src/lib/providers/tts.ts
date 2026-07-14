@@ -29,7 +29,7 @@ export async function generateNarration(
 }
 
 async function xaiNarration(settings: Settings, text: string): Promise<string> {
-  const key = settings.keys.xai;
+  const key = settings.keys.xai.trim();
   if (!key) throw new Error('Add your xAI API key in Settings to generate narration.');
   const res = await fetch('https://api.x.ai/v1/tts', {
     method: 'POST',

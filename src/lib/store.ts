@@ -8,7 +8,13 @@ import type { GenerationProgress, RenderedStory, Settings, StoryBrief } from './
  *  the app never boots into a broken configuration. */
 function sanitizeSettings(raw: unknown): Settings {
   const s = { ...DEFAULT_SETTINGS, ...(raw as Partial<Settings> | undefined) } as Settings;
-  const keys = { ...DEFAULT_SETTINGS.keys, ...(s.keys ?? {}) };
+  const mergedKeys = { ...DEFAULT_SETTINGS.keys, ...(s.keys ?? {}) };
+  const keys = {
+    openai: mergedKeys.openai.trim(),
+    anthropic: mergedKeys.anthropic.trim(),
+    google: mergedKeys.google.trim(),
+    xai: mergedKeys.xai.trim(),
+  };
   const valid = <T extends string>(list: { id: T }[], id: T) => list.some((p) => p.id === id);
   const text = valid(TEXT_PROVIDERS, s.text?.provider) ? s.text : DEFAULT_SETTINGS.text;
   const image = valid(IMAGE_PROVIDERS, s.image?.provider) ? s.image : DEFAULT_SETTINGS.image;
