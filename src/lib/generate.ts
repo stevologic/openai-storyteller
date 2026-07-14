@@ -50,6 +50,9 @@ export async function writeStory(
   const rawPages = Array.isArray(loose.pages) ? loose.pages : Array.isArray(loose.story) ? loose.story : [];
   const coerced = StorySchema.safeParse({
     title: String(loose.title ?? brief.idea),
+    youtubeTitle: String(loose.youtubeTitle ?? ''),
+    youtubeDescription: String(loose.youtubeDescription ?? ''),
+    youtubeHashtags: Array.isArray(loose.youtubeHashtags) ? loose.youtubeHashtags.map(String) : [],
     dedication: String(loose.dedication ?? ''),
     ageRange: String(loose.ageRange ?? brief.ageRange),
     characterBible: String(loose.characterBible ?? loose.character ?? ''),
@@ -188,13 +191,14 @@ export async function weaveStory(
   if (settings.storyVideo?.enabled !== false && videoExportSupported()) {
     onProgress({ stage: 'filming', message: 'Filming your storybook…', ratio: 0.9 });
     try {
-      const { blob, filename } = await renderStoryToVideo(
+      const { blob, filename, youtubeMetadata } = await renderStoryToVideo(
         rendered,
         (p) => onProgress({ stage: 'filming', message: p.message, ratio: 0.9 + 0.09 * p.ratio }),
         { preferMp4: true },
       );
       rendered.storyVideoUrl = URL.createObjectURL(blob);
       rendered.storyVideoName = filename;
+      rendered.youtubeMetadata = youtubeMetadata;
     } catch (err) {
       console.warn('Story video render failed:', err);
     }

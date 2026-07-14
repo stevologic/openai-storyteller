@@ -54,10 +54,20 @@ REQUIREMENTS
    - Never rely on the separate moral or “The End” screen to finish the plot. The final story page must stand
      on its own as a real ending, with no unresolved central problem.
 7. End with a short "moral": one warm sentence that reflects the resolution without introducing new plot.
+8. Prepare a tasteful YouTube package in ${lang} for the finished story video:
+   - "youtubeTitle": an inviting, specific title under 90 characters. Include the story title and a natural
+     phrase a parent might search for, without clickbait, all caps, or hashtags.
+   - "youtubeDescription": 2–3 warm sentences describing the hero, central journey, and age-appropriate
+     takeaway without spoiling every beat. Do not include timestamps or hashtags here.
+   - "youtubeHashtags": 5–8 concise, relevant hashtag strings. Include a mix of story-specific themes and
+     broad discovery terms; no spaces, duplicates, or unrelated trending tags.
 
 Return ONLY a JSON object with this exact shape:
 {
   "title": string,
+  "youtubeTitle": string,
+  "youtubeDescription": string,
+  "youtubeHashtags": string[],
   "dedication": string,
   "ageRange": string,
   "characterBible": string,

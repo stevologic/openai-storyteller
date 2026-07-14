@@ -22,6 +22,7 @@ import {
 } from '../icons';
 import { downloadStoryImages, saveStoryJson, storyHasImages } from '../../lib/exportStory';
 import { downloadBlob, renderStoryToVideo, videoExportSupported } from '../../lib/exportVideo';
+import { youtubePackageText } from '../../lib/youtube';
 import { DonateButton } from '../Donate';
 import './reader.css';
 
@@ -38,6 +39,7 @@ function tokenize(text: string): { word: string; start: number }[] {
 
 export default function StoryReader({ story }: { story: RenderedStory }) {
   const setView = useStore((s) => s.setView);
+  const setStory = useStore((s) => s.setStory);
   const ttsProvider = useStore((s) => s.settings.tts.provider);
 
   const slides: Slide[] = useMemo(
@@ -50,8 +52,10 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
   const [autoplay, setAutoplay] = useState(false);
   const [ambientOn, setAmbientOn] = useState(false);
   const [videoExport, setVideoExport] = useState<{ ratio: number; message: string } | null>(null);
+  const [copied, setCopied] = useState('');
   const ambient = useRef<Ambient>(new Ambient());
   const advanceTimer = useRef<number | undefined>(undefined);
+  const copyTimer = useRef<number | undefined>(undefined);
 
   const slide = slides[pos];
   const page = slide.kind === 'page' ? story.pages[slide.index] : undefined;
@@ -95,11 +99,12 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
       setAutoplay(false);
       setVideoExport({ ratio: 0, message: 'Preparing…' });
       try {
-        const { blob, filename } = await renderStoryToVideo(
+        const { blob, filename, youtubeMetadata } = await renderStoryToVideo(
           story,
           (p) => setVideoExport({ ratio: p.ratio, message: p.message }),
           { preferMp4: true, audio: silent ? 'none' : 'narration' },
         );
+        setStory({ ...story, youtubeMetadata });
         downloadBlob(blob, silent ? filename.replace(/(\.\w+)$/, '-silent$1') : filename);
         setVideoExport(null);
       } catch (err) {
@@ -107,8 +112,30 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
         window.setTimeout(() => setVideoExport(null), 4500);
       }
     },
-    [story, narration],
+    [story, narration, setStory],
   );
+
+  const copyYouTube = useCallback(async (label: string, value: string) => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+      } else {
+        const area = document.createElement('textarea');
+        area.value = value;
+        area.style.position = 'fixed';
+        area.style.opacity = '0';
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        area.remove();
+      }
+      window.clearTimeout(copyTimer.current);
+      setCopied(label);
+      copyTimer.current = window.setTimeout(() => setCopied(''), 1800);
+    } catch {
+      setCopied('Copy failed');
+    }
+  }, []);
 
   // Keyboard navigation.
   useEffect(() => {
@@ -149,6 +176,7 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
     return () => {
       amb.stop();
       window.clearTimeout(advanceTimer.current);
+      window.clearTimeout(copyTimer.current);
     };
   }, []);
 
@@ -228,9 +256,52 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
                 )}
                 <div className="cinema-vignette" />
               </div>
-              <div className="reader-end">
+              <div className={`reader-end${story.youtubeMetadata ? ' reader-end-with-youtube' : ''}`}>
                 <h2>The End</h2>
                 {story.moral && <p className="reader-moral">“{story.moral}”</p>}
+                {story.youtubeMetadata && (
+                  <section className="reader-youtube" aria-label="YouTube publishing details">
+                    <div className="reader-youtube-head">
+                      <div>
+                        <span className="eyebrow">Ready to publish</span>
+                        <h3>YouTube package</h3>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn btn-sunlit btn-sm"
+                        onClick={() => copyYouTube('all', youtubePackageText(story.youtubeMetadata!))}
+                      >
+                        {copied === 'all' ? 'Copied!' : 'Copy everything'}
+                      </button>
+                    </div>
+                    <YouTubeField
+                      label="Title"
+                      value={story.youtubeMetadata.title}
+                      copied={copied === 'title'}
+                      onCopy={() => copyYouTube('title', story.youtubeMetadata!.title)}
+                    />
+                    <YouTubeField
+                      label="Description"
+                      value={story.youtubeMetadata.description}
+                      copied={copied === 'description'}
+                      onCopy={() => copyYouTube('description', story.youtubeMetadata!.description)}
+                    />
+                    <YouTubeField
+                      label="Slide timestamps"
+                      value={story.youtubeMetadata.timestamps}
+                      copied={copied === 'timestamps'}
+                      onCopy={() => copyYouTube('timestamps', story.youtubeMetadata!.timestamps)}
+                      pre
+                    />
+                    <YouTubeField
+                      label="Hashtags"
+                      value={story.youtubeMetadata.hashtags}
+                      copied={copied === 'hashtags'}
+                      onCopy={() => copyYouTube('hashtags', story.youtubeMetadata!.hashtags)}
+                    />
+                    {copied === 'Copy failed' && <p className="reader-copy-error">Copy failed. Select the text and copy it manually.</p>}
+                  </section>
+                )}
                 <div className="reader-end-actions">
                   <button className="btn btn-ghost" onClick={() => setPos(0)}>
                     Read again
@@ -354,6 +425,32 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function YouTubeField({
+  label,
+  value,
+  copied,
+  onCopy,
+  pre = false,
+}: {
+  label: string;
+  value: string;
+  copied: boolean;
+  onCopy: () => void;
+  pre?: boolean;
+}) {
+  return (
+    <div className="reader-youtube-field">
+      <div className="reader-youtube-label">
+        <span>{label}</span>
+        <button type="button" onClick={onCopy}>
+          {copied ? 'Copied!' : 'Copy'}
+        </button>
+      </div>
+      {pre ? <pre>{value}</pre> : <p>{value}</p>}
     </div>
   );
 }

@@ -228,6 +228,92 @@
 .reader-end-tip {
   margin-top: 22px;
 }
+.reader-end-with-youtube {
+  justify-content: flex-start;
+  overflow-y: auto;
+  padding: 88px 24px 132px;
+  scrollbar-color: rgba(244, 184, 96, 0.65) transparent;
+  scrollbar-width: thin;
+}
+.reader-end-with-youtube h2 {
+  font-size: clamp(36px, 7vw, 70px);
+}
+.reader-end-with-youtube .reader-moral {
+  margin-top: 10px;
+}
+.reader-youtube {
+  width: min(780px, 100%);
+  margin-top: 24px;
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 26px;
+  background: linear-gradient(135deg, rgba(31, 20, 54, 0.82), rgba(9, 6, 25, 0.78));
+  box-shadow:
+    0 18px 48px rgba(5, 2, 18, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(12px) saturate(1.08);
+  backdrop-filter: blur(12px) saturate(1.08);
+  color: #fdfbff;
+  text-align: left;
+  user-select: text;
+}
+.reader-youtube-head,
+.reader-youtube-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.reader-youtube-head {
+  margin-bottom: 18px;
+}
+.reader-youtube-head h3 {
+  margin-top: 3px;
+  font-size: clamp(22px, 3vw, 30px);
+}
+.reader-youtube-field {
+  padding: 14px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.reader-youtube-label span {
+  color: var(--amber);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.reader-youtube-label button {
+  border: 0;
+  background: transparent;
+  color: #d9caff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 0 4px 12px;
+}
+.reader-youtube-label button:hover {
+  color: #fff;
+}
+.reader-youtube-field p,
+.reader-youtube-field pre {
+  margin-top: 7px;
+  color: #f7f1ff;
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.reader-youtube-field pre {
+  max-height: 180px;
+  overflow-y: auto;
+}
+.reader-copy-error {
+  color: #ffd0dc;
+  font-size: 13px;
+  margin-top: 8px;
+}
 
 /* ---------- Chrome ---------- */
 .reader-topbar {
@@ -405,4 +491,7 @@
   .reader-chip-label { display: none; }
   .reader-dots { display: none; }
   .reader-textwrap, .reader-cover { padding-bottom: 18vh; }
+  .reader-end-with-youtube { padding: 76px 14px 124px; }
+  .reader-youtube-head { align-items: flex-start; flex-direction: column; }
+  .reader-youtube-head .btn { width: 100%; }
 }

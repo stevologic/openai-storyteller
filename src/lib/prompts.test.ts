@@ -30,4 +30,14 @@ describe('story writer prompt', () => {
     expect(prompt).toContain('Write exactly 6 pages');
     expect(prompt).toContain('It must clearly lead into the final page');
   });
+
+  it('requests a localized YouTube package without a second generation call', () => {
+    const prompt = buildWriterPrompt(brief);
+
+    expect(prompt).toContain('Prepare a tasteful YouTube package in English (US)');
+    expect(prompt).toContain('"youtubeTitle"');
+    expect(prompt).toContain('"youtubeDescription"');
+    expect(prompt).toContain('"youtubeHashtags"');
+    expect(prompt).toContain('Do not include timestamps or hashtags here');
+  });
 });

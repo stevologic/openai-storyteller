@@ -16,6 +16,10 @@ export type StoryPage = z.infer<typeof StoryPageSchema>;
 
 export const StorySchema = z.object({
   title: z.string(),
+  /** Search-friendly YouTube copy written alongside the story. */
+  youtubeTitle: z.string().default(''),
+  youtubeDescription: z.string().default(''),
+  youtubeHashtags: z.array(z.string()).default([]),
   /** Language the story is written in (label, e.g. "Spanish"). */
   language: z.string().default(''),
   /** One-line dedication, e.g. "For everyone who looks up at night." */
@@ -40,7 +44,18 @@ export interface RenderedPage extends StoryPage {
   /** Demo-only: id of a bundled animated vector scene to render instead of an image. */
   sceneId?: string;
 }
-export interface RenderedStory extends Omit<Story, 'pages'> {
+export interface YouTubeMetadata {
+  title: string;
+  description: string;
+  timestamps: string;
+  hashtags: string;
+}
+export interface RenderedStory
+  extends Omit<Story, 'pages' | 'youtubeTitle' | 'youtubeDescription' | 'youtubeHashtags'> {
+  /** Optional for backward compatibility with demos and previously saved stories. */
+  youtubeTitle?: string;
+  youtubeDescription?: string;
+  youtubeHashtags?: string[];
   coverImageUrl?: string;
   coverSceneId?: string;
   pages: RenderedPage[];
@@ -48,6 +63,8 @@ export interface RenderedStory extends Omit<Story, 'pages'> {
   /** A whole-book video rendered during generation (object URL + filename). */
   storyVideoUrl?: string;
   storyVideoName?: string;
+  /** YouTube-ready copy assembled after the final video timings are known. */
+  youtubeMetadata?: YouTubeMetadata;
   /** Present only for the bundled demo; renders vector scenes instead of images. */
   demo?: boolean;
 }

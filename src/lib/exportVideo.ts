@@ -1,6 +1,7 @@
 import { createElement } from 'react';
-import type { RenderedStory } from './types';
+import type { RenderedStory, YouTubeMetadata } from './types';
 import { DemoScene } from '../sample/scenes';
+import { buildYouTubeMetadata } from './youtube';
 
 /* Renders a storybook to a .webm video fully in the browser: each page is drawn
    to a canvas with Ken Burns motion + text, an ambient pad (and pre-rendered
@@ -324,6 +325,7 @@ export interface VideoResult {
   blob: Blob;
   filename: string;
   mime: string;
+  youtubeMetadata: YouTubeMetadata;
 }
 
 /** Render the whole story to a video Blob (real-time capture). Prefers MP4
@@ -344,6 +346,18 @@ export async function renderStoryToVideo(
 
   const slides = await buildSlides(story, onProgress);
   const total = slides.reduce((a, s) => a + s.duration, 0);
+  const youtubeMetadata = buildYouTubeMetadata(
+    story,
+    slides.map((slide, index) => ({
+      label:
+        slide.kind === 'cover'
+          ? story.title
+          : slide.kind === 'end'
+            ? 'The End'
+            : slide.eyebrow || `Page ${index}`,
+      duration: slide.duration,
+    })),
+  );
 
   const canvas = document.createElement('canvas');
   canvas.width = CW;
@@ -436,7 +450,7 @@ export async function renderStoryToVideo(
   if (actx) setTimeout(() => actx.close().catch(() => {}), 300);
 
   onProgress({ message: 'Done', ratio: 1 });
-  return { blob, filename: `${slugify(story.title)}.${ext}`, mime: mime || 'video/webm' };
+  return { blob, filename: `${slugify(story.title)}.${ext}`, mime: mime || 'video/webm', youtubeMetadata };
 }
 
 export function downloadBlob(blob: Blob, filename: string): void {
