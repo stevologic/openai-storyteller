@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { XAI_VOICES } from '../catalog';
 import type { Settings } from '../types';
 import { generateNarration } from './tts';
+import { generateImage } from './image';
 import { describeHttpError, fetchWithRetry, normalizeApiKey } from './util';
 import { generateVideo } from './video';
 
@@ -37,6 +38,16 @@ describe('provider request handling', () => {
 
     expect(response.status).toBe(200);
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not replay a billable POST after a retryable response', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('limited', { status: 429 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await fetchWithRetry('https://api.example.test/images', { method: 'POST' }, { attempts: 3 });
+
+    expect(response.status).toBe(429);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('keeps plain-text errors and provider request IDs', async () => {
@@ -120,6 +131,28 @@ describe('voice API payloads', () => {
   });
 });
 
+describe('image API payloads', () => {
+  it('uses the valid landscape DALL-E 3 size and forwards cancellation', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json({ data: [{ b64_json: 'aGVsbG8=' }] }));
+    vi.stubGlobal('fetch', fetchMock);
+    const controller = new AbortController();
+
+    await generateImage(
+      { ...baseSettings, image: { provider: 'openai', model: 'dall-e-3' } },
+      'A friendly bear in a storybook garden',
+      undefined,
+      controller.signal,
+    );
+
+    const init = fetchMock.mock.calls[0][1] as RequestInit;
+    const body = JSON.parse(String(init.body));
+    expect(body).toMatchObject({ model: 'dall-e-3', size: '1536x1024', response_format: 'b64_json' });
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+  });
+});
+
 describe('video API payloads', () => {
   it('creates OpenAI Sora jobs with multipart form data', async () => {
     vi.useFakeTimers();
@@ -137,8 +170,9 @@ describe('video API payloads', () => {
       },
       'A moonlit storybook forest',
     );
+    const rejected = expect(pending).rejects.toThrow('Sora reported the job failed');
     await vi.advanceTimersByTimeAsync(5000);
-    await pending;
+    await rejected;
 
     const init = fetchMock.mock.calls[0][1] as RequestInit;
     expect(init.body).toBeInstanceOf(FormData);

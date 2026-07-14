@@ -237,6 +237,99 @@
   margin-bottom: 8px;
 }
 
+/* Cost confirmation */
+.cost-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(35, 22, 45, 0.52);
+  backdrop-filter: blur(8px);
+}
+.cost-dialog {
+  width: min(680px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
+  overflow: auto;
+  padding: 28px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  box-shadow: 0 24px 80px rgba(30, 15, 38, 0.32);
+}
+.cost-dialog h2 {
+  margin: 8px 0 10px;
+  font-size: clamp(27px, 4vw, 36px);
+}
+.cost-total {
+  margin: 0;
+  color: var(--text);
+  font-size: 17px;
+}
+.cost-total strong {
+  color: var(--accent);
+  font-size: 24px;
+}
+.cost-total-warning {
+  color: var(--terracotta-deep);
+}
+.cost-intro,
+.cost-note {
+  margin: 10px 0 0;
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.cost-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.cost-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cost-line > div {
+  min-width: 0;
+}
+.cost-line strong,
+.cost-line span {
+  display: block;
+}
+.cost-line strong {
+  font-size: 14px;
+}
+.cost-line span {
+  margin-top: 3px;
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.cost-line > b {
+  color: var(--accent);
+  font-size: 14px;
+  white-space: nowrap;
+}
+.cost-line > b.cost-unknown {
+  color: var(--terracotta-deep);
+  white-space: normal;
+  text-align: right;
+}
+.cost-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
 /* Weaving overlay */
 .weave-overlay {
   position: fixed;
@@ -305,5 +398,15 @@
 @media (max-width: 520px) {
   .field-row {
     grid-template-columns: 1fr;
+  }
+  .cost-backdrop {
+    padding: 12px;
+  }
+  .cost-dialog {
+    max-height: calc(100vh - 24px);
+    padding: 22px;
+  }
+  .cost-actions .btn {
+    flex: 1;
   }
 }

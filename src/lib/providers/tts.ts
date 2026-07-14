@@ -7,8 +7,9 @@ export async function generateNarration(
   settings: Settings,
   text: string,
   _onProgress?: OnProgress,
+  signal?: AbortSignal,
 ): Promise<string | undefined> {
-  if (settings.tts.provider === 'xai') return xaiNarration(settings, text);
+  if (settings.tts.provider === 'xai') return xaiNarration(settings, text, signal);
   if (settings.tts.provider !== 'openai') return undefined; // 'browser' narrates live; 'none' is silent
   const key = normalizeApiKey(settings.keys.openai);
   if (!key) throw new Error('Add your OpenAI API key in Settings to generate narration.');
@@ -27,6 +28,7 @@ export async function generateNarration(
           ? { instructions: 'Read warmly and slowly, like a bedtime story for a young child.' }
           : {}),
       }),
+      signal,
     },
     { timeoutMs: 120_000 },
   );
@@ -35,7 +37,7 @@ export async function generateNarration(
   return URL.createObjectURL(blob);
 }
 
-async function xaiNarration(settings: Settings, text: string): Promise<string> {
+async function xaiNarration(settings: Settings, text: string, signal?: AbortSignal): Promise<string> {
   const key = normalizeApiKey(settings.keys.xai);
   if (!key) throw new Error('Add your xAI API key in Settings to generate narration.');
   const res = await fetchWithRetry(
@@ -49,6 +51,7 @@ async function xaiNarration(settings: Settings, text: string): Promise<string> {
         language: 'auto',
         output_format: { codec: 'mp3', sample_rate: 24000, bit_rate: 128000 },
       }),
+      signal,
     },
     { timeoutMs: 120_000 },
   );

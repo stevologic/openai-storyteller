@@ -31,6 +31,17 @@ import './reader.css';
 
 type Slide = { kind: 'cover' } | { kind: 'page'; index: number } | { kind: 'end' };
 
+function revokeObjectUrl(url?: string): void {
+  if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
+}
+
+/** A changed slide makes any previously rendered whole-book video stale. */
+function withoutStoryVideo(story: RenderedStory): Omit<RenderedStory, 'storyVideoUrl' | 'storyVideoName'> {
+  revokeObjectUrl(story.storyVideoUrl);
+  const { storyVideoUrl: _storyVideoUrl, storyVideoName: _storyVideoName, ...withoutVideo } = story;
+  return withoutVideo;
+}
+
 /** Split text into word tokens with their start offsets, for karaoke highlight. */
 function tokenize(text: string): { word: string; start: number }[] {
   const out: { word: string; start: number }[] = [];
@@ -58,6 +69,7 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
   const [videoExport, setVideoExport] = useState<{ ratio: number; message: string } | null>(null);
   const [publishOpen, setPublishOpen] = useState(false);
   const [slideRegen, setSlideRegen] = useState<{ message: string; error?: boolean } | null>(null);
+  const [fileSave, setFileSave] = useState<{ message: string; error?: boolean } | null>(null);
   const [copied, setCopied] = useState('');
   const ambient = useRef<Ambient>(new Ambient());
   const advanceTimer = useRef<number | undefined>(undefined);
@@ -111,7 +123,7 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
           { preferMp4: true, audio: silent ? 'none' : 'narration' },
         );
         if (!silent) {
-          if (story.storyVideoUrl?.startsWith('blob:')) URL.revokeObjectURL(story.storyVideoUrl);
+          revokeObjectUrl(story.storyVideoUrl);
           setStory({
             ...story,
             storyVideoUrl: URL.createObjectURL(blob),
@@ -131,6 +143,20 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
     [story, narration, setStory],
   );
 
+  const saveStoryFile = useCallback(async () => {
+    if (fileSave) return;
+    setFileSave({ message: 'Packing the generated narration and video into your story file...' });
+    try {
+      await saveStoryJson(story);
+      setFileSave(null);
+    } catch (error) {
+      setFileSave({
+        message: error instanceof Error ? error.message : 'Could not save this story file.',
+        error: true,
+      });
+    }
+  }, [fileSave, story]);
+
   const regenerateSlide = useCallback(async () => {
     if (story.demo || slide.kind === 'end') return;
     if (settings.image.provider === 'none') {
@@ -148,13 +174,16 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
       const imageUrl = await generateImage(settings, prompt, story.artStyle);
       if (!imageUrl) throw new Error('The illustration provider returned no image.');
 
+      const updatedStory = withoutStoryVideo(story);
       if (slide.kind === 'cover') {
-        setStory({ ...story, coverImageUrl: imageUrl, coverSceneId: undefined });
+        setStory({ ...updatedStory, coverImageUrl: imageUrl, coverSceneId: undefined });
       } else {
-        const pages = story.pages.map((item, index) =>
-          index === slide.index ? { ...item, imageUrl, videoUrl: undefined, sceneId: undefined } : item,
-        );
-        setStory({ ...story, pages });
+        const pages = updatedStory.pages.map((item, index) => {
+          if (index !== slide.index) return item;
+          revokeObjectUrl(item.videoUrl);
+          return { ...item, imageUrl, videoUrl: undefined, sceneId: undefined };
+        });
+        setStory({ ...updatedStory, pages });
       }
       setSlideRegen(null);
     } catch (error) {
@@ -310,13 +339,18 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
               <div className="reader-end">
                 <h2>The End</h2>
                 {story.moral && <p className="reader-moral">“{story.moral}”</p>}
+                {story.generationWarnings?.map((warning) => (
+                  <p key={warning} className="reader-generation-warning" role="status">
+                    {warning}
+                  </p>
+                ))}
                 <div className="reader-end-actions">
                   <button className="btn btn-ghost" onClick={() => setPos(0)}>
                     Read again
                   </button>
                   {!story.demo && (
-                    <button className="btn btn-ghost" onClick={() => saveStoryJson(story)}>
-                      <IconDownload /> Save file
+                    <button className="btn btn-ghost" onClick={saveStoryFile} disabled={Boolean(fileSave)}>
+                      <IconDownload /> {fileSave ? 'Saving...' : 'Save file'}
                     </button>
                   )}
                   {!story.demo && storyHasImages(story) && (
@@ -374,8 +408,8 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
             </button>
           )}
           {!story.demo && (
-            <button className="reader-chip" onClick={() => saveStoryJson(story)} title="Save this story to a file">
-              <IconDownload /> <span className="reader-chip-label">Save</span>
+            <button className="reader-chip" onClick={saveStoryFile} disabled={Boolean(fileSave)} title="Save this story to a file">
+              <IconDownload /> <span className="reader-chip-label">{fileSave ? 'Saving...' : 'Save'}</span>
             </button>
           )}
           <button
@@ -459,6 +493,23 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
               <p className="video-hint">{slideRegen.message}</p>
               {slideRegen.error && (
                 <button className="btn btn-primary slide-regen-close" onClick={() => setSlideRegen(null)}>
+                  Close
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {fileSave && (
+          <motion.div className="video-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="video-card">
+              {!fileSave.error && <div className="video-spinner" />}
+              <h2>{fileSave.error ? 'Saving stopped' : 'Saving your story file...'}</h2>
+              <p className="video-hint">{fileSave.message}</p>
+              {fileSave.error && (
+                <button className="btn btn-primary slide-regen-close" onClick={() => setFileSave(null)}>
                   Close
                 </button>
               )}

@@ -98,11 +98,12 @@ async function anthropicVision(key: string, model: string, imageDataUrl: string)
 }
 
 async function googleVision(key: string, model: string, imageDataUrl: string): Promise<string> {
+  key = normalizeApiKey(key);
   const { mediaType, base64 } = parseDataUrl(imageDataUrl);
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
     model,
   )}:generateContent?key=${encodeURIComponent(key)}`;
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

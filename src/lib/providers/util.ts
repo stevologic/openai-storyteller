@@ -200,6 +200,11 @@ export async function fetchWithRetry(
   const attempts = Math.max(1, options.attempts ?? 3);
   const timeoutMs = Math.max(1000, options.timeoutMs ?? 180_000);
   const method = (init.method ?? 'GET').toUpperCase();
+  // Creation requests can be billable even when the connection drops after the
+  // provider accepts them. Never replay a non-idempotent request automatically:
+  // callers can safely retry it from the UI instead of receiving duplicate work
+  // (and an inaccurate cost estimate).
+  const canRetry = method === 'GET' || method === 'HEAD' || method === 'OPTIONS';
 
   for (let attempt = 0; attempt < attempts; attempt++) {
     if (init.signal?.aborted) {
@@ -208,11 +213,11 @@ export async function fetchWithRetry(
     const timed = attemptSignal(init.signal, timeoutMs);
     try {
       const response = await fetch(input, { ...init, signal: timed.signal });
-      if (!(await isRetryableResponse(response)) || attempt === attempts - 1) return response;
+      if (!canRetry || !(await isRetryableResponse(response)) || attempt === attempts - 1) return response;
       await response.body?.cancel().catch(() => undefined);
       await sleep(retryDelayMs(response, attempt));
     } catch (error) {
-      const mayRetryNetworkError = method === 'GET' && attempt < attempts - 1 && !init.signal?.aborted;
+      const mayRetryNetworkError = canRetry && attempt < attempts - 1 && !init.signal?.aborted;
       if (!mayRetryNetworkError) throw error;
       await sleep(Math.min(5000, 500 * 2 ** attempt));
     } finally {

@@ -6,15 +6,16 @@ export async function generateImage(
   settings: Settings,
   prompt: string,
   _styleKey?: string,
+  signal?: AbortSignal,
 ): Promise<string | undefined> {
   const { provider, model } = settings.image;
   switch (provider) {
     case 'openai':
-      return openaiImage(settings.keys.openai, model, prompt);
+      return openaiImage(settings.keys.openai, model, prompt, signal);
     case 'google':
-      return googleImagen(settings.keys.google, model, prompt);
+      return googleImagen(settings.keys.google, model, prompt, signal);
     case 'xai':
-      return xaiImage(settings.keys.xai, model, prompt);
+      return xaiImage(settings.keys.xai, model, prompt, signal);
     case 'none':
       return undefined;
     default:
@@ -22,7 +23,7 @@ export async function generateImage(
   }
 }
 
-async function xaiImage(key: string, model: string, prompt: string): Promise<string> {
+async function xaiImage(key: string, model: string, prompt: string, signal?: AbortSignal): Promise<string> {
   key = normalizeApiKey(key);
   if (!key) throw new Error('Add your xAI API key in Settings to generate illustrations.');
   const res = await fetchWithRetry('https://api.x.ai/v1/images/generations', {
@@ -36,6 +37,7 @@ async function xaiImage(key: string, model: string, prompt: string): Promise<str
       aspect_ratio: '16:9',
       resolution: '2k',
     }),
+    signal,
   });
   if (!res.ok) throw await describeHttpError(res, 'xAI Images');
   const data = await res.json();
@@ -44,7 +46,7 @@ async function xaiImage(key: string, model: string, prompt: string): Promise<str
   return base64ToDataUrl(b64, 'image/jpeg');
 }
 
-async function openaiImage(key: string, model: string, prompt: string): Promise<string> {
+async function openaiImage(key: string, model: string, prompt: string, signal?: AbortSignal): Promise<string> {
   key = normalizeApiKey(key);
   if (!key) throw new Error('Add your OpenAI API key in Settings to generate illustrations.');
   const isDalle = model.startsWith('dall-e');
@@ -52,7 +54,10 @@ async function openaiImage(key: string, model: string, prompt: string): Promise<
     model,
     prompt,
     n: 1,
-    size: isDalle ? '1792x1024' : '1536x1024',
+    // DALL·E 3's supported landscape size is 1536×1024. Keeping both OpenAI
+    // image paths on a valid landscape shape prevents a paid request from
+    // failing before it produces an illustration.
+    size: '1536x1024',
   };
   // gpt-image-1 always returns b64 and rejects response_format; DALL·E needs it.
   if (isDalle) body.response_format = 'b64_json';
@@ -62,6 +67,7 @@ async function openaiImage(key: string, model: string, prompt: string): Promise<
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
     body: JSON.stringify(body),
+    signal,
   });
   if (!res.ok) throw await describeHttpError(res, 'OpenAI Images');
   const data = await res.json();
@@ -70,18 +76,20 @@ async function openaiImage(key: string, model: string, prompt: string): Promise<
   return base64ToDataUrl(b64, 'image/png');
 }
 
-async function googleImagen(key: string, model: string, prompt: string): Promise<string> {
+async function googleImagen(key: string, model: string, prompt: string, signal?: AbortSignal): Promise<string> {
+  key = normalizeApiKey(key);
   if (!key) throw new Error('Add your Google AI API key in Settings to generate illustrations.');
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
     model,
   )}:predict?key=${encodeURIComponent(key)}`;
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       instances: [{ prompt }],
       parameters: { sampleCount: 1, aspectRatio: '16:9', personGeneration: 'allow_all' },
     }),
+    signal,
   });
   if (!res.ok) throw await describeHttpError(res, 'Google Imagen');
   const data = await res.json();

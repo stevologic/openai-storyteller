@@ -11,6 +11,8 @@ import { buildYouTubeMetadata } from './youtube';
 const CW = 1280;
 const CH = 720;
 const SERIF = 'Fraunces, Georgia, serif';
+const MEDIA_LOAD_TIMEOUT_MS = 20_000;
+const FONT_LOAD_TIMEOUT_MS = 5_000;
 
 export type VideoProgress = (info: { message: string; ratio: number }) => void;
 
@@ -30,6 +32,8 @@ interface Slide {
   body: string;
   motion: string;
   img: HTMLImageElement | null;
+  /** Optional generated page clip; it is drawn into the canvas export too. */
+  video: HTMLVideoElement | null;
   audioUrl?: string;
   duration: number;
 }
@@ -39,10 +43,55 @@ interface Slide {
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    let settled = false;
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      img.onload = null;
+      img.onerror = null;
+      if (error) reject(error);
+      else resolve(img);
+    };
+    const timer = window.setTimeout(() => {
+      img.src = '';
+      finish(new Error('Image loading timed out.'));
+    }, MEDIA_LOAD_TIMEOUT_MS);
     img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('image failed to load'));
+    img.onload = () => finish();
+    img.onerror = () => finish(new Error('Image failed to load.'));
     img.src = src;
+  });
+}
+
+function loadVideo(src: string): Promise<HTMLVideoElement> {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    let settled = false;
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      video.onloadeddata = null;
+      video.onerror = null;
+      if (error) reject(error);
+      else resolve(video);
+    };
+    const timer = window.setTimeout(() => {
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+      finish(new Error('Video loading timed out.'));
+    }, MEDIA_LOAD_TIMEOUT_MS);
+    video.crossOrigin = 'anonymous';
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.onloadeddata = () => finish();
+    video.onerror = () => finish(new Error('Video failed to load.'));
+    video.src = src;
+    video.load();
   });
 }
 
@@ -69,14 +118,99 @@ async function resolveImage(url?: string, sceneId?: string): Promise<HTMLImageEl
   return null;
 }
 
+async function resolveVideo(url?: string): Promise<HTMLVideoElement | null> {
+  if (!url) return null;
+  try {
+    return await loadVideo(url);
+  } catch {
+    return null;
+  }
+}
+
 function audioDuration(url: string): Promise<number> {
   return new Promise((resolve) => {
     const a = new Audio();
+    let settled = false;
+    const cancelLoad = () => {
+      a.pause();
+      a.removeAttribute('src');
+      a.load();
+    };
+    const finish = (duration = 5) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      a.onloadedmetadata = null;
+      a.onerror = null;
+      resolve(duration);
+    };
+    const timer = window.setTimeout(() => {
+      finish();
+      cancelLoad();
+    }, MEDIA_LOAD_TIMEOUT_MS);
     a.preload = 'metadata';
-    a.onloadedmetadata = () => resolve(Number.isFinite(a.duration) && a.duration > 0 ? a.duration : 5);
-    a.onerror = () => resolve(5);
+    a.onloadedmetadata = () => finish(Number.isFinite(a.duration) && a.duration > 0 ? a.duration : 5);
+    a.onerror = () => {
+      finish();
+      cancelLoad();
+    };
     a.src = url;
   });
+}
+
+function waitFor<T>(promise: Promise<T>, timeoutMs: number): Promise<T | undefined> {
+  return new Promise((resolve) => {
+    const timer = window.setTimeout(() => resolve(undefined), timeoutMs);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      () => {
+        window.clearTimeout(timer);
+        resolve(undefined);
+      },
+    );
+  });
+}
+
+function waitForResult<T>(promise: Promise<T>, timeoutMs: number, timeoutMessage: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
+/** Decode narration for capture without calling HTMLMediaElement.play(). That
+ * keeps automatic exports from depending on a user-activation token that has
+ * expired while the story's remote media was being generated. */
+async function decodeNarration(context: AudioContext, url: string): Promise<AudioBuffer> {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), MEDIA_LOAD_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) throw new Error(`Narration audio could not be loaded (${response.status}).`);
+    const data = await response.arrayBuffer();
+    return await waitForResult(
+      context.decodeAudioData(data),
+      MEDIA_LOAD_TIMEOUT_MS,
+      'Narration audio decoding timed out.',
+    );
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error('Narration audio loading timed out.');
+    throw error;
+  } finally {
+    window.clearTimeout(timer);
+  }
 }
 
 function words(s: string): number {
@@ -91,49 +225,64 @@ function slugify(s: string): string {
 /* ---------- slide model ---------- */
 
 async function buildSlides(story: RenderedStory, onProgress: VideoProgress): Promise<Slide[]> {
-  const slides: Slide[] = [];
-  onProgress({ message: 'Loading art…', ratio: 0.02 });
+  onProgress({ message: `Loading ${story.pages.length} page${story.pages.length === 1 ? '' : 's'} in parallel…`, ratio: 0.02 });
+  let loadedPages = 0;
+  const pageSlides = Promise.all(
+    story.pages.map(async (page, index) => {
+      const [img, video, narrationDuration] = await Promise.all([
+        resolveImage(page.imageUrl, story.demo ? page.sceneId : undefined),
+        resolveVideo(page.videoUrl),
+        page.audioUrl ? audioDuration(page.audioUrl) : Promise.resolve(undefined),
+      ]);
+      loadedPages++;
+      onProgress({
+        message: `Loaded page ${index + 1} (${loadedPages}/${story.pages.length})…`,
+        ratio: 0.02 + (0.3 * loadedPages) / Math.max(1, story.pages.length),
+      });
+      return {
+        kind: 'page' as const,
+        eyebrow: page.header,
+        title: '',
+        sub: '',
+        body: page.text,
+        // Let generated motion speak for itself rather than adding Ken Burns.
+        motion: video ? 'still' : page.motion,
+        img,
+        video,
+        audioUrl: page.audioUrl,
+        duration: narrationDuration ? narrationDuration + 0.8 : Math.min(9, Math.max(4, words(page.text) * 0.34)),
+      };
+    }),
+  );
+  const coverImage = resolveImage(story.coverImageUrl, story.demo ? story.coverSceneId : undefined);
+  const endImage = resolveImage(story.demo ? undefined : story.coverImageUrl, story.demo ? 'end' : undefined);
+  const [cover, pages, end] = await Promise.all([coverImage, pageSlides, endImage]);
 
-  slides.push({
-    kind: 'cover',
-    eyebrow: '',
-    title: story.title,
-    sub: story.dedication ?? '',
-    body: '',
-    motion: 'still',
-    img: await resolveImage(story.coverImageUrl, story.demo ? story.coverSceneId : undefined),
-    duration: 4.5,
-  });
-
-  for (let i = 0; i < story.pages.length; i++) {
-    const p = story.pages[i];
-    onProgress({ message: `Loading page ${i + 1}…`, ratio: 0.02 + (0.3 * i) / story.pages.length });
-    const dur = p.audioUrl ? (await audioDuration(p.audioUrl)) + 0.8 : Math.min(9, Math.max(4, words(p.text) * 0.34));
-    slides.push({
-      kind: 'page',
-      eyebrow: p.header,
-      title: '',
-      sub: '',
-      body: p.text,
-      motion: p.motion,
-      img: await resolveImage(p.imageUrl, story.demo ? p.sceneId : undefined),
-      audioUrl: p.audioUrl,
-      duration: dur,
-    });
-  }
-
-  slides.push({
-    kind: 'end',
-    eyebrow: '',
-    title: 'The End',
-    sub: story.moral ? `“${story.moral}”` : '',
-    body: '',
-    motion: 'drift',
-    img: await resolveImage(story.demo ? undefined : story.coverImageUrl, story.demo ? 'end' : undefined),
-    duration: 5,
-  });
-
-  return slides;
+  return [
+    {
+      kind: 'cover',
+      eyebrow: '',
+      title: story.title,
+      sub: story.dedication ?? '',
+      body: '',
+      motion: 'still',
+      img: cover,
+      video: null,
+      duration: 4.5,
+    },
+    ...pages,
+    {
+      kind: 'end',
+      eyebrow: '',
+      title: 'The End',
+      sub: story.moral ? `“${story.moral}”` : '',
+      body: '',
+      motion: 'drift',
+      img: end,
+      video: null,
+      duration: 5,
+    },
+  ];
 }
 
 /* ---------- drawing ---------- */
@@ -156,19 +305,35 @@ function kenBurns(motion: string, t: number): { scale: number; ox: number; oy: n
   }
 }
 
-function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement | null, motion: string, t: number): void {
-  if (img) drawMedia(ctx, img, motion, t);
+function drawCover(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement | null,
+  video: HTMLVideoElement | null,
+  motion: string,
+  t: number,
+): void {
+  const media = video && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA ? video : img;
+  if (media) drawMedia(ctx, media, motion, t);
   else drawGradient(ctx);
 }
 
-function drawMedia(ctx: CanvasRenderingContext2D, img: HTMLImageElement, motion: string, t: number): void {
-  const iw = img.naturalWidth || CW;
-  const ih = img.naturalHeight || CH;
+function drawMedia(
+  ctx: CanvasRenderingContext2D,
+  media: HTMLImageElement | HTMLVideoElement,
+  motion: string,
+  t: number,
+): void {
+  const isVideo = 'videoWidth' in media;
+  const iw = (isVideo ? media.videoWidth : media.naturalWidth) || CW;
+  const ih = (isVideo ? media.videoHeight : media.naturalHeight) || CH;
   const { scale, ox, oy } = kenBurns(motion, t);
   const base = Math.max(CW / iw, CH / ih) * scale;
   const dw = iw * base;
   const dh = ih * base;
-  ctx.drawImage(img, (CW - dw) / 2 + ox, (CH - dh) / 2 + oy, dw, dh);
+  const x = (CW - dw) / 2 + ox;
+  const y = (CH - dh) / 2 + oy;
+  if (isVideo) ctx.drawImage(media, x, y, dw, dh);
+  else ctx.drawImage(media, x, y, dw, dh);
 }
 
 function drawGradient(ctx: CanvasRenderingContext2D): void {
@@ -240,7 +405,7 @@ function drawSlide(ctx: CanvasRenderingContext2D, s: Slide, t: number, fade: num
   ctx.save();
   ctx.globalAlpha = fade;
 
-  drawCover(ctx, s.img, s.motion, t);
+  drawCover(ctx, s.img, s.video, s.motion, t);
 
   // bottom scrim
   const g = ctx.createLinearGradient(0, CH * 0.4, 0, CH);
@@ -328,24 +493,94 @@ export interface VideoResult {
   youtubeMetadata: YouTubeMetadata;
 }
 
+export interface VideoRenderOptions {
+  preferMp4?: boolean;
+  audio?: 'narration' | 'none';
+  /** Context unlocked synchronously from the user's Create button, when one is available. */
+  audioContext?: AudioContext;
+}
+
 /** Render the whole story to a video Blob (real-time capture). Prefers MP4
  *  (H.264/AAC) when the browser can record it, else falls back to WebM. */
 export async function renderStoryToVideo(
   story: RenderedStory,
   onProgress: VideoProgress,
-  opts: { preferMp4?: boolean; audio?: 'narration' | 'none' } = {},
+  opts: VideoRenderOptions = {},
 ): Promise<VideoResult> {
   if (!videoExportSupported()) throw new Error('Video export is not supported in this browser. Try Chrome, Edge, or Firefox.');
 
   onProgress({ message: 'Preparing…', ratio: 0 });
+  const wantAudio = (opts.audio ?? 'narration') !== 'none';
+  let actx: AudioContext | null = opts.audioContext ?? null;
+  let resumeResult: Promise<boolean> | null = null;
+  // This runs synchronously before the first await. For a manual export, it
+  // preserves that button's user activation; automatic exports receive a
+  // context unlocked by Studio when Create storybook was clicked.
+  if (wantAudio && !actx) {
+    const AudioCtor = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (AudioCtor) actx = new AudioCtor();
+  }
+  if (actx && actx.state !== 'running') {
+    resumeResult = actx.resume().then(
+      () => actx?.state === 'running',
+      () => false,
+    );
+  }
+  const audioBuffers = new Map<number, AudioBuffer>();
+  const narrationSources = new Set<AudioBufferSourceNode>();
+  let narrationDestination: MediaStreamAudioDestinationNode | null = null;
+  let slides: Slide[] = [];
+  let stream: MediaStream | null = null;
+  let recorder: MediaRecorder | null = null;
+
   try {
-    await (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts?.ready;
-  } catch {
-    /* fonts optional */
+  const fonts = (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts;
+  if (fonts?.ready) await waitFor(fonts.ready, FONT_LOAD_TIMEOUT_MS);
+
+  slides = await buildSlides(story, onProgress);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = CW;
+  canvas.height = CH;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Could not create a drawing canvas.');
+
+  // Audio: the selected narration voice only — no ambient/background track, so
+  // the video is clean. Omit the audio track entirely for a silent file (or when
+  // there's no narration), giving a social-ready, no-audio video.
+  const hasNarration = slides.some((s) => s.audioUrl);
+  const audioTracks: MediaStreamTrack[] = [];
+  if (wantAudio && hasNarration) {
+    if (!actx) {
+      throw new Error('This browser cannot capture narration into the video. Export a silent video instead.');
+    }
+    const audioContext = actx;
+    const narrationContextRunning = () => audioContext.state === 'running';
+    if (!narrationContextRunning()) {
+      const resumed = await (resumeResult ??
+        audioContext.resume().then(
+          () => actx?.state === 'running',
+          () => false,
+        ));
+      if (!resumed || !narrationContextRunning()) {
+        throw new Error('Narration capture needs a user click. Use “Re-generate video” from the final page to save a voiced video.');
+      }
+    }
+    narrationDestination = audioContext.createMediaStreamDestination();
+    onProgress({ message: 'Preparing narration for video…', ratio: 0.32 });
+    await Promise.all(
+      slides.map(async (slide, index) => {
+        if (!slide.audioUrl) return;
+        const buffer = await decodeNarration(audioContext, slide.audioUrl);
+        audioBuffers.set(index, buffer);
+        slide.duration = buffer.duration + 0.8;
+      }),
+    );
+    if (!audioBuffers.size) throw new Error('Narration audio could not be prepared for this video.');
+    audioTracks.push(...narrationDestination.stream.getAudioTracks());
   }
 
-  const slides = await buildSlides(story, onProgress);
-  const total = slides.reduce((a, s) => a + s.duration, 0);
+  const total = slides.reduce((sum, slide) => sum + slide.duration, 0);
   const youtubeMetadata = buildYouTubeMetadata(
     story,
     slides.map((slide, index) => ({
@@ -359,98 +594,145 @@ export async function renderStoryToVideo(
     })),
   );
 
-  const canvas = document.createElement('canvas');
-  canvas.width = CW;
-  canvas.height = CH;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Could not create a drawing canvas.');
-
-  // Audio: the selected narration voice only — no ambient/background track, so
-  // the video is clean. Omit the audio track entirely for a silent file (or when
-  // there's no narration), giving a social-ready, no-audio video.
-  const wantAudio = (opts.audio ?? 'narration') !== 'none';
-  const hasNarration = slides.some((s) => s.audioUrl);
-  const audioEls = new Map<number, HTMLAudioElement>();
-  const audioTracks: MediaStreamTrack[] = [];
-  let actx: AudioContext | null = null;
-  if (wantAudio && hasNarration) {
-    const AudioCtor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    actx = new AudioCtor();
-    await actx.resume().catch(() => {});
-    const dest = actx.createMediaStreamDestination();
-    slides.forEach((s, i) => {
-      if (!s.audioUrl) return;
-      try {
-        const a = new Audio(s.audioUrl);
-        a.crossOrigin = 'anonymous';
-        const src = actx!.createMediaElementSource(a);
-        // Feed narration only to the MediaRecorder mix. Connecting this source
-        // to actx.destination also plays it through the user's speakers while
-        // the real-time video render is still being saved.
-        src.connect(dest);
-        audioEls.set(i, a);
-      } catch {
-        /* skip narration for this page */
-      }
-    });
-    audioTracks.push(...dest.stream.getAudioTracks());
-  }
-
   const videoStream = canvas.captureStream(30);
-  const stream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
+  const activeStream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
+  stream = activeStream;
   const mime = pickMime(opts.preferMp4 ?? true);
   const ext = mime.includes('mp4') ? 'mp4' : 'webm';
-  const recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 4_500_000 } : undefined);
+  const activeRecorder = new MediaRecorder(
+    activeStream,
+    mime ? { mimeType: mime, videoBitsPerSecond: 4_500_000 } : undefined,
+  );
+  recorder = activeRecorder;
   const chunks: BlobPart[] = [];
-  recorder.ondataavailable = (e) => {
+  let abortTimeline: ((error: Error) => void) | undefined;
+  let recorderError: Error | undefined;
+  activeRecorder.ondataavailable = (e) => {
     if (e.data && e.data.size) chunks.push(e.data);
   };
-  const finished = new Promise<Blob>((resolve) => {
-    recorder.onstop = () => resolve(new Blob(chunks, { type: mime || 'video/webm' }));
-  });
-  recorder.start(250);
-
-  // Draw the timeline in real time. A timer (not rAF) drives it so recording
-  // keeps advancing even if the tab is backgrounded.
-  await new Promise<void>((resolve) => {
-    const start = performance.now();
-    const started = new Set<number>();
-    const bounds: number[] = [];
-    let acc = 0;
-    for (const s of slides) {
-      bounds.push(acc);
-      acc += s.duration;
-    }
-    const tick = () => {
-      const elapsed = (performance.now() - start) / 1000;
-      if (elapsed >= total) {
-        window.clearInterval(iv);
-        resolve();
+  const finished = new Promise<Blob>((resolve, reject) => {
+    activeRecorder.onstop = () => {
+      const blob = new Blob(chunks, { type: mime || 'video/webm' });
+      if (!blob.size) {
+        reject(new Error('The browser recorder finished without video data. Try exporting again.'));
         return;
       }
-      let idx = 0;
-      while (idx < slides.length - 1 && elapsed >= bounds[idx + 1]) idx++;
-      const s = slides[idx];
-      const localElapsed = elapsed - bounds[idx];
-      if (!started.has(idx)) {
-        started.add(idx);
-        audioEls.get(idx)?.play().catch(() => {});
-      }
-      drawSlide(ctx, s, Math.min(1, localElapsed / s.duration), fadeFor(localElapsed, s.duration));
-      onProgress({ message: `Recording video… ${idx + 1}/${slides.length}`, ratio: 0.32 + 0.66 * (elapsed / total) });
+      resolve(blob);
     };
-    const iv = window.setInterval(tick, 1000 / 30);
-    tick();
+    activeRecorder.onerror = () => {
+      const error = new Error('The browser video recorder failed.');
+      recorderError = error;
+      abortTimeline?.(error);
+      reject(error);
+    };
   });
+  // The recorder can fail while the timeline is still running. Attach a
+  // rejection handler immediately so it remains a visible, controlled error.
+  void finished.catch(() => undefined);
+  activeRecorder.start(250);
 
-  recorder.stop();
-  const blob = await finished;
+    // Draw the timeline in real time. A timer (not rAF) drives it so recording
+    // keeps advancing even if the tab is backgrounded.
+    await new Promise<void>((resolve, reject) => {
+      const start = performance.now();
+      const started = new Set<number>();
+      const bounds: number[] = [];
+      let activeVideo: HTMLVideoElement | null = null;
+      let interval = 0;
+      let complete = false;
+      let acc = 0;
+      for (const s of slides) {
+        bounds.push(acc);
+        acc += s.duration;
+      }
+      const finish = () => {
+        if (complete) return;
+        complete = true;
+        activeVideo?.pause();
+        window.clearInterval(interval);
+        resolve();
+      };
+      const fail = (reason: unknown) => {
+        if (complete) return;
+        complete = true;
+        activeVideo?.pause();
+        window.clearInterval(interval);
+        reject(reason instanceof Error ? reason : new Error('Video drawing failed.'));
+      };
+      abortTimeline = fail;
+      if (recorderError) {
+        fail(recorderError);
+        return;
+      }
+      const tick = () => {
+        try {
+        const elapsed = (performance.now() - start) / 1000;
+        if (elapsed >= total) {
+          finish();
+          return;
+        }
+        let idx = 0;
+        while (idx < slides.length - 1 && elapsed >= bounds[idx + 1]) idx++;
+        const s = slides[idx];
+        const localElapsed = elapsed - bounds[idx];
+        if (!started.has(idx)) {
+          started.add(idx);
+          const buffer = audioBuffers.get(idx);
+          if (buffer) {
+            if (!actx || !narrationDestination) throw new Error('Narration audio could not be mixed into this video.');
+            const source = actx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(narrationDestination);
+            narrationSources.add(source);
+            source.onended = () => narrationSources.delete(source);
+            source.start(0);
+          }
+        }
+        if (activeVideo !== s.video) {
+          activeVideo?.pause();
+          activeVideo = s.video;
+          if (activeVideo) {
+            try {
+              activeVideo.currentTime = 0;
+            } catch {
+              /* The initial frame remains usable when seeking is unavailable. */
+            }
+            activeVideo.play().catch(() => {});
+          }
+        }
+        drawSlide(ctx, s, Math.min(1, localElapsed / s.duration), fadeFor(localElapsed, s.duration));
+        onProgress({ message: `Recording video… ${idx + 1}/${slides.length}`, ratio: 0.32 + 0.66 * (elapsed / total) });
+        } catch (error) {
+          fail(error);
+        }
+      };
+      interval = window.setInterval(tick, 1000 / 30);
+      tick();
+    });
 
-  audioEls.forEach((a) => a.pause());
-  if (actx) setTimeout(() => actx.close().catch(() => {}), 300);
+    abortTimeline = undefined;
+    if (activeRecorder.state !== 'inactive') activeRecorder.stop();
+    const blob = await waitForResult(
+      finished,
+      MEDIA_LOAD_TIMEOUT_MS,
+      'The browser video recorder did not finish in time. Try exporting again.',
+    );
 
-  onProgress({ message: 'Done', ratio: 1 });
-  return { blob, filename: `${slugify(story.title)}.${ext}`, mime: mime || 'video/webm', youtubeMetadata };
+    onProgress({ message: 'Done', ratio: 1 });
+    return { blob, filename: `${slugify(story.title)}.${ext}`, mime: mime || 'video/webm', youtubeMetadata };
+  } finally {
+    if (recorder && recorder.state !== 'inactive') recorder.stop();
+    narrationSources.forEach((source) => {
+      try {
+        source.stop();
+      } catch {
+        /* An already-ended source does not need cleanup. */
+      }
+    });
+    slides.forEach((slide) => slide.video?.pause());
+    stream?.getTracks().forEach((track) => track.stop());
+    if (actx && actx.state !== 'closed') void actx.close().catch(() => {});
+  }
 }
 
 export function downloadBlob(blob: Blob, filename: string): void {

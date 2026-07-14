@@ -65,6 +65,8 @@ export interface RenderedStory
   storyVideoName?: string;
   /** YouTube-ready copy assembled after the final video timings are known. */
   youtubeMetadata?: YouTubeMetadata;
+  /** Non-fatal output issues, such as a browser video export that was skipped. */
+  generationWarnings?: string[];
   /** Present only for the bundled demo; renders vector scenes instead of images. */
   demo?: boolean;
 }

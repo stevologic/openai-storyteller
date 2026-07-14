@@ -20,10 +20,76 @@ function triggerDownload(href: string, filename: string): void {
   a.remove();
 }
 
-/** Save the whole rendered story (text + inlined media) as a single JSON file.
- *  Round-trips through openStoryFile() and is the cleanest way to hand off assets. */
-export function saveStoryJson(story: RenderedStory): void {
-  const json = JSON.stringify(story);
+function isBlobUrl(url: string | undefined): url is string {
+  return Boolean(url?.startsWith('blob:'));
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  // btoa accepts a binary string, not a Uint8Array. Chunking keeps the argument
+  // list small enough for sizeable generated clips.
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+  }
+  return btoa(binary);
+}
+
+async function blobUrlToDataUrl(url: string): Promise<string> {
+  let response: Response;
+  try {
+    response = await fetch(url);
+  } catch {
+    throw new Error('One of this story\'s generated assets is no longer available. Re-generate it before saving a portable story file.');
+  }
+  if (!response.ok) {
+    throw new Error('One of this story\'s generated assets could not be included in the saved file. Please try again.');
+  }
+  const blob = await response.blob();
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  return `data:${blob.type || 'application/octet-stream'};base64,${bytesToBase64(bytes)}`;
+}
+
+/**
+ * Turn browser-only object URLs into data URLs before writing a story file.
+ * Image providers already return data URLs, while generated narration and
+ * video clips use object URLs that stop working after the tab is closed.
+ */
+export async function makeStoryPortable(story: RenderedStory): Promise<RenderedStory> {
+  const converted = new Map<string, Promise<string>>();
+  const persistUrl = (url?: string): Promise<string | undefined> => {
+    if (!isBlobUrl(url)) return Promise.resolve(url);
+    let pending = converted.get(url);
+    if (!pending) {
+      pending = blobUrlToDataUrl(url);
+      converted.set(url, pending);
+    }
+    return pending;
+  };
+
+  const [coverImageUrl, storyVideoUrl, pages] = await Promise.all([
+    persistUrl(story.coverImageUrl),
+    persistUrl(story.storyVideoUrl),
+    Promise.all(
+      story.pages.map(async (page) => {
+        const [imageUrl, videoUrl, audioUrl] = await Promise.all([
+          persistUrl(page.imageUrl),
+          persistUrl(page.videoUrl),
+          persistUrl(page.audioUrl),
+        ]);
+        return { ...page, imageUrl, videoUrl, audioUrl };
+      }),
+    ),
+  ]);
+
+  return { ...story, coverImageUrl, storyVideoUrl, pages };
+}
+
+/** Save the whole rendered story and its generated media as one portable JSON file.
+ *  Round-trips through openStoryFile() across tabs and browser sessions. */
+export async function saveStoryJson(story: RenderedStory): Promise<void> {
+  const portableStory = await makeStoryPortable(story);
+  const json = JSON.stringify(portableStory);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   triggerDownload(url, `${slugify(story.title)}.storyteller.json`);

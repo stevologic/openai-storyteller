@@ -1,31 +1,22 @@
 import type { Settings } from '../types';
-import { describeHttpError, fetchWithRetry, isProviderHttpError, normalizeApiKey, sleep } from './util';
+import { describeHttpError, fetchWithRetry, normalizeApiKey, sleep } from './util';
 
-/** Best-effort short clip for a page. Video generation is slow (minutes) and
- *  async; on any failure we resolve to undefined so the reader falls back to
- *  cinematic Ken Burns motion. */
+/** Generate a short clip for a page. Failures are deliberately surfaced so an
+ * enabled paid feature can never silently produce a degraded book. */
 export async function generateVideo(
   settings: Settings,
   prompt: string,
   onTick?: (msg: string) => void,
 ): Promise<string | undefined> {
   if (!settings.video.enabled || settings.video.provider === 'none') return undefined;
-  try {
-    if (settings.video.provider === 'google') {
-      return await veo(settings.keys.google, settings.video.model, prompt, onTick);
-    }
-    if (settings.video.provider === 'openai') {
-      return await sora(settings.keys.openai, settings.video.model, prompt, onTick);
-    }
-    if (settings.video.provider === 'xai') {
-      return await grokImagine(settings.keys.xai, settings.video.model, prompt, onTick);
-    }
-  } catch (err) {
-    // Provider responses such as bad auth, invalid models, and exhausted quota
-    // must reach the UI; silently continuing would repeat the same failure for
-    // every remaining page.
-    if (isProviderHttpError(err)) throw err;
-    console.warn('Video generation failed, falling back to motion:', err);
+  if (settings.video.provider === 'google') {
+    return veo(settings.keys.google, settings.video.model, prompt, onTick);
+  }
+  if (settings.video.provider === 'openai') {
+    return sora(settings.keys.openai, settings.video.model, prompt, onTick);
+  }
+  if (settings.video.provider === 'xai') {
+    return grokImagine(settings.keys.xai, settings.video.model, prompt, onTick);
   }
   return undefined;
 }
@@ -88,15 +79,21 @@ async function veo(
   prompt: string,
   onTick?: (msg: string) => void,
 ): Promise<string | undefined> {
+  key = normalizeApiKey(key);
   if (!key) throw new Error('Google AI key required for Veo.');
-  const startRes = await fetch(
+  const startRes = await fetchWithRetry(
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
       model,
     )}:predictLongRunning?key=${encodeURIComponent(key)}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ instances: [{ prompt }], parameters: { aspectRatio: '16:9' } }),
+      // Pin the duration and resolution so the quote shown before generation
+      // matches the provider request. Veo 3.1 accepts 4/6/8-second clips.
+      body: JSON.stringify({
+        instances: [{ prompt }],
+        parameters: { aspectRatio: '16:9', durationSeconds: '4', resolution: '720p' },
+      }),
     },
   );
   if (!startRes.ok) throw await describeHttpError(startRes, 'Google Veo');
@@ -106,15 +103,22 @@ async function veo(
   for (let i = 0; i < 40; i++) {
     onTick?.(`Rendering video… (${i * 6}s)`);
     await sleep(6000);
-    const pollRes = await fetch(
+    const pollRes = await fetchWithRetry(
       `https://generativelanguage.googleapis.com/v1beta/${opName}?key=${encodeURIComponent(key)}`,
+      {},
+      { timeoutMs: 30_000 },
     );
     if (!pollRes.ok) throw await describeHttpError(pollRes, 'Google Veo');
     const status = await pollRes.json();
     if (status.done) {
       const uri = findUri(status.response);
       if (!uri) return undefined;
-      const dl = await fetch(uri.includes('key=') ? uri : `${uri}&key=${encodeURIComponent(key)}`);
+      const dl = await fetchWithRetry(
+        uri.includes('key=') ? uri : `${uri}&key=${encodeURIComponent(key)}`,
+        {},
+        { timeoutMs: 120_000 },
+      );
+      if (!dl.ok) throw await describeHttpError(dl, 'Google Veo download');
       const blob = await dl.blob();
       return URL.createObjectURL(blob);
     }

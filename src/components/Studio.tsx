@@ -4,9 +4,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from '../lib/store';
 import { ART_STYLE_PRESETS, TONE_PRESETS, LANGUAGES, providerLabel, TEXT_PROVIDERS, IMAGE_PROVIDERS } from '../lib/catalog';
 import { weaveStory } from '../lib/generate';
+import { estimateStoryCost, formatUsd, getGenerationConfigurationErrors, type StoryCostEstimate } from '../lib/cost';
 import { openStoryFile } from '../lib/exportStory';
 import { describeCharacter } from '../lib/providers/vision';
-import type { StoryBrief } from '../lib/types';
+import type { Settings, StoryBrief } from '../lib/types';
 import { Dropdown } from './Dropdown';
 import { IconSpark, IconSettings, IconImage } from './icons';
 import './studio.css';
@@ -51,6 +52,35 @@ const DEFAULT_BRIEF: StoryBrief = {
   language: 'English (US)',
 };
 
+interface GenerationPlan {
+  settings: Settings;
+  brief: StoryBrief;
+  estimate: StoryCostEstimate;
+}
+
+function snapshotSettings(settings: Settings): Settings {
+  return {
+    ...settings,
+    keys: { ...settings.keys },
+    text: { ...settings.text },
+    youtube: { ...settings.youtube },
+    image: { ...settings.image },
+    video: { ...settings.video },
+    tts: { ...settings.tts },
+    storyVideo: { ...settings.storyVideo },
+  };
+}
+
+/** Unlock narration capture while the Create storybook click is still active. */
+function unlockExportAudio(): AudioContext | undefined {
+  if (typeof window === 'undefined') return undefined;
+  const AudioCtor = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AudioCtor) return undefined;
+  const context = new AudioCtor();
+  void context.resume().catch(() => undefined);
+  return context;
+}
+
 // Shown one at a time while the writer model works (a single opaque call).
 const WRITING_STEPS = [
   'Dreaming up the story',
@@ -76,6 +106,7 @@ export default function Studio() {
   const customStyle = !ART_STYLE_PRESETS.includes(brief.artStyle);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingGeneration, setPendingGeneration] = useState<GenerationPlan | null>(null);
   const [writeStep, setWriteStep] = useState(0);
   const [describing, setDescribing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -128,8 +159,6 @@ export default function Studio() {
 
   const textProvider = TEXT_PROVIDERS.find((p) => p.id === settings.text.provider);
   const textKeyMissing = textProvider?.keyField ? !settings.keys[textProvider.keyField] : false;
-  const youtubeProvider = TEXT_PROVIDERS.find((p) => p.id === settings.youtube.provider);
-  const youtubeKeyMissing = youtubeProvider?.keyField ? !settings.keys[youtubeProvider.keyField] : false;
 
   const set = <K extends keyof StoryBrief>(k: K, v: StoryBrief[K]) =>
     setStoryBrief({ ...(useStore.getState().storyBrief ?? brief), [k]: v });
@@ -140,20 +169,32 @@ export default function Studio() {
       setError('Tell me what the story is about first.');
       return;
     }
-    if (textKeyMissing) {
-      setError(`Add your ${providerLabel(TEXT_PROVIDERS, settings.text.provider)} API key in Settings.`);
+    const configurationErrors = getGenerationConfigurationErrors(settings);
+    if (configurationErrors.length) {
+      setError(configurationErrors.join(' '));
       openSettings();
       return;
     }
-    if (youtubeKeyMissing) {
-      setError(`Add your ${providerLabel(TEXT_PROVIDERS, settings.youtube.provider)} API key for YouTube copy.`);
-      openSettings();
-      return;
-    }
+    const quoteSettings = snapshotSettings(settings);
+    const quoteBrief = { ...brief };
+    setPendingGeneration({
+      settings: quoteSettings,
+      brief: quoteBrief,
+      estimate: estimateStoryCost(quoteSettings, quoteBrief),
+    });
+  }
+
+  async function confirmWeave() {
+    const plan = pendingGeneration;
+    if (!plan) return;
+    const hasCloudNarration = plan.settings.tts.provider === 'openai' || plan.settings.tts.provider === 'xai';
+    const exportAudioContext =
+      plan.settings.storyVideo?.enabled !== false && hasCloudNarration ? unlockExportAudio() : undefined;
+    setPendingGeneration(null);
     setBusy(true);
     setProgress({ stage: 'writing', message: 'Warming up the storyteller…', ratio: 0.02 });
     try {
-      const story = await weaveStory(settings, brief, (p) => setProgress(p));
+      const story = await weaveStory(plan.settings, plan.brief, (p) => setProgress(p), { audioContext: exportAudioContext });
       setStory(story);
       setView('reader');
     } catch (err) {
@@ -161,6 +202,9 @@ export default function Studio() {
       setProgress({ stage: 'error', message: '', ratio: 0 });
     } finally {
       setBusy(false);
+      if (exportAudioContext && exportAudioContext.state !== 'closed') {
+        void exportAudioContext.close().catch(() => undefined);
+      }
     }
   }
 
@@ -380,6 +424,73 @@ export default function Studio() {
           </div>
         </aside>
       </div>
+
+      <AnimatePresence>
+        {pendingGeneration && (
+          <motion.div
+            className="cost-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setPendingGeneration(null)}
+          >
+            <motion.section
+              className="cost-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="cost-dialog-title"
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.98 }}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <span className="eyebrow">Before we begin</span>
+              <h2 id="cost-dialog-title">Estimated API cost</h2>
+              {pendingGeneration.estimate.hasUnknownCosts ? (
+                <p className="cost-total cost-total-warning">
+                  Known subtotal: <strong>{formatUsd(pendingGeneration.estimate.knownTotal)}</strong> USD. One or more selected models have no current standard price.
+                </p>
+              ) : (
+                <p className="cost-total">
+                  <strong>{formatUsd(pendingGeneration.estimate.knownTotal)}</strong> USD estimated for this {pendingGeneration.estimate.pageCount}-page book.
+                </p>
+              )}
+              <p className="cost-intro">No story, image, video, or voice API call is made until you confirm below.</p>
+
+              <div className="cost-lines">
+                {pendingGeneration.estimate.lines.map((line) => (
+                  <div className="cost-line" key={line.label}>
+                    <div>
+                      <strong>{line.label}</strong>
+                      <span>{line.basis}</span>
+                    </div>
+                    <b className={line.amount === undefined ? 'cost-unknown' : undefined}>
+                      {line.amount === undefined ? 'Price unavailable' : formatUsd(line.amount)}
+                    </b>
+                  </div>
+                ))}
+              </div>
+
+              {pendingGeneration.estimate.unknownReasons.length > 0 && (
+                <p className="cost-note">
+                  Check the provider pricing for: {pendingGeneration.estimate.unknownReasons.join(' ')}
+                </p>
+              )}
+              <p className="cost-note">
+                Text and narration are estimates because their final length is not known yet. Standard paid-tier price book: {pendingGeneration.estimate.pricedAt}.
+              </p>
+              <div className="cost-actions">
+                <button type="button" className="btn btn-ghost" onClick={() => setPendingGeneration(null)}>
+                  Cancel
+                </button>
+                <button type="button" className="btn btn-primary" onClick={confirmWeave}>
+                  <IconSpark /> Create storybook
+                </button>
+              </div>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {busy && (

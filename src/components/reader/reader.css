@@ -225,6 +225,18 @@
   flex-wrap: wrap;
   justify-content: center;
 }
+.reader-generation-warning {
+  max-width: 620px;
+  margin: 16px auto -8px;
+  padding: 9px 12px;
+  border: 1px solid rgba(244, 184, 96, 0.72);
+  border-radius: 10px;
+  background: rgba(18, 10, 35, 0.6);
+  color: #fff3d9;
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.4;
+}
 .reader-end-tip {
   margin-top: 22px;
 }

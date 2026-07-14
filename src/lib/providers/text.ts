@@ -123,11 +123,12 @@ async function googleText(
   req: TextRequest,
   maxTokens: number,
 ): Promise<string> {
+  key = normalizeApiKey(key);
   if (!key) throw new Error('Add your Google AI API key in Settings to use Gemini.');
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
     model,
   )}:generateContent?key=${encodeURIComponent(key)}`;
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

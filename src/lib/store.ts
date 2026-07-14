@@ -29,7 +29,15 @@ function sanitizeSettings(raw: unknown): Settings {
   const youtubeCandidate = s.youtube ?? text;
   const youtube = valid(TEXT_PROVIDERS, youtubeCandidate.provider) ? youtubeCandidate : text;
   const image = valid(IMAGE_PROVIDERS, s.image?.provider) ? s.image : DEFAULT_SETTINGS.image;
-  const video = valid(VIDEO_PROVIDERS, s.video?.provider) ? s.video : DEFAULT_SETTINGS.video;
+  const video = valid(VIDEO_PROVIDERS, s.video?.provider) ? { ...s.video } : { ...DEFAULT_SETTINGS.video };
+  // Veo 3.0 was retired in June 2026. Existing browser-local settings should
+  // not keep sending a model id that the provider has shut down.
+  if (
+    video.provider === 'google' &&
+    (video.model === 'veo-3.0-generate-001' || video.model === 'veo-3.0-fast-generate-001' || video.model === 'veo-2.0-generate-001')
+  ) {
+    video.model = 'veo-3.1-fast-generate-preview';
+  }
   const tts = valid(TTS_PROVIDERS, s.tts?.provider) ? { ...s.tts } : { ...DEFAULT_SETTINGS.tts };
   // Migrate persisted voice IDs that providers have removed. Without this,
   // existing browsers keep sending an invalid voice even after the catalog is fixed.
