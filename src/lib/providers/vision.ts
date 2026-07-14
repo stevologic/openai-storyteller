@@ -1,5 +1,5 @@
 import type { Settings } from '../types';
-import { describeHttpError, fetchWithRetry, type OnProgress } from './util';
+import { describeHttpError, fetchWithRetry, normalizeApiKey, type OnProgress } from './util';
 
 const DESCRIBE_PROMPT = `Look at this reference image and write a character description an illustrator could follow for a children's picture book.
 In 2–3 sentences describe only the character's appearance: what kind of character (a child, a person, an animal, a toy…), approximate age, hair, skin/fur colour, notable features, and clothing colours.
@@ -40,7 +40,7 @@ async function openaiCompatVision(
   model: string,
   imageDataUrl: string,
 ): Promise<string> {
-  key = key.trim();
+  key = normalizeApiKey(key);
   const res = await fetchWithRetry(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
@@ -65,7 +65,7 @@ async function openaiCompatVision(
 }
 
 async function anthropicVision(key: string, model: string, imageDataUrl: string): Promise<string> {
-  key = key.trim();
+  key = normalizeApiKey(key);
   const { mediaType, base64 } = parseDataUrl(imageDataUrl);
   const res = await fetchWithRetry('https://api.anthropic.com/v1/messages', {
     method: 'POST',

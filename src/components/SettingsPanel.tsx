@@ -11,8 +11,9 @@ import {
   XAI_VOICES,
 } from '../lib/catalog';
 import type { ModelOption, ProviderCatalogEntry, ProviderKeys, Settings } from '../lib/types';
-import { generateNarration, browserNarration } from '../lib/providers/tts';
+import { generateNarration, browserNarration, validateNarrationAccess } from '../lib/providers/tts';
 import { getProviderModels, resolveModels, type ModelCategory, type ProviderKey, type RawModel } from '../lib/providers/models';
+import { apiKeyEnding, normalizeApiKey } from '../lib/providers/util';
 import { Dropdown } from './Dropdown';
 import { IconClose, IconKey, IconVolume } from './icons';
 import './settings.css';
@@ -28,12 +29,15 @@ const PREVIEW_LINE = 'Once upon a time, a tiny star wished to shine as bright as
  *  speaks live for free. */
 function NarrationPreview({ settings }: { settings: Settings }) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'playing' | 'error'>('idle');
+  const [checking, setChecking] = useState(false);
   const [message, setMessage] = useState('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const browserRef = useRef(browserNarration());
   const provider = settings.tts.provider;
   const voice = settings.tts.voice;
   const model = settings.tts.model;
+  const cloudKey = provider === 'xai' ? settings.keys.xai : provider === 'openai' ? settings.keys.openai : '';
+  const keyId = apiKeyEnding(cloudKey);
 
   function stop() {
     browserRef.current.cancel();
@@ -46,8 +50,12 @@ function NarrationPreview({ settings }: { settings: Settings }) {
     setStatus('idle');
   }
 
-  // Stop any preview when the voice/provider changes or the panel unmounts.
-  useEffect(() => stop, [provider, voice, model]);
+  // Stop previews and clear stale auth results when the voice, provider, or
+  // actual saved credential changes.
+  useEffect(() => {
+    setMessage('');
+    return stop;
+  }, [provider, voice, model, keyId]);
 
   async function play() {
     if (status === 'loading' || status === 'playing') {
@@ -66,7 +74,6 @@ function NarrationPreview({ settings }: { settings: Settings }) {
       return;
     }
     // Cloud voice — synthesize a sample through the selected provider's API.
-    const cloudKey = provider === 'xai' ? settings.keys.xai : settings.keys.openai;
     if (!cloudKey) {
       setStatus('error');
       setMessage(`Add your ${provider === 'xai' ? 'xAI' : 'OpenAI'} key above to preview.`);
@@ -91,6 +98,21 @@ function NarrationPreview({ settings }: { settings: Settings }) {
     }
   }
 
+  async function checkKey() {
+    if (checking || status === 'loading') return;
+    setChecking(true);
+    setMessage('');
+    try {
+      setMessage(await validateNarrationAccess(settings));
+      setStatus('idle');
+    } catch (err) {
+      setStatus('error');
+      setMessage(err instanceof Error ? err.message : 'Could not validate this key.');
+    } finally {
+      setChecking(false);
+    }
+  }
+
   const label =
     status === 'loading' ? 'Loading…' : status === 'playing' ? 'Stop' : 'Preview voice';
   return (
@@ -103,6 +125,21 @@ function NarrationPreview({ settings }: { settings: Settings }) {
       >
         <IconVolume /> {label}
       </button>
+      {(provider === 'openai' || provider === 'xai') && keyId && (
+        <>
+          <span className="voice-key-id" title="Last four characters of the key this browser will send">
+            Using {keyId}
+          </span>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm voice-preview-btn"
+            onClick={checkKey}
+            disabled={checking || status === 'loading'}
+          >
+            {checking ? 'Checking…' : 'Check key'}
+          </button>
+        </>
+      )}
       {message && <span className="voice-preview-msg">{message}</span>}
     </div>
   );
@@ -204,7 +241,7 @@ export default function SettingsPanel() {
   const update = useStore((s) => s.updateSettings);
 
   const setKey = (k: keyof typeof settings.keys, v: string) =>
-    update({ keys: { ...settings.keys, [k]: v.trim() } });
+    update({ keys: { ...settings.keys, [k]: normalizeApiKey(v) } });
 
   // Load each keyed provider's live model list when the panel opens so the
   // newest models surface in the dropdowns automatically (cached for 12h).

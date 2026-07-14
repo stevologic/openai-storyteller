@@ -1,6 +1,25 @@
 /** Progress callback for long-running provider work (model loads, etc.). */
 export type OnProgress = (msg: string) => void;
 
+/** Normalize keys copied from password managers, .env files, or provider UIs.
+ * API credentials never contain whitespace; zero-width copy artifacts are a
+ * surprisingly common cause of credentials that look correct but fail auth.
+ */
+export function normalizeApiKey(value: string): string {
+  let key = String(value ?? '').trim();
+  key = key.replace(/^(?:export\s+)?[A-Z][A-Z0-9_]*\s*=\s*/i, '').trim();
+  if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.slice(1, -1);
+  }
+  return key.replace(/[\s\u200B-\u200D\u2060\uFEFF]/g, '');
+}
+
+/** Safe identifier for confirming which saved key a request will use. */
+export function apiKeyEnding(value: string): string {
+  const key = normalizeApiKey(value);
+  return key ? `…${key.slice(-4)}` : '';
+}
+
 /** Pull the first balanced JSON object out of a model response that may be
  *  wrapped in prose or ```json fences. */
 export function extractJson(raw: string): unknown {

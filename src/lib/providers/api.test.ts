@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { XAI_VOICES } from '../catalog';
 import type { Settings } from '../types';
-import { generateNarration } from './tts';
-import { describeHttpError, fetchWithRetry } from './util';
+import { generateNarration, validateNarrationAccess } from './tts';
+import { describeHttpError, fetchWithRetry, normalizeApiKey } from './util';
 import { generateVideo } from './video';
 
 const baseSettings: Settings = {
@@ -21,6 +21,10 @@ afterEach(() => {
 });
 
 describe('provider request handling', () => {
+  it('normalizes keys copied from .env files or with invisible characters', () => {
+    expect(normalizeApiKey('export XAI_API_KEY="\u200Bxai-new-key-Wf\uFEFF"')).toBe('xai-new-key-Wf');
+  });
+
   it('retries an explicit 429 and preserves the request', async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
@@ -80,6 +84,23 @@ describe('provider request handling', () => {
 });
 
 describe('voice API payloads', () => {
+  it('checks xAI TTS access independently and identifies the exact saved key', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ voices: [] }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const message = await validateNarrationAccess({
+      ...baseSettings,
+      keys: { ...baseSettings.keys, xai: 'XAI_API_KEY="xai-new-key-Wf"' },
+      tts: { provider: 'xai', model: 'text-to-speech', voice: 'eve' },
+    });
+
+    expect(fetchMock.mock.calls[0][0]).toBe('https://api.x.ai/v1/tts/voices');
+    expect((fetchMock.mock.calls[0][1] as RequestInit).headers).toMatchObject({
+      Authorization: 'Bearer xai-new-key-Wf',
+    });
+    expect(message).toBe('xAI TTS accepted key …y-Wf.');
+  });
+
   it('omits unsupported instructions for legacy OpenAI TTS models', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(new Uint8Array([1]), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);

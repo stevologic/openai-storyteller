@@ -1,5 +1,5 @@
 import type { Settings } from '../types';
-import { base64ToDataUrl, describeHttpError, fetchWithRetry } from './util';
+import { base64ToDataUrl, describeHttpError, fetchWithRetry, normalizeApiKey } from './util';
 
 /** Generate one illustration; returns a data URL, or undefined if disabled. */
 export async function generateImage(
@@ -23,7 +23,7 @@ export async function generateImage(
 }
 
 async function xaiImage(key: string, model: string, prompt: string): Promise<string> {
-  key = key.trim();
+  key = normalizeApiKey(key);
   if (!key) throw new Error('Add your xAI API key in Settings to generate illustrations.');
   const res = await fetchWithRetry('https://api.x.ai/v1/images/generations', {
     method: 'POST',
@@ -45,7 +45,7 @@ async function xaiImage(key: string, model: string, prompt: string): Promise<str
 }
 
 async function openaiImage(key: string, model: string, prompt: string): Promise<string> {
-  key = key.trim();
+  key = normalizeApiKey(key);
   if (!key) throw new Error('Add your OpenAI API key in Settings to generate illustrations.');
   const isDalle = model.startsWith('dall-e');
   const body: Record<string, unknown> = {

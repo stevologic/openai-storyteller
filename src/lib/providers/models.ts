@@ -1,5 +1,5 @@
 import type { ModelOption, ProviderKeys } from '../types';
-import { describeHttpError, fetchWithRetry } from './util';
+import { describeHttpError, fetchWithRetry, normalizeApiKey } from './util';
 
 /* Dynamically load each provider's live model list so the newest models show
    up in Settings automatically. The curated catalog is the offline fallback and
@@ -23,7 +23,7 @@ const mem = new Map<string, RawModel[]>();
 /** Non-secret fingerprint so one API key never reuses another key's model access list. */
 function keyFingerprint(key: string): string {
   let hash = 2166136261;
-  for (const char of key.trim()) {
+  for (const char of normalizeApiKey(key)) {
     hash ^= char.charCodeAt(0);
     hash = Math.imul(hash, 16777619);
   }
@@ -60,7 +60,7 @@ function cacheSet(p: ProviderKey, key: string, models: RawModel[]): void {
 }
 
 async function fetchRaw(p: ProviderKey, key: string, signal?: AbortSignal): Promise<RawModel[]> {
-  key = key.trim();
+  key = normalizeApiKey(key);
   if (p === 'openai' || p === 'xai') {
     const base = p === 'openai' ? 'https://api.openai.com/v1' : 'https://api.x.ai/v1';
     const res = await fetchWithRetry(
@@ -106,7 +106,7 @@ async function fetchRaw(p: ProviderKey, key: string, signal?: AbortSignal): Prom
 
 /** Fetch (or return cached) live models for a provider. Throws on failure. */
 export async function getProviderModels(p: ProviderKey, key: string, signal?: AbortSignal): Promise<RawModel[]> {
-  key = key.trim();
+  key = normalizeApiKey(key);
   const cached = cacheGet(p, key);
   if (cached) return cached;
   const models = await fetchRaw(p, key, signal);

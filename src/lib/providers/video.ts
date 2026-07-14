@@ -1,5 +1,5 @@
 import type { Settings } from '../types';
-import { describeHttpError, fetchWithRetry, isProviderHttpError, sleep } from './util';
+import { describeHttpError, fetchWithRetry, isProviderHttpError, normalizeApiKey, sleep } from './util';
 
 /** Best-effort short clip for a page. Video generation is slow (minutes) and
  *  async; on any failure we resolve to undefined so the reader falls back to
@@ -36,7 +36,7 @@ async function grokImagine(
   prompt: string,
   onTick?: (msg: string) => void,
 ): Promise<string | undefined> {
-  key = key.trim();
+  key = normalizeApiKey(key);
   if (!key) throw new Error('xAI API key required for Grok Imagine video.');
   const startRes = await fetchWithRetry('https://api.x.ai/v1/videos/generations', {
     method: 'POST',
@@ -128,7 +128,7 @@ async function sora(
   prompt: string,
   onTick?: (msg: string) => void,
 ): Promise<string | undefined> {
-  key = key.trim();
+  key = normalizeApiKey(key);
   if (!key) throw new Error('OpenAI key required for Sora.');
   const form = new FormData();
   form.set('model', model);

@@ -10,6 +10,7 @@ import {
   XAI_VOICES,
 } from './catalog';
 import type { GenerationProgress, RenderedStory, Settings, StoryBrief } from './types';
+import { normalizeApiKey } from './providers/util';
 
 /** Persisted settings may reference providers that no longer exist (e.g. the
  *  retired on-device options). Snap any unknown provider back to the default so
@@ -18,10 +19,10 @@ function sanitizeSettings(raw: unknown): Settings {
   const s = { ...DEFAULT_SETTINGS, ...(raw as Partial<Settings> | undefined) } as Settings;
   const mergedKeys = { ...DEFAULT_SETTINGS.keys, ...(s.keys ?? {}) };
   const keys = {
-    openai: mergedKeys.openai.trim(),
-    anthropic: mergedKeys.anthropic.trim(),
-    google: mergedKeys.google.trim(),
-    xai: mergedKeys.xai.trim(),
+    openai: normalizeApiKey(mergedKeys.openai),
+    anthropic: normalizeApiKey(mergedKeys.anthropic),
+    google: normalizeApiKey(mergedKeys.google),
+    xai: normalizeApiKey(mergedKeys.xai),
   };
   const valid = <T extends string>(list: { id: T }[], id: T) => list.some((p) => p.id === id);
   const text = valid(TEXT_PROVIDERS, s.text?.provider) ? s.text : DEFAULT_SETTINGS.text;

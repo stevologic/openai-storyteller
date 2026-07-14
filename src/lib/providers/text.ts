@@ -1,5 +1,5 @@
 import type { Settings } from '../types';
-import { describeHttpError, extractJson, fetchWithRetry, type OnProgress } from './util';
+import { describeHttpError, extractJson, fetchWithRetry, normalizeApiKey, type OnProgress } from './util';
 
 export interface TextRequest {
   system: string;
@@ -52,7 +52,7 @@ async function openaiChat(
   req: TextRequest,
   maxTokens: number,
 ): Promise<string> {
-  key = key.trim();
+  key = normalizeApiKey(key);
   if (!key) throw new Error(`Add your ${providerName} API key in Settings to use ${productName}.`);
   const res = await fetchWithRetry(`${baseUrl}/chat/completions`, {
     method: 'POST',
@@ -85,7 +85,7 @@ async function anthropicText(
   req: TextRequest,
   maxTokens: number,
 ): Promise<string> {
-  key = key.trim();
+  key = normalizeApiKey(key);
   if (!key) throw new Error('Add your Anthropic API key in Settings to use Claude.');
   const system = req.json
     ? `${req.system}\n\nRespond with a single valid JSON object and nothing else.`
