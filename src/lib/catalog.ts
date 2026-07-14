@@ -177,13 +177,11 @@ export const OPENAI_VOICES: ModelOption[] = [
 ];
 
 export const XAI_VOICES: ModelOption[] = [
-  { id: 'luna', label: 'Luna — gentle, nurturing' },
-  { id: 'orion', label: 'Orion — rich, cinematic' },
-  { id: 'carina', label: 'Carina — soft, soothing' },
-  { id: 'cosmo', label: 'Cosmo — bright, educational' },
-  { id: 'zagan', label: 'Zagan — dramatic character voice' },
-  { id: 'ara', label: 'Ara — warm, friendly' },
   { id: 'eve', label: 'Eve — energetic, upbeat' },
+  { id: 'ara', label: 'Ara — warm, friendly' },
+  { id: 'leo', label: 'Leo — clear, confident' },
+  { id: 'rex', label: 'Rex — rich, expressive' },
+  { id: 'sal', label: 'Sal — calm, conversational' },
 ];
 
 export interface LanguageOption {

@@ -3,6 +3,7 @@ import { generateJson } from './providers/text';
 import { generateImage } from './providers/image';
 import { generateVideo } from './providers/video';
 import { generateNarration } from './providers/tts';
+import { isProviderHttpError } from './providers/util';
 import { renderStoryToVideo, videoExportSupported } from './exportVideo';
 import {
   buildWriterPrompt,
@@ -118,6 +119,7 @@ export async function weaveStory(
         story.artStyle,
       );
     } catch (err) {
+      if (isProviderHttpError(err)) throw err;
       console.warn('Cover generation failed:', err);
     }
     done++;
@@ -138,6 +140,7 @@ export async function weaveStory(
           story.artStyle,
         );
       } catch (err) {
+        if (isProviderHttpError(err)) throw err;
         console.warn(`Illustration ${i + 1} failed:`, err);
       }
       done++;
@@ -174,6 +177,7 @@ export async function weaveStory(
           onProgress({ stage: 'narrating', message: msg, ratio: bump() }),
         );
       } catch (err) {
+        if (isProviderHttpError(err)) throw err;
         console.warn(`Narration ${i + 1} failed:`, err);
       }
       done++;

@@ -1,5 +1,5 @@
 import type { Settings } from '../types';
-import { describeHttpError, sleep } from './util';
+import { describeHttpError, fetchWithRetry, isProviderHttpError, sleep } from './util';
 
 /** Best-effort short clip for a page. Video generation is slow (minutes) and
  *  async; on any failure we resolve to undefined so the reader falls back to
@@ -21,6 +21,10 @@ export async function generateVideo(
       return await grokImagine(settings.keys.xai, settings.video.model, prompt, onTick);
     }
   } catch (err) {
+    // Provider responses such as bad auth, invalid models, and exhausted quota
+    // must reach the UI; silently continuing would repeat the same failure for
+    // every remaining page.
+    if (isProviderHttpError(err)) throw err;
     console.warn('Video generation failed, falling back to motion:', err);
   }
   return undefined;
@@ -34,7 +38,7 @@ async function grokImagine(
 ): Promise<string | undefined> {
   key = key.trim();
   if (!key) throw new Error('xAI API key required for Grok Imagine video.');
-  const startRes = await fetch('https://api.x.ai/v1/videos/generations', {
+  const startRes = await fetchWithRetry('https://api.x.ai/v1/videos/generations', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
     body: JSON.stringify({ model, prompt, duration: 6, aspect_ratio: '16:9', resolution: '720p' }),
@@ -46,15 +50,15 @@ async function grokImagine(
   for (let i = 0; i < 60; i++) {
     onTick?.(`Rendering video… (${i * 5}s)`);
     await sleep(5000);
-    const pollRes = await fetch(`https://api.x.ai/v1/videos/${encodeURIComponent(requestId)}`, {
+    const pollRes = await fetchWithRetry(`https://api.x.ai/v1/videos/${encodeURIComponent(requestId)}`, {
       headers: { Authorization: `Bearer ${key}` },
-    });
+    }, { timeoutMs: 30_000 });
     if (!pollRes.ok) throw await describeHttpError(pollRes, 'xAI Grok Imagine');
     const status = await pollRes.json();
     if (status.status === 'done') {
       const url = status.video?.url ?? findUri(status.video);
       if (!url) return undefined;
-      const download = await fetch(url);
+      const download = await fetchWithRetry(url, {}, { timeoutMs: 120_000 });
       if (!download.ok) throw await describeHttpError(download, 'xAI Grok Imagine download');
       return URL.createObjectURL(await download.blob());
     }
@@ -124,28 +128,37 @@ async function sora(
   prompt: string,
   onTick?: (msg: string) => void,
 ): Promise<string | undefined> {
+  key = key.trim();
   if (!key) throw new Error('OpenAI key required for Sora.');
-  const startRes = await fetch('https://api.openai.com/v1/videos', {
+  const form = new FormData();
+  form.set('model', model);
+  form.set('prompt', prompt);
+  form.set('size', '1280x720');
+  form.set('seconds', '4');
+  const startRes = await fetchWithRetry('https://api.openai.com/v1/videos', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify({ model, prompt, size: '1280x720', seconds: '4' }),
+    // The Videos API is multipart even when no reference image is attached.
+    // Let fetch set the boundary-bearing Content-Type header for FormData.
+    headers: { Authorization: `Bearer ${key}` },
+    body: form,
   });
   if (!startRes.ok) throw await describeHttpError(startRes, 'OpenAI Sora');
   const job = await startRes.json();
-  const id: string = job.id;
+  const id: string | undefined = job.id;
+  if (!id) throw new Error('OpenAI Sora returned no video id.');
 
   for (let i = 0; i < 60; i++) {
     onTick?.(`Rendering video… (${i * 5}s)`);
     await sleep(5000);
-    const pollRes = await fetch(`https://api.openai.com/v1/videos/${id}`, {
+    const pollRes = await fetchWithRetry(`https://api.openai.com/v1/videos/${encodeURIComponent(id)}`, {
       headers: { Authorization: `Bearer ${key}` },
-    });
+    }, { timeoutMs: 30_000 });
     if (!pollRes.ok) throw await describeHttpError(pollRes, 'OpenAI Sora');
     const status = await pollRes.json();
     if (status.status === 'completed') {
-      const contentRes = await fetch(`https://api.openai.com/v1/videos/${id}/content`, {
+      const contentRes = await fetchWithRetry(`https://api.openai.com/v1/videos/${encodeURIComponent(id)}/content`, {
         headers: { Authorization: `Bearer ${key}` },
-      });
+      }, { timeoutMs: 120_000 });
       if (!contentRes.ok) throw await describeHttpError(contentRes, 'OpenAI Sora');
       const blob = await contentRes.blob();
       return URL.createObjectURL(blob);

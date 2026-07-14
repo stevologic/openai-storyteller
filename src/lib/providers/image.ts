@@ -1,5 +1,5 @@
 import type { Settings } from '../types';
-import { base64ToDataUrl, describeHttpError } from './util';
+import { base64ToDataUrl, describeHttpError, fetchWithRetry } from './util';
 
 /** Generate one illustration; returns a data URL, or undefined if disabled. */
 export async function generateImage(
@@ -25,7 +25,7 @@ export async function generateImage(
 async function xaiImage(key: string, model: string, prompt: string): Promise<string> {
   key = key.trim();
   if (!key) throw new Error('Add your xAI API key in Settings to generate illustrations.');
-  const res = await fetch('https://api.x.ai/v1/images/generations', {
+  const res = await fetchWithRetry('https://api.x.ai/v1/images/generations', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
     body: JSON.stringify({
@@ -45,6 +45,7 @@ async function xaiImage(key: string, model: string, prompt: string): Promise<str
 }
 
 async function openaiImage(key: string, model: string, prompt: string): Promise<string> {
+  key = key.trim();
   if (!key) throw new Error('Add your OpenAI API key in Settings to generate illustrations.');
   const isDalle = model.startsWith('dall-e');
   const body: Record<string, unknown> = {
@@ -55,9 +56,9 @@ async function openaiImage(key: string, model: string, prompt: string): Promise<
   };
   // gpt-image-1 always returns b64 and rejects response_format; DALL·E needs it.
   if (isDalle) body.response_format = 'b64_json';
-  if (model === 'gpt-image-1') body.quality = 'high';
+  if (model.startsWith('gpt-image')) body.quality = 'high';
 
-  const res = await fetch('https://api.openai.com/v1/images/generations', {
+  const res = await fetchWithRetry('https://api.openai.com/v1/images/generations', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
     body: JSON.stringify(body),

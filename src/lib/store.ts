@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { DEFAULT_SETTINGS, TEXT_PROVIDERS, IMAGE_PROVIDERS, VIDEO_PROVIDERS, TTS_PROVIDERS } from './catalog';
+import {
+  DEFAULT_SETTINGS,
+  IMAGE_PROVIDERS,
+  OPENAI_VOICES,
+  TEXT_PROVIDERS,
+  TTS_PROVIDERS,
+  VIDEO_PROVIDERS,
+  XAI_VOICES,
+} from './catalog';
 import type { GenerationProgress, RenderedStory, Settings, StoryBrief } from './types';
 
 /** Persisted settings may reference providers that no longer exist (e.g. the
@@ -19,7 +27,11 @@ function sanitizeSettings(raw: unknown): Settings {
   const text = valid(TEXT_PROVIDERS, s.text?.provider) ? s.text : DEFAULT_SETTINGS.text;
   const image = valid(IMAGE_PROVIDERS, s.image?.provider) ? s.image : DEFAULT_SETTINGS.image;
   const video = valid(VIDEO_PROVIDERS, s.video?.provider) ? s.video : DEFAULT_SETTINGS.video;
-  const tts = valid(TTS_PROVIDERS, s.tts?.provider) ? s.tts : DEFAULT_SETTINGS.tts;
+  const tts = valid(TTS_PROVIDERS, s.tts?.provider) ? { ...s.tts } : { ...DEFAULT_SETTINGS.tts };
+  // Migrate persisted voice IDs that providers have removed. Without this,
+  // existing browsers keep sending an invalid voice even after the catalog is fixed.
+  if (tts.provider === 'xai' && !valid(XAI_VOICES, tts.voice)) tts.voice = XAI_VOICES[0].id;
+  if (tts.provider === 'openai' && !valid(OPENAI_VOICES, tts.voice)) tts.voice = OPENAI_VOICES[0].id;
   return { ...s, keys, text, image, video, tts };
 }
 

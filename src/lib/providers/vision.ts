@@ -1,5 +1,5 @@
 import type { Settings } from '../types';
-import { describeHttpError, type OnProgress } from './util';
+import { describeHttpError, fetchWithRetry, type OnProgress } from './util';
 
 const DESCRIBE_PROMPT = `Look at this reference image and write a character description an illustrator could follow for a children's picture book.
 In 2–3 sentences describe only the character's appearance: what kind of character (a child, a person, an animal, a toy…), approximate age, hair, skin/fur colour, notable features, and clothing colours.
@@ -40,7 +40,8 @@ async function openaiCompatVision(
   model: string,
   imageDataUrl: string,
 ): Promise<string> {
-  const res = await fetch(`${baseUrl}/chat/completions`, {
+  key = key.trim();
+  const res = await fetchWithRetry(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
     body: JSON.stringify({
@@ -58,12 +59,15 @@ async function openaiCompatVision(
   });
   if (!res.ok) throw await describeHttpError(res, providerName);
   const data = await res.json();
-  return (data.choices?.[0]?.message?.content ?? '').trim();
+  const content = (data.choices?.[0]?.message?.content ?? '').trim();
+  if (!content) throw new Error(`${providerName} returned no character description.`);
+  return content;
 }
 
 async function anthropicVision(key: string, model: string, imageDataUrl: string): Promise<string> {
+  key = key.trim();
   const { mediaType, base64 } = parseDataUrl(imageDataUrl);
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetchWithRetry('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -88,7 +92,9 @@ async function anthropicVision(key: string, model: string, imageDataUrl: string)
   if (!res.ok) throw await describeHttpError(res, 'Anthropic Vision');
   const data = await res.json();
   const parts = (data.content ?? []) as Array<{ type: string; text?: string }>;
-  return parts.filter((p) => p.type === 'text').map((p) => p.text ?? '').join('').trim();
+  const content = parts.filter((p) => p.type === 'text').map((p) => p.text ?? '').join('').trim();
+  if (!content) throw new Error('Anthropic Vision returned no character description.');
+  return content;
 }
 
 async function googleVision(key: string, model: string, imageDataUrl: string): Promise<string> {

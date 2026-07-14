@@ -1,5 +1,5 @@
 import type { Settings } from '../types';
-import { describeHttpError, extractJson, type OnProgress } from './util';
+import { describeHttpError, extractJson, fetchWithRetry, type OnProgress } from './util';
 
 export interface TextRequest {
   system: string;
@@ -52,8 +52,9 @@ async function openaiChat(
   req: TextRequest,
   maxTokens: number,
 ): Promise<string> {
+  key = key.trim();
   if (!key) throw new Error(`Add your ${providerName} API key in Settings to use ${productName}.`);
-  const res = await fetch(`${baseUrl}/chat/completions`, {
+  const res = await fetchWithRetry(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -71,7 +72,11 @@ async function openaiChat(
   });
   if (!res.ok) throw await describeHttpError(res, providerName);
   const data = await res.json();
-  return data.choices?.[0]?.message?.content ?? '';
+  const content = data.choices?.[0]?.message?.content;
+  if (typeof content !== 'string' || !content.trim()) {
+    throw new Error(`${providerName} returned no text.`);
+  }
+  return content;
 }
 
 async function anthropicText(
@@ -80,11 +85,12 @@ async function anthropicText(
   req: TextRequest,
   maxTokens: number,
 ): Promise<string> {
+  key = key.trim();
   if (!key) throw new Error('Add your Anthropic API key in Settings to use Claude.');
   const system = req.json
     ? `${req.system}\n\nRespond with a single valid JSON object and nothing else.`
     : req.system;
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetchWithRetry('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -103,10 +109,12 @@ async function anthropicText(
   if (!res.ok) throw await describeHttpError(res, 'Anthropic');
   const data = await res.json();
   const parts = (data.content ?? []) as Array<{ type: string; text?: string }>;
-  return parts
+  const content = parts
     .filter((p) => p.type === 'text')
     .map((p) => p.text ?? '')
     .join('');
+  if (!content.trim()) throw new Error('Anthropic returned no text.');
+  return content;
 }
 
 async function googleText(

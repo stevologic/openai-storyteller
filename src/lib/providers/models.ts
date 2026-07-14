@@ -1,4 +1,5 @@
 import type { ModelOption, ProviderKeys } from '../types';
+import { describeHttpError, fetchWithRetry } from './util';
 
 /* Dynamically load each provider's live model list so the newest models show
    up in Settings automatically. The curated catalog is the offline fallback and
@@ -17,57 +18,84 @@ export interface RawModel {
 
 const TTL = 12 * 60 * 60 * 1000; // re-fetch at most twice a day
 const CACHE_PREFIX = 'tbb.models.';
-const mem = new Map<ProviderKey, RawModel[]>();
+const mem = new Map<string, RawModel[]>();
 
-function cacheGet(p: ProviderKey): RawModel[] | null {
-  if (mem.has(p)) return mem.get(p)!;
+/** Non-secret fingerprint so one API key never reuses another key's model access list. */
+function keyFingerprint(key: string): string {
+  let hash = 2166136261;
+  for (const char of key.trim()) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+function scopedCacheKey(p: ProviderKey, key: string): string {
+  return `${p}.${keyFingerprint(key)}`;
+}
+
+function cacheGet(p: ProviderKey, key: string): RawModel[] | null {
+  const cacheKey = scopedCacheKey(p, key);
+  if (mem.has(cacheKey)) return mem.get(cacheKey)!;
   try {
-    const raw = localStorage.getItem(CACHE_PREFIX + p);
+    const raw = localStorage.getItem(CACHE_PREFIX + cacheKey);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as { ts: number; models: RawModel[] };
     if (!parsed?.models || Date.now() - parsed.ts > TTL) return null;
-    mem.set(p, parsed.models);
+    mem.set(cacheKey, parsed.models);
     return parsed.models;
   } catch {
     return null;
   }
 }
 
-function cacheSet(p: ProviderKey, models: RawModel[]): void {
-  mem.set(p, models);
+function cacheSet(p: ProviderKey, key: string, models: RawModel[]): void {
+  const cacheKey = scopedCacheKey(p, key);
+  mem.set(cacheKey, models);
   try {
-    localStorage.setItem(CACHE_PREFIX + p, JSON.stringify({ ts: Date.now(), models }));
+    localStorage.setItem(CACHE_PREFIX + cacheKey, JSON.stringify({ ts: Date.now(), models }));
   } catch {
     /* localStorage full or unavailable — memory cache still works */
   }
 }
 
-async function fetchRaw(p: ProviderKey, key: string): Promise<RawModel[]> {
+async function fetchRaw(p: ProviderKey, key: string, signal?: AbortSignal): Promise<RawModel[]> {
   key = key.trim();
   if (p === 'openai' || p === 'xai') {
     const base = p === 'openai' ? 'https://api.openai.com/v1' : 'https://api.x.ai/v1';
-    const res = await fetch(`${base}/models`, { headers: { Authorization: `Bearer ${key}` } });
-    if (!res.ok) throw new Error(`model list ${res.status}`);
+    const res = await fetchWithRetry(
+      `${base}/models`,
+      { headers: { Authorization: `Bearer ${key}` }, signal },
+      { timeoutMs: 20_000 },
+    );
+    if (!res.ok) throw await describeHttpError(res, p === 'openai' ? 'OpenAI Models' : 'xAI Models');
     const data = await res.json();
     return (data.data ?? []).map((m: { id: string }) => ({ id: m.id }));
   }
   if (p === 'anthropic') {
-    const res = await fetch('https://api.anthropic.com/v1/models?limit=100', {
-      headers: {
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
+    const res = await fetchWithRetry(
+      'https://api.anthropic.com/v1/models?limit=100',
+      {
+        headers: {
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        signal,
       },
-    });
-    if (!res.ok) throw new Error(`model list ${res.status}`);
+      { timeoutMs: 20_000 },
+    );
+    if (!res.ok) throw await describeHttpError(res, 'Anthropic Models');
     const data = await res.json();
     return (data.data ?? []).map((m: { id: string; display_name?: string }) => ({ id: m.id, name: m.display_name }));
   }
   // google
-  const res = await fetch(
+  const res = await fetchWithRetry(
     `https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000&key=${encodeURIComponent(key)}`,
+    { signal },
+    { timeoutMs: 20_000 },
   );
-  if (!res.ok) throw new Error(`model list ${res.status}`);
+  if (!res.ok) throw await describeHttpError(res, 'Google Models');
   const data = await res.json();
   return (data.models ?? []).map((m: { name: string; displayName?: string; supportedGenerationMethods?: string[] }) => ({
     id: String(m.name ?? '').replace(/^models\//, ''),
@@ -77,11 +105,12 @@ async function fetchRaw(p: ProviderKey, key: string): Promise<RawModel[]> {
 }
 
 /** Fetch (or return cached) live models for a provider. Throws on failure. */
-export async function getProviderModels(p: ProviderKey, key: string): Promise<RawModel[]> {
-  const cached = cacheGet(p);
+export async function getProviderModels(p: ProviderKey, key: string, signal?: AbortSignal): Promise<RawModel[]> {
+  key = key.trim();
+  const cached = cacheGet(p, key);
   if (cached) return cached;
-  const models = await fetchRaw(p, key);
-  cacheSet(p, models);
+  const models = await fetchRaw(p, key, signal);
+  cacheSet(p, key, models);
   return models;
 }
 

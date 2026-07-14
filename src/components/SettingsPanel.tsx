@@ -211,16 +211,25 @@ export default function SettingsPanel() {
   const [dyn, setDyn] = useState<DynModels>({});
   useEffect(() => {
     if (!open) return;
-    (['openai', 'anthropic', 'google', 'xai'] as const).forEach((p) => {
-      const key = settings.keys[p as keyof ProviderKeys];
-      if (!key) return;
-      getProviderModels(p, key).then(
-        (models) => setDyn((s) => (s[p] === models ? s : { ...s, [p]: models })),
-        () => {
-          /* keep the curated list on failure */
-        },
-      );
-    });
+    // Key fields update on every keystroke. Debounce validation and abort stale
+    // requests so typing a key cannot fan out into dozens of /models calls.
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      (['openai', 'anthropic', 'google', 'xai'] as const).forEach((p) => {
+        const key = settings.keys[p as keyof ProviderKeys];
+        if (!key) return;
+        getProviderModels(p, key, controller.signal).then(
+          (models) => setDyn((s) => (s[p] === models ? s : { ...s, [p]: models })),
+          (error) => {
+            if (!controller.signal.aborted) console.warn(`${p} model list could not be loaded:`, error);
+          },
+        );
+      });
+    }, 600);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, settings.keys.openai, settings.keys.anthropic, settings.keys.google, settings.keys.xai]);
 
@@ -308,6 +317,10 @@ export default function SettingsPanel() {
                     />
                   </label>
                 </div>
+                <p className="section-note">
+                  OpenAI API billing is separate from ChatGPT subscriptions. For xAI, use an inference key from
+                  Console → API Keys—not a Management API key—and give it access to the needed endpoints/models.
+                </p>
               </section>
 
               <section className="settings-section">
@@ -390,7 +403,7 @@ export default function SettingsPanel() {
                         ...settings.tts,
                         provider,
                         model: firstModel(TTS_PROVIDERS, provider),
-                        voice: provider === 'openai' ? 'nova' : provider === 'xai' ? 'luna' : settings.tts.voice,
+                        voice: provider === 'openai' ? 'nova' : provider === 'xai' ? 'eve' : settings.tts.voice,
                       },
                     })
                   }
