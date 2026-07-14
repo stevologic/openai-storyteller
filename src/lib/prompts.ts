@@ -1,4 +1,4 @@
-import type { StoryBrief } from './types';
+import type { Story, StoryBrief } from './types';
 
 export const WRITER_SYSTEM = `You are Tiny Book Buddies AI, a beloved children's picture-book author and art director.
 You write warm, musical, age-appropriate stories that a parent would treasure reading aloud.
@@ -54,20 +54,9 @@ REQUIREMENTS
    - Never rely on the separate moral or “The End” screen to finish the plot. The final story page must stand
      on its own as a real ending, with no unresolved central problem.
 7. End with a short "moral": one warm sentence that reflects the resolution without introducing new plot.
-8. Prepare a tasteful YouTube package in ${lang} for the finished story video:
-   - "youtubeTitle": an inviting, specific title under 90 characters. Include the story title and a natural
-     phrase a parent might search for, without clickbait, all caps, or hashtags.
-   - "youtubeDescription": 2–3 warm sentences describing the hero, central journey, and age-appropriate
-     takeaway without spoiling every beat. Do not include timestamps or hashtags here.
-   - "youtubeHashtags": 5–8 concise, relevant hashtag strings. Include a mix of story-specific themes and
-     broad discovery terms; no spaces, duplicates, or unrelated trending tags.
-
 Return ONLY a JSON object with this exact shape:
 {
   "title": string,
-  "youtubeTitle": string,
-  "youtubeDescription": string,
-  "youtubeHashtags": string[],
   "dedication": string,
   "ageRange": string,
   "characterBible": string,
@@ -75,6 +64,33 @@ Return ONLY a JSON object with this exact shape:
   "pages": [{ "header": string, "text": string, "illustration": string, "motion": string }],
   "moral": string
 }`;
+}
+
+export const YOUTUBE_SYSTEM = `You write tasteful, search-friendly publishing copy for children's story videos.
+Be warm, specific, truthful to the supplied story, and useful to parents. Never use clickbait, all caps, or unrelated trends.`;
+
+export function buildYouTubePrompt(story: Story, language: string): string {
+  const synopsis = story.pages.map((page, index) => `${index + 1}. ${page.text}`).join('\n');
+  return `Prepare a YouTube publishing package in ${language || story.language || 'English (US)'} for this story.
+
+Story title: ${story.title}
+Dedication: ${story.dedication}
+Lesson: ${story.moral}
+Story pages:
+${synopsis}
+
+Return ONLY this JSON object:
+{
+  "youtubeTitle": string,
+  "youtubeDescription": string,
+  "youtubeHashtags": string[]
+}
+
+Requirements:
+- youtubeTitle: under 90 characters; include the story title and a natural phrase a parent might search for.
+- youtubeDescription: 2–3 warm sentences about the hero, journey, and takeaway without spoiling every beat.
+- youtubeHashtags: 5–8 concise relevant hashtags, mixing story themes with broad discovery terms.
+- Do not put timestamps or hashtags in youtubeDescription.`;
 }
 
 /** Compose the final illustration prompt sent to the image model, fusing the

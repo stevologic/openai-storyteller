@@ -104,6 +104,7 @@ export interface ProviderKeys {
 export interface Settings {
   keys: ProviderKeys;
   text: { provider: TextProviderId; model: string };
+  youtube: { provider: TextProviderId; model: string };
   image: { provider: ImageProviderId; model: string };
   video: { provider: VideoProviderId; model: string; enabled: boolean };
   tts: { provider: TtsProviderId; model: string; voice: string };

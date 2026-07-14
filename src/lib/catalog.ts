@@ -230,6 +230,7 @@ export const DEFAULT_SETTINGS: Settings = {
   keys: { openai: '', anthropic: '', google: '', xai: '' },
   // Bring-your-own-key: pick a frontier provider and add its key in Settings.
   text: { provider: 'openai', model: 'gpt-5.1' },
+  youtube: { provider: 'openai', model: 'gpt-4o' },
   image: { provider: 'openai', model: 'gpt-image-1' },
   video: { provider: 'none', model: 'none', enabled: false },
   // Cloud voice so the narration is captured into the exported video.

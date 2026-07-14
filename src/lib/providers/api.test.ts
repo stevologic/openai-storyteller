@@ -8,6 +8,7 @@ import { generateVideo } from './video';
 const baseSettings: Settings = {
   keys: { openai: '  sk-test  ', anthropic: '', google: '', xai: '  xai-test  ' },
   text: { provider: 'openai', model: 'gpt-5.1' },
+  youtube: { provider: 'openai', model: 'gpt-4o' },
   image: { provider: 'none', model: 'none' },
   video: { provider: 'none', model: 'none', enabled: false },
   tts: { provider: 'openai', model: 'gpt-4o-mini-tts', voice: 'nova' },

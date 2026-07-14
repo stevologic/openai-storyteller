@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildWriterPrompt, WRITER_SYSTEM } from './prompts';
-import type { StoryBrief } from './types';
+import { buildWriterPrompt, buildYouTubePrompt, WRITER_SYSTEM } from './prompts';
+import type { Story, StoryBrief } from './types';
 
 const brief: StoryBrief = {
   idea: 'A moon moth learns to ask the fireflies for help finding home.',
@@ -31,13 +31,21 @@ describe('story writer prompt', () => {
     expect(prompt).toContain('It must clearly lead into the final page');
   });
 
-  it('requests a localized YouTube package without a second generation call', () => {
-    const prompt = buildWriterPrompt(brief);
+  it('builds a separate localized YouTube-copy prompt', () => {
+    const story: Story = {
+      title: 'Mina and the Moonlit Way', youtubeTitle: '', youtubeDescription: '', youtubeHashtags: [],
+      language: brief.language, dedication: 'For every small light.', ageRange: brief.ageRange,
+      characterBible: '', artStyle: brief.artStyle,
+      pages: [{ header: 'Lost Light', text: 'Mina asks the fireflies for help.', illustration: '', motion: 'drift' }],
+      moral: brief.lesson,
+    };
+    const prompt = buildYouTubePrompt(story, brief.language);
 
-    expect(prompt).toContain('Prepare a tasteful YouTube package in English (US)');
+    expect(prompt).toContain('YouTube publishing package in English (US)');
     expect(prompt).toContain('"youtubeTitle"');
     expect(prompt).toContain('"youtubeDescription"');
     expect(prompt).toContain('"youtubeHashtags"');
-    expect(prompt).toContain('Do not include timestamps or hashtags here');
+    expect(prompt).toContain('Do not put timestamps or hashtags in youtubeDescription');
+    expect(buildWriterPrompt(brief)).not.toContain('youtubeTitle');
   });
 });

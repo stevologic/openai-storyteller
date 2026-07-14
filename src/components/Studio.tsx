@@ -128,6 +128,8 @@ export default function Studio() {
 
   const textProvider = TEXT_PROVIDERS.find((p) => p.id === settings.text.provider);
   const textKeyMissing = textProvider?.keyField ? !settings.keys[textProvider.keyField] : false;
+  const youtubeProvider = TEXT_PROVIDERS.find((p) => p.id === settings.youtube.provider);
+  const youtubeKeyMissing = youtubeProvider?.keyField ? !settings.keys[youtubeProvider.keyField] : false;
 
   const set = <K extends keyof StoryBrief>(k: K, v: StoryBrief[K]) =>
     setStoryBrief({ ...(useStore.getState().storyBrief ?? brief), [k]: v });
@@ -140,6 +142,11 @@ export default function Studio() {
     }
     if (textKeyMissing) {
       setError(`Add your ${providerLabel(TEXT_PROVIDERS, settings.text.provider)} API key in Settings.`);
+      openSettings();
+      return;
+    }
+    if (youtubeKeyMissing) {
+      setError(`Add your ${providerLabel(TEXT_PROVIDERS, settings.youtube.provider)} API key for YouTube copy.`);
       openSettings();
       return;
     }
@@ -332,6 +339,11 @@ export default function Studio() {
                 <span>Illustration</span>
                 <b>{providerLabel(IMAGE_PROVIDERS, settings.image.provider)}</b>
                 <em>{settings.image.model}</em>
+              </li>
+              <li>
+                <span>YouTube copy</span>
+                <b>{providerLabel(TEXT_PROVIDERS, settings.youtube.provider)}</b>
+                <em>{settings.youtube.model}</em>
               </li>
               <li>
                 <span>Video</span>

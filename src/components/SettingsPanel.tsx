@@ -11,7 +11,7 @@ import {
   XAI_VOICES,
 } from '../lib/catalog';
 import type { ModelOption, ProviderCatalogEntry, ProviderKeys, Settings } from '../lib/types';
-import { generateNarration, browserNarration, validateNarrationAccess } from '../lib/providers/tts';
+import { generateNarration, browserNarration } from '../lib/providers/tts';
 import { checkProviderKey, getProviderModels, resolveModels, type ModelCategory, type ProviderKey, type RawModel } from '../lib/providers/models';
 import { apiKeyEnding, normalizeApiKey } from '../lib/providers/util';
 import { Dropdown } from './Dropdown';
@@ -29,7 +29,6 @@ const PREVIEW_LINE = 'Once upon a time, a tiny star wished to shine as bright as
  *  speaks live for free. */
 function NarrationPreview({ settings }: { settings: Settings }) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'playing' | 'error'>('idle');
-  const [checking, setChecking] = useState(false);
   const [message, setMessage] = useState('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const browserRef = useRef(browserNarration());
@@ -98,21 +97,6 @@ function NarrationPreview({ settings }: { settings: Settings }) {
     }
   }
 
-  async function checkKey() {
-    if (checking || status === 'loading') return;
-    setChecking(true);
-    setMessage('');
-    try {
-      setMessage(await validateNarrationAccess(settings));
-      setStatus('idle');
-    } catch (err) {
-      setStatus('error');
-      setMessage(err instanceof Error ? err.message : 'Could not validate this key.');
-    } finally {
-      setChecking(false);
-    }
-  }
-
   const label =
     status === 'loading' ? 'Loading…' : status === 'playing' ? 'Stop' : 'Preview voice';
   return (
@@ -126,19 +110,9 @@ function NarrationPreview({ settings }: { settings: Settings }) {
         <IconVolume /> {label}
       </button>
       {(provider === 'openai' || provider === 'xai') && keyId && (
-        <>
-          <span className="voice-key-id" title="Last four characters of the key this browser will send">
-            Using {keyId}
-          </span>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm voice-preview-btn"
-            onClick={checkKey}
-            disabled={checking || status === 'loading'}
-          >
-            {checking ? 'Checking…' : 'Check key'}
-          </button>
-        </>
+        <span className="voice-key-id" title="Last four characters of the key this browser will send">
+          Using {keyId}
+        </span>
       )}
       {message && <span className="voice-preview-msg">{message}</span>}
     </div>
@@ -405,6 +379,20 @@ export default function SettingsPanel() {
                     update({ text: { provider, model: firstModel(TEXT_PROVIDERS, provider) } })
                   }
                   onModel={(model) => update({ text: { ...settings.text, model } })}
+                />
+
+                <ProviderRow
+                  title="YouTube title & description"
+                  hint="Writes publishing copy for the finished video."
+                  category="text"
+                  dyn={dyn}
+                  providers={TEXT_PROVIDERS}
+                  providerId={settings.youtube.provider}
+                  model={settings.youtube.model}
+                  onProvider={(provider) =>
+                    update({ youtube: { provider, model: firstModel(TEXT_PROVIDERS, provider) } })
+                  }
+                  onModel={(model) => update({ youtube: { ...settings.youtube, model } })}
                 />
 
                 <ProviderRow

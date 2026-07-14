@@ -7,7 +7,9 @@ import { isProviderHttpError } from './providers/util';
 import { renderStoryToVideo, videoExportSupported } from './exportVideo';
 import {
   buildWriterPrompt,
+  buildYouTubePrompt,
   WRITER_SYSTEM,
+  YOUTUBE_SYSTEM,
   composeIllustrationPrompt,
   composeCoverPrompt,
 } from './prompts';
@@ -76,6 +78,20 @@ export async function weaveStory(
   const story = await writeStory(settings, brief, (msg) =>
     onProgress({ stage: 'writing', message: msg, ratio: 0.05 }),
   );
+
+  onProgress({ stage: 'writing', message: 'Writing the YouTube title and description…', ratio: 0.08 });
+  const youtubeSettings: Settings = { ...settings, text: { ...settings.youtube } };
+  const youtube = await generateJson<Record<string, unknown>>(youtubeSettings, {
+    system: YOUTUBE_SYSTEM,
+    user: buildYouTubePrompt(story, brief.language),
+    json: true,
+    maxTokens: 900,
+  });
+  story.youtubeTitle = String(youtube.youtubeTitle ?? '').trim();
+  story.youtubeDescription = String(youtube.youtubeDescription ?? '').trim();
+  story.youtubeHashtags = Array.isArray(youtube.youtubeHashtags)
+    ? youtube.youtubeHashtags.map(String).filter(Boolean)
+    : [];
 
   const doImages = settings.image.provider !== 'none';
   const doVideo = settings.video.enabled && settings.video.provider !== 'none';
