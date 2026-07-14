@@ -13,6 +13,7 @@ import {
   IconClose,
   IconDownload,
   IconFilm,
+  IconImage,
   IconMute,
   IconNext,
   IconPause,
@@ -23,6 +24,8 @@ import {
 import { downloadStoryImages, saveStoryJson, storyHasImages } from '../../lib/exportStory';
 import { downloadBlob, renderStoryToVideo, videoExportSupported } from '../../lib/exportVideo';
 import { youtubePackageText } from '../../lib/youtube';
+import { generateImage } from '../../lib/providers/image';
+import { composeCoverPrompt, composeIllustrationPrompt } from '../../lib/prompts';
 import { DonateButton } from '../Donate';
 import './reader.css';
 
@@ -40,6 +43,7 @@ function tokenize(text: string): { word: string; start: number }[] {
 export default function StoryReader({ story }: { story: RenderedStory }) {
   const setView = useStore((s) => s.setView);
   const setStory = useStore((s) => s.setStory);
+  const settings = useStore((s) => s.settings);
   const ttsProvider = useStore((s) => s.settings.tts.provider);
 
   const slides: Slide[] = useMemo(
@@ -53,6 +57,7 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
   const [ambientOn, setAmbientOn] = useState(false);
   const [videoExport, setVideoExport] = useState<{ ratio: number; message: string } | null>(null);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [slideRegen, setSlideRegen] = useState<{ message: string; error?: boolean } | null>(null);
   const [copied, setCopied] = useState('');
   const ambient = useRef<Ambient>(new Ambient());
   const advanceTimer = useRef<number | undefined>(undefined);
@@ -105,7 +110,17 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
           (p) => setVideoExport({ ratio: p.ratio, message: p.message }),
           { preferMp4: true, audio: silent ? 'none' : 'narration' },
         );
-        setStory({ ...story, youtubeMetadata });
+        if (!silent) {
+          if (story.storyVideoUrl?.startsWith('blob:')) URL.revokeObjectURL(story.storyVideoUrl);
+          setStory({
+            ...story,
+            storyVideoUrl: URL.createObjectURL(blob),
+            storyVideoName: filename,
+            youtubeMetadata,
+          });
+        } else {
+          setStory({ ...story, youtubeMetadata });
+        }
         downloadBlob(blob, silent ? filename.replace(/(\.\w+)$/, '-silent$1') : filename);
         setVideoExport(null);
       } catch (err) {
@@ -115,6 +130,37 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
     },
     [story, narration, setStory],
   );
+
+  const regenerateSlide = useCallback(async () => {
+    if (story.demo || slide.kind === 'end') return;
+    if (settings.image.provider === 'none') {
+      setSlideRegen({ message: 'Select an illustration provider in Settings before regenerating a slide.', error: true });
+      return;
+    }
+    narration.stop();
+    setAutoplay(false);
+    setSlideRegen({ message: slide.kind === 'cover' ? 'Repainting the cover…' : `Repainting page ${slide.index + 1}…` });
+    try {
+      const prompt =
+        slide.kind === 'cover'
+          ? composeCoverPrompt(story.title, story.artStyle, story.characterBible)
+          : composeIllustrationPrompt(story.artStyle, story.characterBible, story.pages[slide.index].illustration);
+      const imageUrl = await generateImage(settings, prompt, story.artStyle);
+      if (!imageUrl) throw new Error('The illustration provider returned no image.');
+
+      if (slide.kind === 'cover') {
+        setStory({ ...story, coverImageUrl: imageUrl, coverSceneId: undefined });
+      } else {
+        const pages = story.pages.map((item, index) =>
+          index === slide.index ? { ...item, imageUrl, videoUrl: undefined, sceneId: undefined } : item,
+        );
+        setStory({ ...story, pages });
+      }
+      setSlideRegen(null);
+    } catch (error) {
+      setSlideRegen({ message: error instanceof Error ? error.message : 'Could not regenerate this slide.', error: true });
+    }
+  }, [narration, setStory, settings, slide, story]);
 
   const copyYouTube = useCallback(async (label: string, value: string) => {
     try {
@@ -278,15 +324,16 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
                       <IconDownload /> Download pictures
                     </button>
                   )}
-                  {story.storyVideoUrl ? (
+                  {story.storyVideoUrl && (
                     <a className="btn btn-ghost" href={story.storyVideoUrl} download={story.storyVideoName}>
                       <IconFilm /> Download video
                     </a>
-                  ) : videoExportSupported() ? (
+                  )}
+                  {videoExportSupported() && (
                     <button className="btn btn-ghost" onClick={() => onExportVideo(false)}>
-                      <IconFilm /> Export video
+                      <IconFilm /> {story.storyVideoUrl ? 'Re-generate video' : 'Export video'}
                     </button>
-                  ) : null}
+                  )}
                   {videoExportSupported() && (
                     <button className="btn btn-ghost" onClick={() => onExportVideo(true)} title="No audio — ready for social media">
                       <IconFilm /> Silent video
@@ -316,6 +363,16 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
           <IconClose />
         </button>
         <div className="reader-toptools">
+          {!story.demo && slide.kind !== 'end' && (
+            <button
+              className="reader-chip"
+              onClick={regenerateSlide}
+              disabled={Boolean(slideRegen) || Boolean(videoExport)}
+              title="Regenerate this slide's artwork"
+            >
+              <IconImage /> <span className="reader-chip-label">Regenerate slide</span>
+            </button>
+          )}
           {!story.demo && (
             <button className="reader-chip" onClick={() => saveStoryJson(story)} title="Save this story to a file">
               <IconDownload /> <span className="reader-chip-label">Save</span>
@@ -388,6 +445,23 @@ export default function StoryReader({ story }: { story: RenderedStory }) {
               </div>
               <p className="video-stage">{videoExport.message}</p>
               <p className="video-hint">Recording plays out in real time — sit back and watch. The video downloads when it’s done.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {slideRegen && (
+          <motion.div className="video-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="video-card">
+              {!slideRegen.error && <div className="video-spinner" />}
+              <h2>{slideRegen.error ? 'Slide regeneration stopped' : 'Regenerating slide…'}</h2>
+              <p className="video-hint">{slideRegen.message}</p>
+              {slideRegen.error && (
+                <button className="btn btn-primary slide-regen-close" onClick={() => setSlideRegen(null)}>
+                  Close
+                </button>
+              )}
             </div>
           </motion.div>
         )}

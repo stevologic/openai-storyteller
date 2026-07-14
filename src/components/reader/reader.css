@@ -504,3 +504,6 @@
   .publish-modal-actions { width: 100%; }
   .publish-modal-actions .btn:first-child { flex: 1; }
 }
+.slide-regen-close {
+  margin-top: 20px;
+}
