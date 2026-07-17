@@ -6,8 +6,9 @@ import { ART_STYLE_PRESETS, TONE_PRESETS, LANGUAGES, providerLabel, TEXT_PROVIDE
 import { weaveStory } from '../lib/generate';
 import { estimateStoryCost, formatUsd, getGenerationConfigurationErrors, type StoryCostEstimate } from '../lib/cost';
 import { openStoryFile } from '../lib/exportStory';
+import { loadLatestBook } from '../lib/bookshelf';
 import { describeCharacter } from '../lib/providers/vision';
-import type { Settings, StoryBrief } from '../lib/types';
+import type { RenderedStory, Settings, StoryBrief } from '../lib/types';
 import { Dropdown } from './Dropdown';
 import { IconSpark, IconSettings, IconImage } from './icons';
 import './studio.css';
@@ -109,8 +110,20 @@ export default function Studio() {
   const [pendingGeneration, setPendingGeneration] = useState<GenerationPlan | null>(null);
   const [writeStep, setWriteStep] = useState(0);
   const [describing, setDescribing] = useState(false);
+  const [shelfBook, setShelfBook] = useState<RenderedStory | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
+
+  // The bookshelf keeps the most recent generated book across reloads.
+  useEffect(() => {
+    let alive = true;
+    loadLatestBook().then((book) => {
+      if (alive) setShelfBook(book);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   async function onPhoto(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -219,6 +232,21 @@ export default function Studio() {
           <button type="button" className="linklike" onClick={() => fileRef.current?.click()}>
             open a saved story
           </button>
+          {shelfBook && (
+            <>
+              {' · '}
+              <button
+                type="button"
+                className="linklike"
+                onClick={() => {
+                  setStory(shelfBook);
+                  setView('reader');
+                }}
+              >
+                continue “{shelfBook.title}”
+              </button>
+            </>
+          )}
           <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={onOpenFile} />
         </p>
       </div>

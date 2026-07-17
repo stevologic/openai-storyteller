@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { useStore } from '../lib/store';
 import { SAMPLE_VIDEOS } from '../sample/sampleVideos';
+import { SAMPLE_STORY } from '../sample/sampleStory';
+import { DemoScene } from '../sample/scenes';
 import { DonateCoins } from './Donate';
 import { IconSpark, IconBook, IconFilm, IconVolume, IconKey, IconDownload, IconAuto } from './icons';
 import './landing.css';
@@ -24,10 +26,16 @@ const STEPS = [
 
 export default function Landing() {
   const setView = useStore((s) => s.setView);
+  const setStory = useStore((s) => s.setStory);
   const setStoryBrief = useStore((s) => s.setStoryBrief);
   const createNew = () => {
     setStoryBrief(null);
     setView('studio');
+  };
+  // The bundled demo book: the full cinematic reader, zero keys, zero cost.
+  const openDemo = () => {
+    setStory(SAMPLE_STORY);
+    setView('reader');
   };
   const scrollToSamples = () => document.getElementById('samples')?.scrollIntoView({ behavior: 'smooth' });
   const featured = SAMPLE_VIDEOS[0];
@@ -61,7 +69,14 @@ export default function Landing() {
               <IconSpark /> Create your own
             </button>
           </motion.div>
-          <p className="hero-note">Bring an API key from OpenAI, Anthropic, Google, or xAI — it stays in your browser, never sent to us.</p>
+          <p className="hero-note">
+            Bring an API key from OpenAI, Anthropic, Google, or xAI — it stays in your browser, never sent to us.
+            No key yet?{' '}
+            <button type="button" className="linklike" onClick={openDemo}>
+              Try the interactive demo
+            </button>{' '}
+            — free, right here.
+          </p>
         </div>
 
         <motion.button
@@ -112,6 +127,23 @@ export default function Landing() {
             </figure>
           ))}
         </div>
+        {/* Interactive demo — the reader itself, running live with no key */}
+        <button type="button" className="demo-card" onClick={openDemo} aria-label="Read Pip and the Lantern Moon — the interactive demo book">
+          <span className="demo-card-art" aria-hidden>
+            <DemoScene sceneId="cover" />
+          </span>
+          <span className="demo-card-copy">
+            <span className="demo-card-eyebrow">✦ Interactive · no key needed</span>
+            <span className="demo-card-title">Pip and the Lantern Moon</span>
+            <span className="demo-card-sub">
+              Open a real book in the cinematic reader — page turns, motion, and read-aloud, live in your
+              browser.
+            </span>
+            <span className="btn btn-sunlit demo-card-btn">
+              <IconBook /> Read it now
+            </span>
+          </span>
+        </button>
         <div className="showcase-cta">
           <button className="btn btn-primary btn-lg" onClick={createNew}>
             <IconSpark /> Make one like this

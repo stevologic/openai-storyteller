@@ -373,6 +373,82 @@
   }
 }
 
+/* INTERACTIVE DEMO CARD — a real book, readable with zero keys */
+.demo-card {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  align-items: stretch;
+  width: 100%;
+  margin-top: 24px;
+  padding: 0;
+  text-align: left;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: linear-gradient(135deg, #101332, #232a5c);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.demo-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow), var(--shadow-glow);
+}
+.demo-card-art {
+  display: block;
+  position: relative;
+  min-height: 230px;
+}
+.demo-card-art svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.demo-card-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+  padding: 30px 34px;
+}
+.demo-card-eyebrow {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #f4b860;
+}
+.demo-card-title {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: clamp(24px, 3.4vw, 36px);
+  color: #fff;
+  line-height: 1.1;
+}
+.demo-card-sub {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #cfd3f2;
+  max-width: 44ch;
+}
+.demo-card-btn {
+  margin-top: 8px;
+}
+@media (max-width: 760px) {
+  .demo-card {
+    grid-template-columns: 1fr;
+  }
+  .demo-card-art {
+    min-height: 190px;
+  }
+  .demo-card-copy {
+    padding: 22px 20px 26px;
+  }
+}
+
 /* FOOTER */
 .landing-footer {
   margin-top: 72px;

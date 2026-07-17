@@ -11,6 +11,7 @@ import {
 } from './catalog';
 import type { GenerationProgress, RenderedStory, Settings, StoryBrief } from './types';
 import { normalizeApiKey } from './providers/util';
+import { saveLatestBook } from './bookshelf';
 
 /** Persisted settings may reference providers that no longer exist (e.g. the
  *  retired on-device options). Snap any unknown provider back to the default so
@@ -86,7 +87,12 @@ export const useStore = create<AppState>()(
       updateSettings: (patch) => set({ settings: { ...get().settings, ...patch } }),
       setSettings: (settings) => set({ settings }),
       setStoryBrief: (storyBrief) => set({ storyBrief }),
-      setStory: (story) => set({ story }),
+      setStory: (story) => {
+        set({ story });
+        // Safety net: every real book (fresh weave, slide regen, opened file)
+        // is snapshotted to IndexedDB so a reload can't destroy paid work.
+        if (story) saveLatestBook(story);
+      },
       setProgress: (progress) => set({ progress }),
       setError: (error) => set({ error }),
       hasAnyKey: () => {
