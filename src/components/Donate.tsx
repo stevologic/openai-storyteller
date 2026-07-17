@@ -50,6 +50,34 @@ export function DonateButton({ label = 'Tip the maker', className = '' }: { labe
   );
 }
 
+/** Explicit per-coin donate buttons for the site footer. Both open the tip
+ *  modal, which carries the QR codes and copy-to-clipboard addresses. */
+export function DonateCoins({ className = '' }: { className?: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <span className={`donate-coins ${className}`}>
+        {WALLETS.map((w) => (
+          <button
+            key={w.symbol}
+            type="button"
+            className="donate-coin"
+            onClick={() => setOpen(true)}
+            title={`Donate ${w.name} — ${w.address}`}
+            aria-label={`Donate ${w.name}`}
+          >
+            <span className="donate-coin-glyph" style={{ color: w.color }} aria-hidden>
+              {w.glyph}
+            </span>
+            {w.name}
+          </button>
+        ))}
+      </span>
+      <AnimatePresence>{open && <DonateModal key="donate-coins" onClose={() => setOpen(false)} />}</AnimatePresence>
+    </>
+  );
+}
+
 function DonateModal({ onClose }: { onClose: () => void }) {
   const [copied, setCopied] = useState<string | null>(null);
   const qrs = useMemo(() => Object.fromEntries(WALLETS.map((w) => [w.symbol, qrDataUrl(w.uri)])), []);

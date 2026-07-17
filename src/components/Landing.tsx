@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useStore } from '../lib/store';
 import { SAMPLE_VIDEOS } from '../sample/sampleVideos';
-import { DonateButton } from './Donate';
+import { DonateCoins } from './Donate';
 import { IconSpark, IconBook, IconFilm, IconVolume, IconKey, IconDownload, IconAuto } from './icons';
 import './landing.css';
 
@@ -188,7 +188,7 @@ export default function Landing() {
           <span> — living storybooks, told by AI.</span>
         </div>
         <div className="footer-links">
-          <DonateButton />
+          <DonateCoins />
           <a href="https://github.com/stevologic/tiny-book-buddies-ai" target="_blank" rel="noreferrer">
             GitHub
           </a>

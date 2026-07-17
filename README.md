@@ -172,6 +172,33 @@ src/
 - Requests go **directly** to OpenAI / Anthropic / Google / xAI. Tiny Book Buddies AI has no server and collects nothing.
 - Generated stories are kept in memory for the session.
 
+## Support the project
+
+It's a free, open project. If it brought a little joy, a tiny tip helps keep it growing. 💜
+
+<table>
+<tr>
+<td align="center" width="50%">
+
+<img src="public/btc.png" alt="Bitcoin donation QR code" width="170" />
+
+**₿ Bitcoin**
+
+`3M9PTxL15b6c8REcHMZCVPbfMomXNZ5AGR`
+
+</td>
+<td align="center" width="50%">
+
+<img src="public/doge.png" alt="Dogecoin donation QR code" width="170" />
+
+**Ð Dogecoin**
+
+`DTW2M5oEW97WbmYJRM71qD7uE6xfJs1MUK`
+
+</td>
+</tr>
+</table>
+
 ## License
 
 **[PolyForm Noncommercial 1.0.0](LICENSE)** — free to use, modify, and share for any noncommercial
